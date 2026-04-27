@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { clearTokens } from '../config/localStorage';
 import { useAuth } from '../context/useAuth';
-import { getServerHost, privateApi } from '../api';
+import { privateApi } from '../api';
 import { useToast } from '../hooks/useToast';
 import useApiAction from '../hooks/useApiAction';
 
@@ -14,7 +14,7 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState(user.name);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(
-    user.avatarUrl ? getServerHost() + user.avatarUrl : null,
+    user.avatarUrl ? user.avatarUrl : null,
   );
   const { execute, loading } = useApiAction((formData) =>
     privateApi.put('/api/users/profile', formData, {
