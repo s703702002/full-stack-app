@@ -1,8 +1,8 @@
 import prisma from '../config/db.js';
 import redisClient from '../config/redis.js';
+import { healCheck } from '../utils/s3Utils.js';
 
 export const checkHealth = async (req, res) => {
-  // 基礎系統指標
   const healthData = {
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -26,16 +26,14 @@ export const checkHealth = async (req, res) => {
   }
 
   try {
-    // 先用你剛學到的 isReady 檢查底層 Socket
     if (redisClient.isReady) {
-      // 真的發送一個 PING 指令，確保沒有卡死
       const pingResult = await redisClient.ping();
       if (pingResult === 'PONG') {
         healthData.services.redis = 'connected';
       }
     } else {
       healthData.services.redis = 'disconnected';
-      // 💡 策略抉擇：如果 Redis 只是輔助（如 Rate Limit），可以不把 isSystemHealthy 設為 false
+      // 策略抉擇：如果 Redis 只是輔助（如 Rate Limit），可以不把 isSystemHealthy 設為 false
       // 如果 Redis 是核心（如儲存 Session），那這裡就要 isSystemHealthy = false;
     }
   } catch (error) {
@@ -43,7 +41,21 @@ export const checkHealth = async (req, res) => {
     console.error('HealthCheck [Redis Error]:', error.message);
   }
 
-  // 🚀 3. 決定最終的 HTTP 狀態碼
+  try {
+    await healCheck();
+    healthData.services.storage = 'connected';
+  } catch (error) {
+    healthData.services.storage = 'disconnected';
+    console.error('HealthCheck [S3/MinIO Error]:', error.message);
+
+    // 架構決策：儲存服務掛掉，整個 API 算不健康嗎？
+    // 如果系統的「核心功能」是看文章，S3 掛了只是「看不到圖片、不能換大頭貼」，
+    // 那業界通常 "不會" 把 isSystemHealthy 設為 false (也就是不回傳 503)。
+    // 因為我們希望使用者還是能正常登入看文字，這叫做「優雅降級 (Graceful Degradation)」。
+    // isSystemHealthy = false; // 取決於你的系統特性
+  }
+
+  // 決定最終的 HTTP 狀態碼
   // 正常回 200；如果有致命錯誤回 503 (Service Unavailable)
   const statusCode = isSystemHealthy ? 200 : 503;
   if (!isSystemHealthy) {

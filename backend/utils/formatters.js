@@ -4,12 +4,14 @@
 export const sanitizeUser = (user) => {
   if (!user) return null;
 
+  const baseUrl = process.env.IMAGE_BASE_URL;
+
   return {
     id: user.id,
     username: user.username,
     name: user.name,
     roleId: user.roleId,
     roleName: user.role?.name,
-    avatarUrl: user.avatarUrl,
+    avatarUrl: user.avatarUrl ? `${baseUrl}/${user.avatarUrl}` : null,
   };
 };

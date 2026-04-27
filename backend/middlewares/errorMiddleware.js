@@ -1,5 +1,5 @@
 import AppError from '../utils/AppError.js';
-import { deleteFile, existsSync } from '../utils/fsHelper.js';
+import { deleteFromS3 } from '../utils/s3Utils.js';
 
 const handlePrismaDuplicateError = () => {
   // P2002 是 Prisma 的「唯一值衝突 (Unique Constraint)」錯誤碼
@@ -25,16 +25,10 @@ export const globalErrorHandler = (err, req, res, _next) => {
   console.error('💥 [未預期系統錯誤]:', err);
 
   // 如果請求失敗了，且這次請求有透過 Multer 上傳檔案
-  if (req.file) {
-    const filePath = req.file.path;
-    try {
-      if (existsSync(filePath)) {
-        deleteFile(filePath);
-        console.log(`[自動清理] 由於請求失敗，已刪除孤兒檔案: ${filePath}`);
-      }
-    } catch (cleanupError) {
-      console.error('[自動清理] 刪除失敗:', cleanupError);
-    }
+  if (req.file?.key) {
+    deleteFromS3(req.file.key)
+      .then(() => console.log(`[錯誤攔截] 孤兒檔案已從 S3 移除`))
+      .catch((e) => console.error('[錯誤攔截] 移除失敗', e));
   }
 
   // 回傳給前端「罐頭訊息」，絕不洩漏系統細節

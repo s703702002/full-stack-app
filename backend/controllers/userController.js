@@ -2,8 +2,7 @@ import UserModel from '../models/userModel.js';
 import { sanitizeUser } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import AppError from '../utils/AppError.js';
-import { deleteFile } from '../utils/fsHelper.js';
-import { join } from '../utils/pathHelper.js';
+import { deleteFromS3 } from '../utils/s3Utils.js';
 
 export const getMe = async (req, res) => {
   const userId = req.user.id;
@@ -58,11 +57,10 @@ export const updateProfile = async (req, res) => {
   const currentUser = await UserModel.findById(userId);
 
   if (req.file) {
-    updateData.avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    updateData.avatarUrl = req.file.key;
 
     if (currentUser.avatarUrl) {
-      const oldFilePath = join(process.cwd(), 'public', currentUser.avatarUrl);
-      deleteFile(oldFilePath);
+      await deleteFromS3(currentUser.avatarUrl);
     }
   }
 
