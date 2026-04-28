@@ -10,7 +10,7 @@ export const checkHealth = async (req, res) => {
     services: {
       database: 'unknown',
       redis: 'unknown',
-      s3: 'unknown',
+      storage: 'unknown',
     },
   };
 
