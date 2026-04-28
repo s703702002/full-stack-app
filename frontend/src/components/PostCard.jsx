@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Avatar from './Avatar';
 
 export default function PostCard({
   post,
@@ -17,7 +18,12 @@ export default function PostCard({
 
   return (
     <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col">
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex items-center mb-2 space-x-2">
+        <Avatar
+          name={post.authorName}
+          avatarUrl={post.authorAvatarUrl}
+          className="w-10 h-10"
+        />
         <span className="font-bold text-slate-700">{post.authorName}</span>
       </div>
 

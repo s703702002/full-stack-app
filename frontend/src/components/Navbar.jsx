@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
+import Avatar from './Avatar';
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -35,9 +36,11 @@ export default function Navbar() {
               <Link to="/profile" className="hover:text-primary transition">
                 個人主頁
               </Link>
-              <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-sm font-bold text-slate-500">
-                {user.name[0].toUpperCase()}
-              </div>
+              <Avatar
+                name={user.name}
+                avatarUrl={user.avatarUrl}
+                className="w-10 h-10 text-lg"
+              />
             </>
           ) : (
             <>

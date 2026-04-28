@@ -5,6 +5,8 @@ import { useAuth } from '../context/useAuth';
 import { privateApi } from '../api';
 import { useToast } from '../hooks/useToast';
 import useApiAction from '../hooks/useApiAction';
+import CameraCapture from '../components/CameraCapture';
+import Avatar from '../components/Avatar';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -27,8 +29,7 @@ export default function ProfilePage() {
 
   const fileInputRef = useRef(null);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = (file) => {
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         error('圖片大小不能超過 5MB');
@@ -62,17 +63,7 @@ export default function ProfilePage() {
     <div className="max-w-4xl mx-auto mt-6 p-4 sm:mt-12 sm:p-6">
       <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-100 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left relative">
         <div className="relative group">
-          {avatarPreview ? (
-            <img
-              src={avatarPreview}
-              alt="Avatar"
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-inner border-2 border-slate-50"
-            />
-          ) : (
-            <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-3xl sm:text-4xl font-bold text-slate-500 shadow-inner border-2 border-slate-50">
-              {user.name[0].toUpperCase()}
-            </div>
-          )}
+          <Avatar avatarUrl={avatarPreview} name={user.name} />
 
           {/* 編輯模式下，顯示上傳按鈕的遮罩 */}
           {isEditing && (
@@ -88,7 +79,7 @@ export default function ProfilePage() {
           <input
             type="file"
             ref={fileInputRef}
-            onChange={handleFileChange}
+            onChange={(e) => handleFileChange(e.target.files[0])}
             accept="image/jpeg, image/png, image/webp"
             className="hidden"
           />
@@ -101,7 +92,7 @@ export default function ProfilePage() {
           </p>
 
           {isEditing ? (
-            <div className="mt-2 mb-3">
+            <div className="mt-2 mb-3 space-y-2">
               <input
                 type="text"
                 value={editName}
@@ -109,6 +100,7 @@ export default function ProfilePage() {
                 className="w-full max-w-xs border border-slate-300 rounded-lg px-3 py-1.5 text-lg font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="請輸入姓名"
               />
+              <CameraCapture onCapture={handleFileChange} />
             </div>
           ) : (
             <h1 className="text-2xl sm:text-4xl font-bold text-slate-950 mb-1.5 mt-0.5 break-words">
