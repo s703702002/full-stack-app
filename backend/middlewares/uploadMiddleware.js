@@ -10,7 +10,6 @@ const storage = multerS3({
   key: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const ext = extname(file.originalname);
-    // 這裡可以加上資料夾前綴，例如 avatars/xxx.jpg
     cb(null, `avatars/avatar-${uniqueSuffix}${ext}`);
   },
 });

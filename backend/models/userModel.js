@@ -1,23 +1,23 @@
+// eslint-disable-next-line no-unused-vars
+import { Prisma } from '@prisma/client';
 import prisma from '../config/db.js';
 
 const UserModel = {
-  findByUsername: async (username) => {
+  // ==========================================
+  // 🔍 1. 查詢類 (Read)
+  // ==========================================
+
+  findByUsername: async (username, includeRole = false) => {
     return await prisma.user.findUnique({
       where: { username },
-      include: { role: true },
+      include: includeRole ? { role: true } : undefined,
     });
   },
 
-  findById: async (id) => {
-    return await prisma.user.findUnique({
-      where: { id },
-    });
-  },
-
-  findByIdWithRole: async (id) => {
+  findById: async (id, includeRole = false) => {
     return await prisma.user.findUnique({
       where: { id: Number(id) },
-      include: { role: true },
+      include: includeRole ? { role: true } : undefined,
     });
   },
 
@@ -28,73 +28,50 @@ const UserModel = {
     });
   },
 
-  findRoleByName: async (roleName) => {
-    return await prisma.role.findUnique({
-      where: { name: roleName },
-    });
-  },
-
-  // 驗證權限：檢查該用戶的角色是否有某個權限
-  hasPermission: async (userId, permissionName) => {
-    const count = await prisma.rolePermission.count({
-      where: {
-        role: {
-          users: { some: { id: userId } },
-        },
-        permission: { name: permissionName },
-      },
-    });
-    return count > 0;
-  },
-
-  updateRole: async (userId, newRoleName) => {
-    return await prisma.user.update({
-      where: { id: userId },
-      data: {
-        role: { connect: { name: newRoleName } },
-      },
-    });
-  },
-
-  updateRoleId: async (userId, roleId) => {
-    return await prisma.user.update({
-      where: { id: Number(userId) },
-      data: { roleId: Number(roleId) },
-    });
-  },
-
-  createUser: async (username, hashedPassword, name, roleId) => {
-    return await prisma.user.create({
-      data: { username, password: hashedPassword, name, roleId },
-    });
-  },
-
-  updateResetToken: async (userId, token, expiryDate) => {
-    return await prisma.user.update({
-      where: { id: userId },
-      data: { resetToken: token, resetTokenExpires: expiryDate },
-    });
-  },
-
-  updateProfile: async (userId, updateData) => {
-    return await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-    });
-  },
-
   findByValidResetToken: async (token) => {
     return await prisma.user.findFirst({
       where: {
         resetToken: token,
-        resetTokenExpires: { gt: new Date() }, // gt 代表 greater than (大於現在時間)
+        resetTokenExpires: { gt: new Date() },
       },
     });
   },
 
+  // ==========================================
+  // 🛠️ 2. 通用資料更新 (Generic Update)
+  // ==========================================
+
+  /**
+   * 更新使用者資料
+   * @param {number | string} userId - 使用者 ID
+   * @param {Prisma.UserUpdateInput} data - Prisma 嚴格把關的更新資料格式
+   */
+  updateUser: async (userId, data) => {
+    return await prisma.user.update({
+      where: { id: Number(userId) },
+      data,
+    });
+  },
+
+  // ==========================================
+  // 🧠 3. 核心商業邏輯 (Business Logic & Side-effects)
+  // ==========================================
+
+  createUser: async (username, hashedPassword, name, roleId) => {
+    return await prisma.user.create({
+      data: {
+        username,
+        password: hashedPassword,
+        name,
+        roleId: Number(roleId),
+      },
+    });
+  },
+
+  // 因為重設密碼伴隨清除 2FA 與 Token 等多個副作用，必須獨立封裝防呆
   resetPassword: async (userId, newHashedPassword) => {
     return await prisma.user.update({
-      where: { id: userId },
+      where: { id: Number(userId) },
       data: {
         password: newHashedPassword,
         resetToken: null,
@@ -105,18 +82,36 @@ const UserModel = {
     });
   },
 
-  save2FASecret: async (userId, secret) => {
+  // 因為用到了 Prisma 特殊的 connect 語法，封裝起來 Controller 比較好呼叫
+  updateRoleByName: async (userId, newRoleName) => {
     return await prisma.user.update({
-      where: { id: userId },
-      data: { twoFactorSecret: secret },
+      where: { id: Number(userId) },
+      data: {
+        role: { connect: { name: newRoleName } },
+      },
     });
   },
 
-  enable2FA: async (userId) => {
-    return await prisma.user.update({
-      where: { id: userId },
-      data: { isTwoFactorEnabled: true },
+  // ==========================================
+  // 🛡️ 4. 角色與權限 (未來若壯大，建議獨立拆分至 RoleModel)
+  // ==========================================
+
+  findRoleByName: async (roleName) => {
+    return await prisma.role.findUnique({
+      where: { name: roleName },
     });
+  },
+
+  hasPermission: async (userId, permissionName) => {
+    const count = await prisma.rolePermission.count({
+      where: {
+        role: {
+          users: { some: { id: Number(userId) } },
+        },
+        permission: { name: permissionName },
+      },
+    });
+    return count > 0;
   },
 };
 

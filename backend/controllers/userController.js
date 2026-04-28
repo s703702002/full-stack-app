@@ -6,7 +6,7 @@ import { deleteFromS3 } from '../utils/s3Utils.js';
 
 export const getMe = async (req, res) => {
   const userId = req.user.id;
-  const user = await UserModel.findByIdWithRole(userId);
+  const user = await UserModel.findById(userId, true);
 
   if (!user) {
     throw new AppError('找不到使用者帳號', 404);
@@ -43,7 +43,7 @@ export const updateUserRole = async (req, res) => {
     throw new AppError('你不能更改自己的角色！', 400);
   }
 
-  await UserModel.updateRoleId(targetUserId, newRole.id);
+  await UserModel.updateUser(targetUserId, { roleId: newRole.id });
 
   sendSuccess(res, 200, {}, `成功將使用者更改為 ${newRoleName} 角色`);
 };
@@ -64,7 +64,7 @@ export const updateProfile = async (req, res) => {
     }
   }
 
-  const updatedUser = await UserModel.updateProfile(userId, updateData);
+  const updatedUser = await UserModel.updateUser(userId, updateData);
 
   sendSuccess(res, 200, sanitizeUser(updatedUser), '個人資料更新成功');
 };

@@ -84,7 +84,7 @@ export const login2FA = async (req, res) => {
     throw new AppError('無效的憑證類型', 403);
   }
 
-  const user = await UserModel.findByIdWithRole(decoded.id);
+  const user = await UserModel.findById(decoded.id, true);
   if (!user) {
     throw new AppError('找不到該使用者', 401);
   }
@@ -118,7 +118,7 @@ export const refreshToken = async (req, res) => {
     throw new AppError('Refresh Token 無效或已被撤銷，請重新登入', 403);
   }
 
-  const user = await UserModel.findByIdWithRole(decoded.id);
+  const user = await UserModel.findById(decoded.id, true);
   if (!user) {
     throw new AppError('帳號不存在', 403);
   }
@@ -147,7 +147,10 @@ export const forgotPassword = async (req, res) => {
   const resetToken = generateRandomToken();
   const resetExpires = new Date(Date.now() + 3600000); // 💡 Prisma 需要 Date 物件
 
-  await UserModel.updateResetToken(user.id, resetToken, resetExpires);
+  await UserModel.updateResetToken(user.id, {
+    resetToken: resetToken,
+    resetTokenExpires: resetExpires,
+  });
 
   console.log(
     `\n✉️ [系統通知信] 請點擊連結重設密碼: http://localhost:5173/reset-password/${resetToken}\n`,
@@ -178,7 +181,7 @@ export const setup2FA = async (req, res) => {
   const userId = req.user.id;
   const userEmailOrName = req.user.username;
   const { secret, qrCodeImage } = await generate2FA(userEmailOrName);
-  await UserModel.save2FASecret(userId, secret);
+  await UserModel.updateUser(userId, { twoFactorSecret: secret });
   sendSuccess(res, 200, { qrCodeImage, secret });
 };
 
@@ -194,6 +197,6 @@ export const verify2FA = async (req, res) => {
 
   await otpVerify({ token: token, secret: user.twoFactorSecret });
 
-  await UserModel.enable2FA(userId);
+  await UserModel.updateUser(userId, { isTwoFactorEnabled: true });
   sendSuccess(res, 200, {}, '2FA 雙重驗證已成功啟用！');
 };

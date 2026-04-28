@@ -5,7 +5,7 @@ import { sendNotification } from '../utils/sseManager.js';
 
 export const getAllPosts = async (req, res) => {
   const currentUserId = req.user.id;
-  const posts = await PostModel.findAllWithAuthor(currentUserId);
+  const posts = await PostModel.findAllWithDetails(currentUserId);
 
   const formattedPosts = posts.map((post) => ({
     id: post.id,
@@ -15,6 +15,9 @@ export const getAllPosts = async (req, res) => {
     userId: post.userId,
     username: post.author?.username,
     authorName: post.author?.name,
+    authorAvatarUrl: post.author?.avatarUrl
+      ? `${process.env.IMAGE_BASE_URL}/${post.author?.avatarUrl}`
+      : null,
     likeCount: post._count.likes,
     isLikedByMe: post.likes.length > 0, // 如果陣列裡有東西，代表我有按讚！
   }));
@@ -54,7 +57,7 @@ export const createPost = async (req, res) => {
 
   if (!content) throw new AppError('留言內容不能為空', 400);
 
-  const newPost = await PostModel.createPost(userId, content);
+  const newPost = await PostModel.createPost(userId, { content: content });
   sendSuccess(res, 201, { post: newPost }, '留言發布成功');
 };
 
@@ -71,7 +74,7 @@ export const updatePost = async (req, res) => {
     throw new AppError('你只能編輯自己的留言', 403);
   }
 
-  await PostModel.updateContent(postId, content);
+  await PostModel.updatePost(postId, { content: content });
 
   sendSuccess(res, 200, {}, '留言更新成功');
 };

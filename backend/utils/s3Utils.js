@@ -23,7 +23,7 @@ export const deleteFromS3 = async (fileKey) => {
   await s3Client.send(command);
 };
 
-export const healCheck = async () => {
+export const healthCheck = async () => {
   const command = new HeadBucketCommand({ Bucket: BUCKET_NAME });
   await s3Client.send(command);
 };

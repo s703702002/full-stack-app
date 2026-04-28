@@ -7,7 +7,6 @@ export const checkAuthenticated = (req, res, next) => {
       return next(err);
     }
 
-    //  驗證失敗 (沒帶 Token、Token 偽造、Token 過期)
     if (!user) {
       if (info?.name === 'TokenExpiredError') {
         return next(
