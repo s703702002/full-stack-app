@@ -45,7 +45,12 @@ export const registerUser = async (username, password, name) => {
   if (!role) throw new AppError('系統錯誤：找不到預設角色', 500);
 
   const hashedPassword = await hashString(password, 10);
-  return await UserModel.createUser(username, hashedPassword, name, role.id);
+  return await UserModel.createUser({
+    username,
+    password: hashedPassword,
+    name,
+    roleId: role.id,
+  });
 };
 
 export const verify2FALogin = async (tempToken, totpCode) => {

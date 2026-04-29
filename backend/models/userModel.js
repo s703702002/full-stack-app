@@ -21,6 +21,20 @@ const UserModel = {
     });
   },
 
+  findByEmail: async (email, includeRole = false) => {
+    return await prisma.user.findUnique({
+      where: { email: email },
+      include: includeRole ? { role: true } : undefined,
+    });
+  },
+
+  findByGoogleId: async (id, includeRole = false) => {
+    return await prisma.user.findUnique({
+      where: { googleId: id },
+      include: includeRole ? { role: true } : undefined,
+    });
+  },
+
   findAllWithRole: async () => {
     return await prisma.user.findMany({
       include: { role: true },
@@ -57,13 +71,15 @@ const UserModel = {
   // 🧠 3. 核心商業邏輯 (Business Logic & Side-effects)
   // ==========================================
 
-  createUser: async (username, hashedPassword, name, roleId) => {
+  createUser: async ({ username, password, name, roleId, googleId, email }) => {
     return await prisma.user.create({
       data: {
         username,
-        password: hashedPassword,
+        password,
         name,
         roleId: Number(roleId),
+        googleId,
+        email,
       },
     });
   },

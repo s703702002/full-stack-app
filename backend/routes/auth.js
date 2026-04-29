@@ -9,6 +9,8 @@ import {
   logout,
   setup2FA,
   verify2FA,
+  googleAuth,
+  googleCallback,
 } from '../controllers/authController.js';
 import { checkAuthenticated } from '../middlewares/auth.js';
 import { accountAuthLimiter } from '../middlewares/rateLimiter.js';
@@ -28,6 +30,8 @@ router.post('/register', validate(registerSchema), register);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.post('/refresh', refreshToken);
+router.get('/google', googleAuth);
+router.get('/google/callback', googleCallback);
 
 // 只有這三個需要登入
 router.post('/logout', checkAuthenticated, logout);

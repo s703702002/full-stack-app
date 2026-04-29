@@ -118,3 +118,32 @@ export const verify2FA = async (req, res) => {
   await AuthService.verifyAndEnable2FA(req.user.id, token);
   sendSuccess(res, 200, {}, '2FA 雙重驗證已成功啟用！');
 };
+
+export const googleAuth = passport.authenticate('google', {
+  scope: ['profile', 'email'], // 我們要跟 Google 拿的資料
+});
+
+// 使用者在 Google 按下同意後，Google 會把人導向回這支 API
+export const googleCallback = (req, res, next) => {
+  passport.authenticate('google', { session: false }, async (err, user) => {
+    try {
+      if (err || !user) {
+        // 登入失敗，導回前端的登入頁面並帶上錯誤訊息
+        return res.redirect(
+          'http://localhost:5173/login?error=google_login_failed',
+        );
+      }
+
+      // 🚀 核心魔法：呼叫你寫好的 Service 產 Token！
+      const { accessToken, refreshToken } =
+        await AuthService.generateAuthTokens(user);
+
+      setAccessTokenCookie(res, accessToken);
+      setRefreshTokenCookie(res, refreshToken);
+
+      return res.redirect('http://localhost:5173/profile');
+    } catch (error) {
+      next(error);
+    }
+  })(req, res, next);
+};
