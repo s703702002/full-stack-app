@@ -29,6 +29,11 @@ export default function LoginPage() {
     await execute(formData);
   };
 
+  const handleGoogleLogin = () => {
+    // 直接改變瀏覽器網址，跳轉到後端的觸發點
+    globalThis.location.href = 'http://localhost:3000/api/auth/google';
+  };
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
@@ -65,6 +70,10 @@ export default function LoginPage() {
           </div>
           <Button loading={loading}>立即登入</Button>
         </form>
+
+        <div className="my-2">
+          <Button onClick={handleGoogleLogin}>使用 Google 登入</Button>
+        </div>
 
         <p className="text-center text-slate-600 mt-8 text-sm">
           還沒有帳號？{' '}
