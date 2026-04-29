@@ -1,26 +1,14 @@
 import PostModel from '../models/postModel.js';
 import AppError from '../utils/AppError.js';
+import { formatPost } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import { sendNotification } from '../utils/sseManager.js';
 
 export const getAllPosts = async (req, res) => {
   const currentUserId = req.user.id;
-  const posts = await PostModel.findAllWithDetails(currentUserId);
 
-  const formattedPosts = posts.map((post) => ({
-    id: post.id,
-    content: post.content,
-    createdAt: post.createdAt,
-    updatedAt: post.updatedAt,
-    userId: post.userId,
-    username: post.author?.username,
-    authorName: post.author?.name,
-    authorAvatarUrl: post.author?.avatarUrl
-      ? `${process.env.IMAGE_BASE_URL}/${post.author?.avatarUrl}`
-      : null,
-    likeCount: post._count.likes,
-    isLikedByMe: post.likes.length > 0, // 如果陣列裡有東西，代表我有按讚！
-  }));
+  const posts = await PostModel.findAllWithDetails(currentUserId);
+  const formattedPosts = posts.map(formatPost);
 
   sendSuccess(res, 200, { posts: formattedPosts });
 };

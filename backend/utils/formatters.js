@@ -1,6 +1,3 @@
-/**
- * 清洗 User 物件，只保留前端需要的、安全的欄位
- */
 export const sanitizeUser = (user) => {
   if (!user) return null;
 
@@ -13,5 +10,24 @@ export const sanitizeUser = (user) => {
     roleId: user.roleId,
     roleName: user.role?.name,
     avatarUrl: user.avatarUrl ? `${baseUrl}/${user.avatarUrl}` : null,
+  };
+};
+
+export const formatPost = (post) => {
+  const baseUrl = process.env.IMAGE_BASE_URL;
+
+  return {
+    id: post.id,
+    content: post.content,
+    createdAt: post.createdAt,
+    updatedAt: post.updatedAt,
+    userId: post.userId,
+    username: post.author?.username,
+    authorName: post.author?.name,
+    authorAvatarUrl: post.author?.avatarUrl
+      ? `${baseUrl}/${post.author.avatarUrl}`
+      : null,
+    likeCount: post._count?.likes || 0,
+    isLikedByMe: post.likes && post.likes.length > 0,
   };
 };

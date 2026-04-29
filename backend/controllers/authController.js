@@ -1,55 +1,26 @@
 import passport from 'passport';
-
-import UserModel from '../models/userModel.js';
-import redisClient from '../config/redis.js';
-import {
-  getAccountRateLimitKey,
-  getRefreshTokenKey,
-} from '../constants/redisKeys.js';
-import { handle2FAIntercept, handleLoginSuccess } from '../utils/authHelper.js';
+import * as AuthService from '../services/authService.js';
 import { sanitizeUser } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import AppError from '../utils/AppError.js';
-import {
-  signAccessToken,
-  verifyRefreshToken,
-  verifyTempToken,
-} from '../utils/jwtHelper.js';
-import { hashString } from '../utils/hashHelper.js';
-import { generateRandomToken } from '../utils/cryptoHelper.js';
-import { generate2FA, otpVerify } from '../utils/twoFAHelper.js';
 import {
   setAccessTokenCookie,
   clearAllAuthCookies,
   getRefreshToken,
   getTempToken,
+  setTempTokenCookie,
+  setRefreshTokenCookie,
+  clearTempTokenCookie,
 } from '../utils/cookieHelper.js';
 
 export const register = async (req, res) => {
   const { username, password, name } = req.body;
-
-  const userExists = await UserModel.findByUsername(username);
-  if (userExists) {
-    throw new AppError('這個帳號已經被註冊過了', 409);
-  }
-
-  const role = await UserModel.findRoleByName('viewer');
-  if (!role) {
-    throw new AppError('系統錯誤：找不到預設角色', 500);
-  }
-
-  const hashedPassword = await hashString(password, 10);
-  const newUser = await UserModel.createUser(
-    username,
-    hashedPassword,
-    name,
-    role.id,
-  );
-
+  const newUser = await AuthService.registerUser(username, password, name);
   sendSuccess(res, 201, { user: sanitizeUser(newUser) }, '註冊成功');
 };
 
 export const login = (req, res, next) => {
+  // Passport 本身是 Middleware 且高度綁定 req/res，所以保留在 Controller 層最為合適
   passport.authenticate(
     'local',
     { session: false },
@@ -59,10 +30,23 @@ export const login = (req, res, next) => {
         if (!user) throw new AppError(info?.message || '登入失敗', 401);
 
         if (user.isTwoFactorEnabled && !user._skip2FA) {
-          return handle2FAIntercept(res, user);
+          const tempToken = AuthService.generate2FAToken(user);
+          setTempTokenCookie(res, tempToken);
+          return sendSuccess(
+            res,
+            200,
+            { tempToken, require2FA: true },
+            '請輸入 2FA 驗證碼',
+          );
         }
 
-        return await handleLoginSuccess(req, res, user);
+        const { accessToken, refreshToken } =
+          await AuthService.generateAuthTokens(user);
+
+        setAccessTokenCookie(res, accessToken);
+        setRefreshTokenCookie(res, refreshToken);
+
+        return sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
       } catch (error) {
         next(error);
       }
@@ -74,62 +58,32 @@ export const login2FA = async (req, res) => {
   const { totpCode } = req.body;
   const tempToken = getTempToken(req);
 
-  if (!tempToken) {
-    throw new AppError('缺少驗證資訊', 400);
-  }
+  if (!tempToken) throw new AppError('缺少驗證資訊', 400);
 
-  const decoded = verifyTempToken(tempToken);
+  const user = await AuthService.verify2FALogin(tempToken, totpCode);
 
-  if (decoded.purpose !== '2fa') {
-    throw new AppError('無效的憑證類型', 403);
-  }
+  const { accessToken, refreshToken } =
+    await AuthService.generateAuthTokens(user);
 
-  const user = await UserModel.findById(decoded.id, true);
-  if (!user) {
-    throw new AppError('找不到該使用者', 401);
-  }
+  setAccessTokenCookie(res, accessToken);
+  setRefreshTokenCookie(res, refreshToken);
+  clearTempTokenCookie(res);
 
-  await otpVerify({ token: totpCode, secret: user.twoFactorSecret });
-
-  return await handleLoginSuccess(req, res, user);
+  sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
 };
 
 export const logout = async (req, res) => {
-  const redisKey = getRefreshTokenKey(req.user.id);
-  await redisClient.del(redisKey);
-
+  await AuthService.logoutUser(req.user.id);
   clearAllAuthCookies(res);
-
   sendSuccess(res, 200, {}, '登出成功');
 };
 
 export const refreshToken = async (req, res) => {
-  const refreshToken = getRefreshToken(req);
+  const currentRefreshToken = getRefreshToken(req);
+  if (!currentRefreshToken) throw new AppError('未提供 Refresh Token', 401);
 
-  if (!refreshToken) {
-    throw new AppError('未提供 Refresh Token', 401);
-  }
-
-  const decoded = verifyRefreshToken(refreshToken);
-  const redisKey = getRefreshTokenKey(decoded.id);
-  const storedToken = await redisClient.get(redisKey);
-
-  if (!storedToken || storedToken !== refreshToken) {
-    throw new AppError('Refresh Token 無效或已被撤銷，請重新登入', 403);
-  }
-
-  const user = await UserModel.findById(decoded.id, true);
-  if (!user) {
-    throw new AppError('帳號不存在', 403);
-  }
-
-  const newAccessToken = signAccessToken({
-    id: user.id,
-    username: user.username,
-    roleId: user.roleId,
-    roleName: user.role?.name,
-  });
-
+  const newAccessToken =
+    await AuthService.refreshAccessToken(currentRefreshToken);
   setAccessTokenCookie(res, newAccessToken);
 
   sendSuccess(res, 200, {});
@@ -137,66 +91,30 @@ export const refreshToken = async (req, res) => {
 
 export const forgotPassword = async (req, res) => {
   const { username } = req.body;
+  await AuthService.processForgotPassword(username);
 
-  const user = await UserModel.findByUsername(username);
-  if (!user) {
-    // 為了防範帳號枚舉攻擊 (User Enumeration)，就算找不到帳號也顯示寄出成功
-    return sendSuccess(res, 200, {}, '若帳號存在，重設密碼的連結已寄出');
-  }
-
-  const resetToken = generateRandomToken();
-  const resetExpires = new Date(Date.now() + 3600000); // 💡 Prisma 需要 Date 物件
-
-  await UserModel.updateResetToken(user.id, {
-    resetToken: resetToken,
-    resetTokenExpires: resetExpires,
-  });
-
-  console.log(
-    `\n✉️ [系統通知信] 請點擊連結重設密碼: http://localhost:5173/reset-password/${resetToken}\n`,
-  );
-
-  sendSuccess(res, 200, {}, '重設密碼的連結已寄出 (請查看終端機)');
+  // 無論帳號是否存在，為了資安皆回傳相同的成功訊息
+  sendSuccess(res, 200, {}, '若帳號存在，重設密碼的連結已寄出');
 };
 
 export const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;
 
-  const user = await UserModel.findByValidResetToken(token);
-  if (!user) {
-    throw new AppError('連結無效或已過期', 400);
-  }
-
-  const hashedPassword = await hashString(newPassword, 10);
-  await UserModel.resetPassword(user.id, hashedPassword);
-
-  const redisKey = getAccountRateLimitKey(user.username);
-  await redisClient.del(redisKey);
-
+  await AuthService.processResetPassword(token, newPassword);
   sendSuccess(res, 200, {}, '密碼重設成功，請使用新密碼登入！');
 };
 
 export const setup2FA = async (req, res) => {
-  const userId = req.user.id;
-  const userEmailOrName = req.user.username;
-  const { secret, qrCodeImage } = await generate2FA(userEmailOrName);
-  await UserModel.updateUser(userId, { twoFactorSecret: secret });
+  const { secret, qrCodeImage } = await AuthService.setupUser2FA(
+    req.user.id,
+    req.user.username,
+  );
   sendSuccess(res, 200, { qrCodeImage, secret });
 };
 
 export const verify2FA = async (req, res) => {
-  const userId = req.user.id;
   const { token } = req.body;
-
-  const user = await UserModel.findById(userId);
-
-  if (!user?.twoFactorSecret) {
-    throw new AppError('尚未產生 2FA 金鑰，請先執行 setup', 400);
-  }
-
-  await otpVerify({ token: token, secret: user.twoFactorSecret });
-
-  await UserModel.updateUser(userId, { isTwoFactorEnabled: true });
+  await AuthService.verifyAndEnable2FA(req.user.id, token);
   sendSuccess(res, 200, {}, '2FA 雙重驗證已成功啟用！');
 };

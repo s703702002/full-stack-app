@@ -1,80 +1,74 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { privateApi } from '../api';
 import PostForm from '../components/PostForm';
 import PostCard from '../components/PostCard';
 import LikersModal from '../components/LikersModal';
-import { useToast } from '../hooks/useToast';
+import useApiAction from '../hooks/useApiAction';
 
 export default function MessageBoard() {
-  const [posts, setPosts] = useState([]);
   const [showLikersModal, setShowLikersModal] = useState(false);
-  const [currentLikers, setCurrentLikers] = useState([]);
-  const [isLoadingLikers, setIsLoadingLikers] = useState(false);
-  const { error } = useToast();
+  const { data, execute: getAllPosts } = useApiAction(
+    () => privateApi.get('/api/posts'),
+    {
+      runOnMount: true,
+      successToast: false,
+    },
+  );
+  const {
+    data: currentLikersData,
+    loading,
+    execute: getCurrentLikers,
+  } = useApiAction((postId) => privateApi.get(`/api/posts/${postId}/likes`), {
+    successToast: false,
+  });
+  const { execute: createPost } = useApiAction((payload) =>
+    privateApi.post('/api/posts', payload),
+  );
+  const { execute: editPost } = useApiAction((payload) =>
+    privateApi.put(`/api/posts/${payload.id}`, payload),
+  );
+  const { execute: deletePost } = useApiAction((postId) =>
+    privateApi.delete(`/api/posts/${postId}`),
+  );
+  const { execute: toggleLikePost } = useApiAction((postId) =>
+    privateApi.post(`/api/posts/${postId}/like`),
+  );
 
-  const fetchPosts = useCallback(async () => {
-    try {
-      const res = await privateApi.get('/api/posts');
-      if (res.data.success) setPosts(res.data.posts);
-    } catch (err) {
-      console.error('無法載入留言', err);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  const posts = data?.data?.posts ?? [];
+  const currentLikers = currentLikersData?.data?.likers ?? [];
 
   const handleCreate = async (content) => {
-    try {
-      await privateApi.post('/api/posts', { content });
-      fetchPosts();
-    } catch (e) {
-      error(e.response?.data?.message || '發布失敗');
+    const { success } = await createPost({ content });
+    if (success) {
+      getAllPosts();
     }
   };
 
   const handleSaveEdit = async (id, updatedContent) => {
-    try {
-      await privateApi.put(`/api/posts/${id}`, { content: updatedContent });
-      fetchPosts();
-    } catch (e) {
-      error(e.response?.data?.message || '更新失敗');
+    const { success } = await editPost({ id: id, content: updatedContent });
+    if (success) {
+      getAllPosts();
     }
   };
 
   const handleDelete = async (id) => {
     if (!globalThis.confirm('確定要刪除這篇留言嗎？')) return;
-    try {
-      await privateApi.delete(`/api/posts/${id}`);
-      fetchPosts();
-    } catch (e) {
-      error(e.response?.data?.message || '刪除失敗');
+    const { success } = await deletePost(id);
+    if (success) {
+      getAllPosts();
     }
   };
 
   const handleToggleLike = async (id) => {
-    try {
-      await privateApi.post(`/api/posts/${id}/like`);
-      fetchPosts();
-    } catch (e) {
-      error(e.response?.data?.message || '點讚操作失敗');
+    const { success } = await toggleLikePost(id);
+    if (success) {
+      getAllPosts();
     }
   };
 
   const handleShowLikers = async (postId) => {
     setShowLikersModal(true);
-    setIsLoadingLikers(true);
-    setCurrentLikers([]);
-    try {
-      const res = await privateApi.get(`/api/posts/${postId}/likes`);
-      if (res.data.success) setCurrentLikers(res.data.likers);
-    } catch {
-      error('無法載入按讚名單');
-      setShowLikersModal(false);
-    } finally {
-      setIsLoadingLikers(false);
-    }
+    getCurrentLikers(postId);
   };
 
   return (
@@ -105,7 +99,7 @@ export default function MessageBoard() {
         isOpen={showLikersModal}
         onClose={() => setShowLikersModal(false)}
         likers={currentLikers}
-        isLoading={isLoadingLikers}
+        isLoading={loading}
       />
     </div>
   );

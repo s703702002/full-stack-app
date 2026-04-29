@@ -30,7 +30,6 @@ export default function useApiAction(
     async (...args) => {
       setLoading(true);
       setMessage('');
-      setData(null);
 
       try {
         const response = await apiRef.current(...args);

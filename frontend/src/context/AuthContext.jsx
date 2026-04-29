@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   }, [execute]);
 
   return (
-    <AuthContext.Provider value={{ user: data?.user, isInitialized }}>
+    <AuthContext.Provider value={{ user: data?.data?.user, isInitialized }}>
       {children}
     </AuthContext.Provider>
   );

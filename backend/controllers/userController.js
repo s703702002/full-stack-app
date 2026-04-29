@@ -2,7 +2,7 @@ import UserModel from '../models/userModel.js';
 import { sanitizeUser } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import AppError from '../utils/AppError.js';
-import { deleteFromS3 } from '../utils/s3Utils.js';
+import * as UserService from '../services/userService.js';
 
 export const getMe = async (req, res) => {
   const userId = req.user.id;
@@ -17,33 +17,17 @@ export const getMe = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   const users = await UserModel.findAllWithRole();
-  const sanitizeUsers = users.map((u) => sanitizeUser(u));
+  const sanitizeUsers = users.map(sanitizeUser);
+
   sendSuccess(res, 200, { users: sanitizeUsers });
 };
 
 export const updateUserRole = async (req, res) => {
+  const operatorId = req.user.id;
   const targetUserId = req.params.id;
   const { newRoleName } = req.body;
 
-  if (newRoleName === 'superadmin') {
-    throw new AppError('權限不足：無法將使用者指派為系統最高管理員！', 403);
-  }
-
-  const targetUser = await UserModel.findById(targetUserId);
-  if (!targetUser) throw new AppError('找不到該使用者', 404);
-
-  if (targetUser.username === 'root') {
-    throw new AppError('權限不足：無法變更系統創世神的角色！', 403);
-  }
-
-  const newRole = await UserModel.findRoleByName(newRoleName);
-  if (!newRole) throw new AppError('找不到該角色', 400);
-
-  if (Number.parseInt(targetUserId) === req.user.id) {
-    throw new AppError('你不能更改自己的角色！', 400);
-  }
-
-  await UserModel.updateUser(targetUserId, { roleId: newRole.id });
+  await UserService.changeUserRole(operatorId, targetUserId, newRoleName);
 
   sendSuccess(res, 200, {}, `成功將使用者更改為 ${newRoleName} 角色`);
 };
@@ -51,20 +35,14 @@ export const updateUserRole = async (req, res) => {
 export const updateProfile = async (req, res) => {
   const { name } = req.body;
   const userId = req.user.id;
-
   const updateData = { name: name };
+  const newAvatarKey = req.file ? req.file.key : null;
 
-  const currentUser = await UserModel.findById(userId);
-
-  if (req.file) {
-    updateData.avatarUrl = req.file.key;
-
-    if (currentUser.avatarUrl) {
-      await deleteFromS3(currentUser.avatarUrl);
-    }
-  }
-
-  const updatedUser = await UserModel.updateUser(userId, updateData);
+  const updatedUser = await UserService.updateProfile(
+    userId,
+    updateData,
+    newAvatarKey,
+  );
 
   sendSuccess(res, 200, sanitizeUser(updatedUser), '個人資料更新成功');
 };
