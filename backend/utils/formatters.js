@@ -1,7 +1,7 @@
+const baseUrl = process.env.IMAGE_BASE_URL;
+
 export const sanitizeUser = (user) => {
   if (!user) return null;
-
-  const baseUrl = process.env.IMAGE_BASE_URL;
 
   return {
     id: user.id,
@@ -14,8 +14,6 @@ export const sanitizeUser = (user) => {
 };
 
 export const formatPost = (post) => {
-  const baseUrl = process.env.IMAGE_BASE_URL;
-
   return {
     id: post.id,
     content: post.content,
@@ -29,5 +27,14 @@ export const formatPost = (post) => {
       : null,
     likeCount: post._count?.likes || 0,
     isLikedByMe: post.likes && post.likes.length > 0,
+  };
+};
+
+export const formatLikers = (like) => {
+  const user = like.user;
+
+  return {
+    ...user,
+    avatarUrl: user.avatarUrl ? `${baseUrl}/${user.avatarUrl}` : null,
   };
 };
