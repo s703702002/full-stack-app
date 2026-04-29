@@ -1,3 +1,5 @@
+import Avatar from './Avatar';
+
 export default function LikersModal({ isOpen, onClose, likers, isLoading }) {
   if (!isOpen) return null;
 
@@ -20,7 +22,15 @@ export default function LikersModal({ isOpen, onClose, likers, isLoading }) {
           ) : likers.length > 0 ? (
             <ul className="space-y-1">
               {likers.map((liker) => (
-                <li key={liker.id} className="p-3 hover:bg-slate-50 rounded-lg">
+                <li
+                  key={liker.id}
+                  className="p-3 hover:bg-slate-50 rounded-lg flex items-center gap-2"
+                >
+                  <Avatar
+                    avatarUrl={liker.avatarUrl}
+                    name={liker.name}
+                    className="w-8 h-8"
+                  />
                   {liker.name || liker.username}
                 </li>
               ))}
