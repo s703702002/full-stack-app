@@ -26,7 +26,7 @@ export const login = (req, res, next) => {
     { session: false },
     async (err, user, info) => {
       try {
-        if (err) throw new AppError('伺服器內部錯誤', 500);
+        if (err) throw err;
         if (!user) throw new AppError(info?.message || '登入失敗', 401);
 
         if (user.isTwoFactorEnabled && !user._skip2FA) {
@@ -128,13 +128,14 @@ export const googleCallback = (req, res, next) => {
   passport.authenticate('google', { session: false }, async (err, user) => {
     try {
       if (err || !user) {
+        console.error('🚨 [Google OAuth 系統錯誤]:', err);
+
         // 登入失敗，導回前端的登入頁面並帶上錯誤訊息
         return res.redirect(
           'http://localhost:5173/login?error=google_login_failed',
         );
       }
 
-      // 🚀 核心魔法：呼叫你寫好的 Service 產 Token！
       const { accessToken, refreshToken } =
         await AuthService.generateAuthTokens(user);
 
