@@ -1,4 +1,5 @@
 import AppError from '../utils/AppError.js';
+import logger from '../utils/logger.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
 
 const handlePrismaDuplicateError = () => {
@@ -22,13 +23,20 @@ export const globalErrorHandler = (err, req, res, _next) => {
     });
   }
 
-  console.error('💥 [未預期系統錯誤]:', err);
+  if (err.isOperational) {
+    logger.warn(
+      { errMessage: err.message, path: req.originalUrl },
+      '⚠️ [業務邏輯阻擋]',
+    );
+  } else {
+    logger.error({ err, path: req.originalUrl }, '🚨 [未預期系統錯誤]');
+  }
 
   // 如果請求失敗了，且這次請求有透過 Multer 上傳檔案
   if (req.file?.key) {
     deleteFromS3(req.file.key)
-      .then(() => console.log(`[錯誤攔截] 孤兒檔案已從 S3 移除`))
-      .catch((e) => console.error('[錯誤攔截] 移除失敗', e));
+      .then(() => logger.info(`[錯誤攔截] 孤兒檔案已從 S3 移除`))
+      .catch((e) => logger.error(e, '[錯誤攔截] 移除失敗'));
   }
 
   // 回傳給前端「罐頭訊息」，絕不洩漏系統細節

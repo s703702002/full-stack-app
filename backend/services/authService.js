@@ -15,6 +15,7 @@ import {
 import { hashString } from '../utils/hashHelper.js';
 import { generateRandomToken } from '../utils/cryptoHelper.js';
 import { generate2FA, otpVerify } from '../utils/twoFAHelper.js';
+import logger from '../utils/logger.js';
 
 export const generate2FAToken = (user) => {
   const tempToken = signTempToken({ id: user.id, purpose: '2fa' });
@@ -103,8 +104,9 @@ export const processForgotPassword = async (username) => {
     resetTokenExpires: resetExpires,
   });
 
-  console.log(
-    `\n✉️ [系統通知信] 請點擊重設密碼: http://localhost:5173/reset-password/${resetToken}\n`,
+  logger.info(
+    { userId: user.id },
+    `✉️ [系統通知信] 請點擊重設密碼: http://localhost:5173/reset-password/${resetToken}`,
   );
 };
 

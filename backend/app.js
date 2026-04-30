@@ -4,12 +4,14 @@ import express from 'express';
 import passport from 'passport';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import pinoHttp from 'pino-http';
 
 import setupPassport from './config/passport.js';
 import apiRoutes from './routes/index.js';
 import { globalErrorHandler } from './middlewares/errorMiddleware.js';
 import { checkHealth } from './controllers/healthController.js';
 import { dirname, join } from './utils/pathHelper.js';
+import logger from './utils/logger.js';
 
 setupPassport(passport);
 
@@ -40,10 +42,27 @@ app.set('trust proxy', 1);
 
 app.use(passport.initialize());
 
+app.use(
+  pinoHttp({
+    customProps: (req) => {
+      return {
+        userId: req.user?.id || 'guest',
+        username: req.user?.username || 'anonymous',
+      };
+    },
+    logger,
+    serializers: {
+      req: (req) => ({ method: req.method, url: req.url, body: req.raw.body }),
+      res: (res) => ({ statusCode: res.statusCode }),
+    },
+  }),
+);
+
 // ==========================================
 // 掛載路由 (Routes)
 // ==========================================
 app.use(express.static(join(__dirname, 'public')));
+
 app.use('/', apiRoutes);
 app.use(globalErrorHandler);
 
@@ -52,5 +71,5 @@ app.use(globalErrorHandler);
 // ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 伺服器已啟動: http://localhost:${PORT}`);
+  logger.info(`🚀 伺服器已啟動: http://localhost:${PORT}`);
 });

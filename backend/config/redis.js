@@ -1,4 +1,5 @@
 import { createClient } from 'redis';
+import logger from '../utils/logger';
 
 const redisClient = createClient({
   socket: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT },
@@ -11,7 +12,7 @@ redisClient.on('error', (err) => console.log('🔴 Redis 連線錯誤:', err));
 try {
   await redisClient.connect();
 } catch {
-  console.error('🔴 無法連線到 Redis，請檢查設定和服務狀態');
+  logger.error('🔴 無法連線到 Redis，請檢查設定和服務狀態');
 }
 
 export default redisClient;

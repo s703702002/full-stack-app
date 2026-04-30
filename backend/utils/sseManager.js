@@ -1,4 +1,5 @@
 import redisClient from '../config/redis.js';
+import logger from './logger.js';
 
 const connectedClients = new Map();
 
@@ -34,7 +35,7 @@ export const sseStream = (req, res) => {
   const userId = req.user.id;
 
   connectedClients.set(userId, res);
-  console.log(`📡 User ${userId} 開始收聽 SSE 廣播`);
+  logger.info(`📡 User ${userId} 開始收聽 SSE 廣播`);
 
   // 發送一個初始連線成功的訊號 (SSE 的格式必須是 data: ... \n\n)
   res.write(
@@ -42,7 +43,7 @@ export const sseStream = (req, res) => {
   );
 
   req.on('close', () => {
-    console.log(`🔌 User ${userId} 斷開了 SSE 連線`);
+    logger.info(`🔌 User ${userId} 斷開了 SSE 連線`);
     connectedClients.delete(userId);
     res.end();
   });
