@@ -49,7 +49,7 @@ export default function Setup2FAPage() {
               請使用 Google Authenticator 掃描下方條碼
             </p>
             <img
-              src={data.qrCodeImage}
+              src={data.data.qrCodeImage}
               alt="2FA QR Code"
               className="mx-auto w-48 h-48 border-4 border-white shadow-sm rounded-lg"
             />
@@ -57,7 +57,7 @@ export default function Setup2FAPage() {
               無法掃描？請手動輸入金鑰：
               <br />
               <span className="font-mono text-slate-600 font-bold">
-                {data.secret}
+                {data.data.secret}
               </span>
             </p>
           </div>

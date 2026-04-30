@@ -30,7 +30,7 @@ export default function AdminUserPage() {
       <div className="text-center mt-20 text-red-500 font-bold">{message}</div>
     );
 
-  const users = data?.users ?? [];
+  const users = data?.data?.users ?? [];
 
   return (
     <div className="max-w-5xl mx-auto mt-10 p-4">
