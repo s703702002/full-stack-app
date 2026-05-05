@@ -9,10 +9,14 @@ const redisClient = createClient({
 redisClient.on('connect', () => console.log('🟢 Redis 連線成功！'));
 redisClient.on('error', (err) => console.log('🔴 Redis 連線錯誤:', err));
 
-try {
-  await redisClient.connect();
-} catch {
-  logger.error('🔴 無法連線到 Redis，請檢查設定和服務狀態');
-}
+export const connectRedis = async () => {
+  try {
+    await redisClient.connect();
+    logger.info('🟢 Redis 連線成功');
+  } catch {
+    logger.error('🔴 Redis 連線失敗，無法啟動伺服器');
+    process.exit(1);
+  }
+};
 
 export default redisClient;

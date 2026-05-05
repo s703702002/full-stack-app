@@ -21,10 +21,7 @@ const app = express();
 
 app.get('/health', checkHealth);
 
-// ==========================================
-// 全域中介軟體 (Middlewares)
-// ==========================================
-
+// --- 全域中介軟體 ---
 app.use(
   cors({
     origin: 'http://localhost:5173',
@@ -37,19 +34,15 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
-
 app.set('trust proxy', 1);
-
 app.use(passport.initialize());
 
 app.use(
   pinoHttp({
-    customProps: (req) => {
-      return {
-        userId: req.user?.id || 'guest',
-        username: req.user?.username || 'anonymous',
-      };
-    },
+    customProps: (req) => ({
+      userId: req.user?.id || 'guest',
+      username: req.user?.username || 'anonymous',
+    }),
     logger,
     serializers: {
       req: (req) => ({ method: req.method, url: req.url, body: req.raw.body }),
@@ -58,18 +51,9 @@ app.use(
   }),
 );
 
-// ==========================================
-// 掛載路由 (Routes)
-// ==========================================
+// --- 掛載路由 ---
 app.use(express.static(join(__dirname, 'public')));
-
 app.use('/', apiRoutes);
 app.use(globalErrorHandler);
 
-// ==========================================
-// 啟動伺服器
-// ==========================================
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  logger.info(`🚀 伺服器已啟動: http://localhost:${PORT}`);
-});
+export default app;

@@ -97,16 +97,6 @@ const UserModel = {
       },
     });
   },
-
-  // 因為用到了 Prisma 特殊的 connect 語法，封裝起來 Controller 比較好呼叫
-  updateRoleByName: async (userId, newRoleName) => {
-    return await prisma.user.update({
-      where: { id: Number(userId) },
-      data: {
-        role: { connect: { name: newRoleName } },
-      },
-    });
-  },
 };
 
 export default UserModel;
