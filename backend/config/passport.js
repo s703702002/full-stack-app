@@ -2,6 +2,7 @@ import passportLocal from 'passport-local';
 import passportJwt from 'passport-jwt';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import UserModel from '../models/userModel.js';
+import RoleModel from '../models/roleModel.js';
 import { compareHash } from '../utils/hashHelper.js';
 import { getAccessToken } from '../utils/cookieHelper.js';
 import { readFileSync } from '../utils/fsHelper.js';
@@ -87,7 +88,7 @@ export default function setupPassport(passport) {
           }
 
           // 3. 真的完全沒註冊過，直接幫他建立一個新帳號！
-          const defaultRole = await UserModel.findRoleByName('viewer');
+          const defaultRole = await RoleModel.findByName('viewer');
           const newUser = await UserModel.createUser({
             googleId: profile.id,
             email: email,

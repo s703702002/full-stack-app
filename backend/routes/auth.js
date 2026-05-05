@@ -13,7 +13,7 @@ import {
   googleCallback,
 } from '../controllers/authController.js';
 import { checkAuthenticated } from '../middlewares/auth.js';
-import { accountAuthLimiter } from '../middlewares/rateLimiter.js';
+import { accountAuthLimiter, apiLimiter } from '../middlewares/rateLimiter.js';
 import validate from '../middlewares/validateMiddleware.js';
 import {
   registerSchema,
@@ -27,7 +27,7 @@ const router = express.Router();
 router.post('/login', validate(loginSchema), accountAuthLimiter, login);
 router.post('/login-2fa', validate(login2FASchema), login2FA);
 router.post('/register', validate(registerSchema), register);
-router.post('/forgot-password', forgotPassword);
+router.post('/forgot-password', apiLimiter, forgotPassword);
 router.post('/reset-password/:token', resetPassword);
 router.post('/refresh', refreshToken);
 router.get('/google', googleAuth);

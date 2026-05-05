@@ -107,28 +107,6 @@ const UserModel = {
       },
     });
   },
-
-  // ==========================================
-  // 🛡️ 4. 角色與權限 (未來若壯大，建議獨立拆分至 RoleModel)
-  // ==========================================
-
-  findRoleByName: async (roleName) => {
-    return await prisma.role.findUnique({
-      where: { name: roleName },
-    });
-  },
-
-  hasPermission: async (userId, permissionName) => {
-    const count = await prisma.rolePermission.count({
-      where: {
-        role: {
-          users: { some: { id: Number(userId) } },
-        },
-        permission: { name: permissionName },
-      },
-    });
-    return count > 0;
-  },
 };
 
 export default UserModel;

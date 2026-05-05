@@ -16,6 +16,7 @@ import { hashString } from '../utils/hashHelper.js';
 import { generateRandomToken } from '../utils/cryptoHelper.js';
 import { generate2FA, otpVerify } from '../utils/twoFAHelper.js';
 import logger from '../utils/logger.js';
+import RoleModel from '../models/roleModel.js';
 
 export const generate2FAToken = (user) => {
   const tempToken = signTempToken({ id: user.id, purpose: '2fa' });
@@ -42,7 +43,7 @@ export const registerUser = async (username, password, name) => {
   const userExists = await UserModel.findByUsername(username);
   if (userExists) throw new AppError('這個帳號已經被註冊過了', 409);
 
-  const role = await UserModel.findRoleByName('viewer');
+  const role = await RoleModel.findByName('viewer');
   if (!role) throw new AppError('系統錯誤：找不到預設角色', 500);
 
   const hashedPassword = await hashString(password, 10);

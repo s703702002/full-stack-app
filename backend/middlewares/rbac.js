@@ -1,11 +1,11 @@
-import UserModel from '../models/userModel.js';
+import * as PermissionService from '../services/permissionService.js';
 import AppError from '../utils/AppError.js';
 
 export const checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
     const user = req.user;
 
-    const permissionCheck = await UserModel.hasPermission(
+    const permissionCheck = await PermissionService.verifyUserPermission(
       user.id,
       requiredPermission,
     );

@@ -17,7 +17,7 @@ const router = express.Router();
 router.use(checkAuthenticated);
 
 router.get('/me', apiLimiter, getMe);
-router.get('/', getAllUsers);
+router.get('/', apiLimiter, getAllUsers);
 router.put('/:id/role', checkPermission('user:manage'), updateUserRole);
 router.put(
   '/profile',

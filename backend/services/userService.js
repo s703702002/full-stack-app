@@ -1,3 +1,4 @@
+import RoleModel from '../models/roleModel.js';
 import UserModel from '../models/userModel.js';
 import AppError from '../utils/AppError.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
@@ -18,7 +19,7 @@ export const changeUserRole = async (operatorId, targetUserId, newRoleName) => {
     throw new AppError('權限不足：無法變更系統創世神的角色！', 403);
   }
 
-  const newRole = await UserModel.findRoleByName(newRoleName);
+  const newRole = await RoleModel.findByName(newRoleName);
   if (!newRole) throw new AppError('找不到該角色', 400);
 
   return await UserModel.updateUser(targetUserId, { roleId: newRole.id });

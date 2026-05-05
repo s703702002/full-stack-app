@@ -77,35 +77,6 @@ const PostModel = {
       where: { id: Number(id) },
     });
   },
-
-  // ==========================================
-  // 🧠 3. 核心商業邏輯 (Business Logic & Side-effects)
-  // ==========================================
-
-  toggleLike: async (userId, postId) => {
-    const uid = Number(userId);
-    const pid = Number(postId);
-
-    const existingLike = await prisma.postLike.findUnique({
-      where: {
-        userId_postId: { userId: uid, postId: pid },
-      },
-    });
-
-    if (existingLike) {
-      await prisma.postLike.delete({
-        where: {
-          userId_postId: { userId: uid, postId: pid },
-        },
-      });
-      return { liked: false };
-    } else {
-      await prisma.postLike.create({
-        data: { userId: uid, postId: pid },
-      });
-      return { liked: true };
-    }
-  },
 };
 
 export default PostModel;
