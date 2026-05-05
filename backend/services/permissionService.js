@@ -1,18 +1,30 @@
+import redisClient from '../config/redis.js';
+import { getUserPermissionKey } from '../constants/redisKeys.js';
 import PermissionModel from '../models/permissionModel.js';
 
 export const verifyUserPermission = async (userId, permissionName) => {
-  // 💡 未來擴充點：先去 Redis 查這個 user 有沒有這個 permission
-  // const cachedHasPermission = await redisClient.get(`perms:${userId}:${permissionName}`);
-  // if (cachedHasPermission) return cachedHasPermission === 'true';
+  const cacheKey = getUserPermissionKey(userId);
 
-  // 如果 Redis 沒有，才去叫 Model 查資料庫
+  // 用 hGet (Hash Get) 尋找特定欄位
+  const cachedHasPermission = await redisClient.hGet(cacheKey, permissionName);
+  if (cachedHasPermission) return cachedHasPermission === 'true';
+
+  // 如果沒中，去查資料庫
   const hasPermission = await PermissionModel.checkUserHasPermission(
     userId,
     permissionName,
   );
 
-  // 💡 未來擴充點：查完之後存入 Redis
-  // await redisClient.setEx(`perms:${userId}:${permissionName}`, 3600, hasPermission.toString());
+  // 用 hSet (Hash Set) 存入欄位
+  await redisClient.hSet(cacheKey, permissionName, hasPermission.toString());
+
+  // 設定整個 Hash 表的過期時間 (避免冷門 user 佔用記憶體)
+  await redisClient.expire(cacheKey, 3600);
 
   return hasPermission;
+};
+
+// 新增一個專門用來「炸毀」快取的函式，提供給外面呼叫
+export const clearUserPermissionCache = async (userId) => {
+  await redisClient.del(getUserPermissionKey(userId));
 };
