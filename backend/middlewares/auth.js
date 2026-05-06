@@ -3,9 +3,7 @@ import AppError from '../utils/AppError.js';
 
 export const checkAuthenticated = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
 
     if (!user) {
       if (info?.name === 'TokenExpiredError') {
@@ -14,8 +12,7 @@ export const checkAuthenticated = (req, res, next) => {
         );
       }
 
-      const errorMessage = info?.message || '權限不足或未登入';
-      return next(new AppError(errorMessage, 401));
+      return next(new AppError(info?.message || '權限不足或未登入', 401));
     }
 
     req.user = user;

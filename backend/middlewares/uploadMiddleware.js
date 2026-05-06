@@ -2,6 +2,7 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { extname } from '../utils/pathHelper';
 import { s3Client } from '../utils/s3Utils';
+import AppError from '../utils/AppError';
 
 const storage = multerS3({
   s3: s3Client,
@@ -18,7 +19,7 @@ const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('只允許上傳圖片檔案！'), false);
+    cb(new AppError('只允許上傳圖片檔案！', 400), false);
   }
 };
 

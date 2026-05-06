@@ -25,31 +25,27 @@ export const login = (req, res, next) => {
     'local',
     { session: false },
     async (err, user, info) => {
-      try {
-        if (err) throw err;
-        if (!user) throw new AppError(info?.message || '登入失敗', 401);
+      if (err) return next(err);
+      if (!user) return next(new AppError(info?.message || '登入失敗', 401));
 
-        if (user.isTwoFactorEnabled && !user._skip2FA) {
-          const tempToken = AuthService.generate2FAToken(user);
-          setTempTokenCookie(res, tempToken);
-          return sendSuccess(
-            res,
-            200,
-            { tempToken, require2FA: true },
-            '請輸入 2FA 驗證碼',
-          );
-        }
-
-        const { accessToken, refreshToken } =
-          await AuthService.generateAuthTokens(user);
-
-        setAccessTokenCookie(res, accessToken);
-        setRefreshTokenCookie(res, refreshToken);
-
-        return sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
-      } catch (error) {
-        next(error);
+      if (user.isTwoFactorEnabled && !user._skip2FA) {
+        const tempToken = AuthService.generate2FAToken(user);
+        setTempTokenCookie(res, tempToken);
+        return sendSuccess(
+          res,
+          200,
+          { tempToken, require2FA: true },
+          '請輸入 2FA 驗證碼',
+        );
       }
+
+      const { accessToken, refreshToken } =
+        await AuthService.generateAuthTokens(user);
+
+      setAccessTokenCookie(res, accessToken);
+      setRefreshTokenCookie(res, refreshToken);
+
+      return sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
     },
   )(req, res, next);
 };

@@ -12,6 +12,8 @@ export const globalErrorHandler = (err, req, res, _next) => {
   error.message = err.message;
   error.statusCode = err.statusCode || 500;
 
+  res.locals.errorMessage = error.message;
+
   // 全域攔截 Prisma 的特定錯誤碼並翻譯
   if (err.code === 'P2002') error = handlePrismaDuplicateError();
 

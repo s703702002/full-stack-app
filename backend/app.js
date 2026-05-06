@@ -39,10 +39,18 @@ app.use(passport.initialize());
 
 app.use(
   pinoHttp({
-    customProps: (req) => ({
-      userId: req.user?.id || 'guest',
-      username: req.user?.username || 'anonymous',
-    }),
+    customProps: (req, res) => {
+      const props = {
+        userId: req.user?.id || 'guest',
+        username: req.user?.username || 'anonymous',
+      };
+
+      if (res.locals.errorMessage) {
+        props.errorMessage = res.locals.errorMessage;
+      }
+
+      return props;
+    },
     logger,
     serializers: {
       req: (req) => ({ method: req.method, url: req.url, body: req.raw.body }),
