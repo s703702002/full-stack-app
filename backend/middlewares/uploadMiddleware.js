@@ -15,11 +15,11 @@ const storage = multerS3({
   },
 });
 
-const fileFilter = (req, file, cb) => {
+export const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new AppError('只允許上傳圖片檔案！', 400), false);
+    cb(new AppError('只允許上傳圖片檔案', 400), false);
   }
 };
 
