@@ -11,6 +11,23 @@ export default function PostCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
 
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    const date = new Date(timeString);
+    return date.toLocaleString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  // 判斷要顯示的時間：優先顯示更新時間，沒有的話才用建立時間
+  const displayTime = formatTime(post.updatedAt || post.createdAt);
+  const isEdited =
+    post.updatedAt && post.createdAt && post.updatedAt !== post.createdAt;
+
   const handleSave = async () => {
     await onSaveEdit(post.id, editContent);
     setIsEditing(false);
@@ -18,13 +35,21 @@ export default function PostCard({
 
   return (
     <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col">
-      <div className="flex items-center mb-2 space-x-2">
+      <div className="flex items-center mb-3 space-x-3">
         <Avatar
           name={post.authorName}
           avatarUrl={post.authorAvatarUrl}
           className="w-10 h-10"
         />
-        <span className="font-bold text-slate-700">{post.authorName}</span>
+        <div className="flex flex-col">
+          <span className="font-bold text-slate-700 leading-tight">
+            {post.authorName}
+          </span>
+          <span className="text-xs text-slate-400 mt-0.5">
+            {isEdited && <span>已編輯 • </span>}
+            {displayTime}
+          </span>
+        </div>
       </div>
 
       {isEditing ? (
@@ -88,7 +113,9 @@ export default function PostCard({
           </div>
           <div className="flex gap-3">
             <button onClick={() => setIsEditing(true)}>編輯</button>
-            <button onClick={() => onDelete(post.id)}>刪除</button>
+            <button className="text-red-500" onClick={() => onDelete(post.id)}>
+              刪除
+            </button>
           </div>
         </div>
       )}
