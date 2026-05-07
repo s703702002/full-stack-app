@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../generated"
 }
 
 datasource db {
@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id                 Int       @id @default(autoincrement())
+  id                 String    @id @default(cuid()) 
   username           String    @unique @db.VarChar(50)
   password           String?   @db.VarChar(255)
   name               String    @db.VarChar(50)
@@ -20,10 +20,12 @@ model User {
   resetTokenExpires  DateTime? @map("reset_token_expires")
   isTwoFactorEnabled Boolean?  @default(false) @map("is_two_factor_enabled")
   twoFactorSecret    String?   @map("two_factor_secret") @db.VarChar(255)
+  
+  // 💡 roleId 保持 Int，因為指向 Role 表 (Role.id 是 Int)
   roleId             Int?      @map("role_id")
 
-  email             String?  @unique
-  googleId          String?  @unique @map("google_id")
+  email              String?   @unique
+  googleId           String?   @unique @map("google_id")
 
   posts          Post[]
   likedPosts     PostLike[]
@@ -32,6 +34,7 @@ model User {
   @@map("users")
 }
 
+// 💡 Role 和 Permission 是系統設定，保留 Int 流水號即可
 model Role {
   id          Int       @id @default(autoincrement())
   name        String    @unique @db.VarChar(50)
@@ -67,8 +70,8 @@ model RolePermission {
 }
 
 model Post {
-  id        Int       @id @default(autoincrement())
-  userId    Int?      @map("user_id")
+  id        String    @id @default(cuid())
+  userId    String?   @map("user_id") 
   content   String
   createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
@@ -80,13 +83,13 @@ model Post {
 }
 
 model PostLike {
-  userId    Int      @map("user_id")
-  postId    Int      @map("post_id")
+  userId    String   @map("user_id") 
+  postId    String   @map("post_id") 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  @@id([userId, postId])
+  @@id([userId, postId]) 
   @@map("post_likes")
 }

@@ -14,7 +14,7 @@ const UserModel = {
 
   findById: async (id, includeRole = false) => {
     return await prisma.user.findUnique({
-      where: { id: Number(id) },
+      where: { id: id },
       include: includeRole ? { role: true } : undefined,
     });
   },
@@ -53,14 +53,9 @@ const UserModel = {
   // 🛠️ 2. 通用資料更新 (Generic Update)
   // ==========================================
 
-  /**
-   * 更新使用者資料
-   * @param {number | string} userId - 使用者 ID
-   * @param {Prisma.UserUpdateInput} data - Prisma 嚴格把關的更新資料格式
-   */
   updateUser: async (userId, data) => {
     return await prisma.user.update({
-      where: { id: Number(userId) },
+      where: { id: userId },
       data,
     });
   },
@@ -75,7 +70,7 @@ const UserModel = {
         username,
         password,
         name,
-        roleId: Number(roleId),
+        roleId: roleId,
         googleId,
         email,
       },
@@ -85,7 +80,7 @@ const UserModel = {
   // 因為重設密碼伴隨清除 2FA 與 Token 等多個副作用，必須獨立封裝防呆
   resetPassword: async (userId, newHashedPassword) => {
     return await prisma.user.update({
-      where: { id: Number(userId) },
+      where: { id: userId },
       data: {
         password: newHashedPassword,
         resetToken: null,

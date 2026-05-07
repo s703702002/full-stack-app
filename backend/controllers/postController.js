@@ -12,7 +12,7 @@ export const getAllPosts = async (req, res) => {
 };
 
 export const getPostLikers = async (req, res) => {
-  const postId = Number(req.params.id);
+  const postId = req.params.id;
   const likes = await PostModel.getPostLikers(postId);
   const likers = likes.map(formatLikers);
 

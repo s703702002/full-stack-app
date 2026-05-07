@@ -7,7 +7,7 @@ const PostModel = {
 
   findById: async (id) => {
     return await prisma.post.findUnique({
-      where: { id: Number(id) },
+      where: { id: id },
     });
   },
 
@@ -31,7 +31,7 @@ const PostModel = {
         ...(currentUserId
           ? {
               likes: {
-                where: { userId: Number(currentUserId) },
+                where: { userId: currentUserId },
               },
             }
           : {}),
@@ -42,7 +42,7 @@ const PostModel = {
 
   getPostLikers: async (postId) => {
     return await prisma.postLike.findMany({
-      where: { postId: Number(postId) },
+      where: { postId: postId },
       orderBy: { createdAt: 'desc' },
       include: {
         user: {
@@ -59,27 +59,22 @@ const PostModel = {
   createPost: async (userId, data) => {
     return await prisma.post.create({
       data: {
-        userId: Number(userId),
+        userId: userId,
         ...data,
       },
     });
   },
 
-  /**
-   * 通用更新貼文
-   * @param {number|string} id - 貼文 ID
-   * @param {Prisma.PostUpdateInput} data - 允許更新的欄位資料
-   */
   updatePost: async (id, data) => {
     return await prisma.post.update({
-      where: { id: Number(id) },
+      where: { id: id },
       data,
     });
   },
 
   deleteById: async (id) => {
     return await prisma.post.delete({
-      where: { id: Number(id) },
+      where: { id: id },
     });
   },
 };

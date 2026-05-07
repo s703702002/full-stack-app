@@ -5,7 +5,7 @@ const PermissionModel = {
     const count = await prisma.rolePermission.count({
       where: {
         role: {
-          users: { some: { id: Number(userId) } },
+          users: { some: { id: userId } },
         },
         permission: { name: permissionName },
       },

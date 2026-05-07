@@ -74,21 +74,28 @@ async function main() {
   }
 
   // 3. 建立預設管理員 (避免登入不了)
-  const hashedRootPassword = await hashString('root123', 10);
-  const superAdminRole = await prisma.role.findUnique({
-    where: { name: 'superadmin' },
+  const existingRoot = await prisma.user.findUnique({
+    where: { username: 'root' },
   });
 
-  await prisma.user.upsert({
-    where: { username: 'root' }, // 🚀 系統的唯一識別碼
-    update: {}, // 如果 root 已經存在，就不做任何事，保護他的資料
-    create: {
-      username: 'root',
-      password: hashedRootPassword,
-      name: '系統創世神',
-      roleId: superAdminRole.id,
-    },
-  });
+  if (existingRoot) {
+    console.log('⚡ root 帳號已存在，跳過建立');
+  } else {
+    const hashedRootPassword = await hashString('root123', 10);
+    const superAdminRole = await prisma.role.findUnique({
+      where: { name: 'superadmin' },
+    });
+
+    await prisma.user.create({
+      data: {
+        username: 'root',
+        password: hashedRootPassword,
+        name: '系統創世神',
+        roleId: superAdminRole.id,
+      },
+    });
+    console.log('✅ 預設 root 帳號建立完成');
+  }
 
   console.log('🚀 所有核心資料種植完畢！');
 }
