@@ -1,36 +1,57 @@
 import { useState } from 'react';
 import Avatar from './Avatar';
+import { formatDateTime } from '../utils/format';
+import useApiAction from '../hooks/useApiAction';
+import { privateApi } from '../api';
 
 export default function PostCard({
   post,
-  onSaveEdit,
+  onEdit,
   onDelete,
   onToggleLike,
   onShowLikers,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+  const { execute: editPost } = useApiAction((payload) =>
+    privateApi.put(`/api/posts/${payload.id}`, payload),
+  );
+  const { execute: deletePost } = useApiAction((postId) =>
+    privateApi.delete(`/api/posts/${postId}`),
+  );
+  const { execute: toggleLikePost } = useApiAction((postId) =>
+    privateApi.post(`/api/posts/${postId}/like`),
+  );
 
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    const date = new Date(timeString);
-    return date.toLocaleString('zh-TW', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  // 判斷要顯示的時間：優先顯示更新時間，沒有的話才用建立時間
-  const displayTime = formatTime(post.updatedAt || post.createdAt);
+  const displayTime = formatDateTime(post.updatedAt || post.createdAt);
   const isEdited =
     post.updatedAt && post.createdAt && post.updatedAt !== post.createdAt;
 
-  const handleSave = async () => {
-    await onSaveEdit(post.id, editContent);
-    setIsEditing(false);
+  const handleSaveEdit = async () => {
+    const { success } = await editPost({
+      id: post.id,
+      content: editContent,
+    });
+
+    if (success) {
+      setIsEditing(false);
+      onEdit?.();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!globalThis.confirm('確定要刪除這篇留言嗎？')) return;
+    const { success } = await deletePost(post.id);
+    if (success) {
+      onDelete?.();
+    }
+  };
+
+  const handleToggleLike = async () => {
+    const { success } = await toggleLikePost(post.id);
+    if (success) {
+      onToggleLike?.();
+    }
   };
 
   return (
@@ -62,7 +83,7 @@ export default function PostCard({
           <div className="flex justify-end gap-2">
             <button onClick={() => setIsEditing(false)}>取消</button>
             <button
-              onClick={handleSave}
+              onClick={handleSaveEdit}
               className="bg-blue-500 text-white px-3 py-1 rounded"
             >
               儲存
@@ -77,7 +98,7 @@ export default function PostCard({
         <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => onToggleLike(post.id)}
+              onClick={() => handleToggleLike(post.id)}
               className={`transition-colors ${
                 post.isLikedByMe
                   ? 'text-pink-500 hover:text-pink-600'
@@ -113,7 +134,10 @@ export default function PostCard({
           </div>
           <div className="flex gap-3">
             <button onClick={() => setIsEditing(true)}>編輯</button>
-            <button className="text-red-500" onClick={() => onDelete(post.id)}>
+            <button
+              className="text-red-500"
+              onClick={() => handleDelete(post.id)}
+            >
               刪除
             </button>
           </div>

@@ -4,6 +4,8 @@ import {
   getAllUsers,
   updateUserRole,
   updateProfile,
+  getUserProfile,
+  getUserTimeline,
 } from '../controllers/userController.js';
 import { checkAuthenticated } from '../middlewares/auth.js';
 import { checkPermission } from '../middlewares/rbac.js';
@@ -18,6 +20,8 @@ router.use(checkAuthenticated);
 
 router.get('/me', apiLimiter, getMe);
 router.get('/', apiLimiter, getAllUsers);
+router.get('/:id', apiLimiter, getUserProfile);
+router.get('/:id/posts', apiLimiter, getUserTimeline);
 router.put('/:id/role', checkPermission('user:manage'), updateUserRole);
 router.put(
   '/profile',

@@ -10,6 +10,7 @@ export const sanitizeUser = (user) => {
     roleId: user.roleId,
     roleName: user.role?.name,
     avatarUrl: user.avatarUrl ? `${baseUrl}/${user.avatarUrl}` : null,
+    bio: user.bio,
   };
 };
 

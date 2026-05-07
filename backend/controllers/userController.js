@@ -3,6 +3,7 @@ import { sanitizeUser } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import AppError from '../utils/AppError.js';
 import * as UserService from '../services/userService.js';
+import PostModel from '../models/postModel.js';
 
 export const getMe = async (req, res) => {
   const userId = req.user.id;
@@ -33,9 +34,9 @@ export const updateUserRole = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  const { name } = req.body;
+  const { name, bio } = req.body;
   const userId = req.user.id;
-  const updateData = { name: name };
+  const updateData = { name: name, bio };
   const newAvatarKey = req.file ? req.file.key : null;
 
   const updatedUser = await UserService.updateProfile(
@@ -45,4 +46,25 @@ export const updateProfile = async (req, res) => {
   );
 
   sendSuccess(res, 200, sanitizeUser(updatedUser), '個人資料更新成功');
+};
+
+export const getUserProfile = async (req, res) => {
+  const operatorId = req.user.id;
+  const id = req.params.id;
+  const user = await UserModel.findById(id);
+
+  if (!user) throw new AppError('找不到該使用者', 404);
+  const isOwnProfile = operatorId === user.id;
+
+  sendSuccess(res, 200, { user: { ...sanitizeUser(user), isOwnProfile } });
+};
+
+export const getUserTimeline = async (req, res) => {
+  const id = req.params.id;
+  const targetUser = await UserModel.findById(id);
+  if (!targetUser) throw new AppError('找不到該使用者', 404);
+
+  const posts = await PostModel.findAllByUserId(targetUser.id);
+
+  sendSuccess(res, 200, { posts });
 };
