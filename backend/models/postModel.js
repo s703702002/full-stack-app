@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
 import prisma from '../config/db.js';
-import { Prisma } from '@prisma/client';
 
 const PostModel = {
   // ==========================================

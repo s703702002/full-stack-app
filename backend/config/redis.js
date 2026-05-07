@@ -6,9 +6,6 @@ const redisClient = createClient({
   database: process.env.REDIS_SHARED_DB,
 });
 
-redisClient.on('connect', () => console.log('🟢 Redis 連線成功！'));
-redisClient.on('error', (err) => console.log('🔴 Redis 連線錯誤:', err));
-
 export const connectRedis = async () => {
   try {
     await redisClient.connect();

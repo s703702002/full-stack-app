@@ -1,5 +1,3 @@
-// eslint-disable-next-line no-unused-vars
-import { Prisma } from '@prisma/client';
 import prisma from '../config/db.js';
 
 const UserModel = {
