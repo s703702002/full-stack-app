@@ -3,6 +3,7 @@ import PostCard from '../components/PostCard';
 import useApiAction from '../hooks/useApiAction';
 import { privateApi } from '../api';
 import CreatePostBox from '../components/CreatePostBox';
+import Avatar from '../components/Avatar';
 
 export default function UserPage() {
   const { userId } = useParams();
@@ -33,13 +34,11 @@ export default function UserPage() {
         />
 
         <div className="px-6 relative pb-6">
-          {/* 大頭貼 (往上浮動) */}
-          <div className="absolute -top-12 border-4 border-white rounded-full">
-            <img
-              src={profile.avatarUrl || '/default-avatar.png'}
-              className="w-24 h-24 rounded-full object-cover"
-            />
-          </div>
+          <Avatar
+            avatarUrl={profile.avatarUrl}
+            name={profile.name}
+            className="w-24 h-24 object-cover absolute -top-12 border-4 border-white rounded-full"
+          />
 
           {/* 名字與自我介紹 */}
           <div className={`mt-2 pt-16`}>

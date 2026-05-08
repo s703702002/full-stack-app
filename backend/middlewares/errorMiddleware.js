@@ -22,10 +22,7 @@ export const globalErrorHandler = (err, req, res, _next) => {
   }
 
   if (isOperational && statusCode !== 500) {
-    logger.warn(
-      { errMessage: message, path: req.originalUrl },
-      '⚠️ [業務邏輯阻擋]',
-    );
+    logger.warn({ errMessage: message, path: req.originalUrl });
   } else {
     logger.error({ err, path: req.originalUrl }, '🚨 [未預期系統崩潰]');
   }

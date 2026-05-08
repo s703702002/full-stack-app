@@ -66,7 +66,7 @@ export default function AdminUserPage() {
                   key={targetUser.id}
                   className="hover:bg-slate-50 transition-colors"
                 >
-                  <td className="p-4 text-slate-500">#{targetUser.id}</td>
+                  <td className="p-4 text-slate-500">{targetUser.id}</td>
                   <td className="p-4 font-medium text-slate-800">
                     {targetUser.username}
                   </td>
