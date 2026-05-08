@@ -29,16 +29,15 @@ export const createPost = async (req, res) => {
 
 export const updatePost = async (req, res) => {
   const postId = req.params.id;
-  const userId = req.user.id;
   const { content } = req.body;
 
-  await PostService.updatePost(userId, postId, content);
+  await PostService.updatePost(req.user, postId, content);
   sendSuccess(res, 200, {}, '留言更新成功');
 };
 
 export const deletePost = async (req, res) => {
   const postId = req.params.id;
-  await PostService.deletePost(postId);
+  await PostService.deletePost(req.user, postId);
 
   sendSuccess(res, 200, {}, '留言已成功刪除');
 };

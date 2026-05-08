@@ -52,7 +52,13 @@ export default function setupPassport(passport) {
   passport.use(
     new JwtStrategy(jwtOptions, async (jwt_payload, done) => {
       try {
-        return done(null, jwt_payload);
+        const user = await UserModel.findPermissionsById(jwt_payload.id);
+
+        if (!user) {
+          return done(null, false);
+        }
+
+        return done(null, user);
       } catch (err) {
         return done(err, false);
       }

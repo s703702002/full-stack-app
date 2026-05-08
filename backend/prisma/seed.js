@@ -4,10 +4,13 @@ import prisma from '../config/db.js';
 async function main() {
   console.log('🌱 開始種植系統核心權限與角色...');
 
-  // 1. 定義並建立所有權限 (Permissions)
+  // 定義並建立所有權限 (Permissions)
   const permissionsData = [
     { name: 'post:create', description: '建立留言' },
-    { name: 'post:delete', description: '刪除留言' },
+    { name: 'post:edit:own', description: '編輯自己的留言' },
+    { name: 'post:edit:any', description: '編輯任何人的留言 (管理員)' },
+    { name: 'post:delete:own', description: '刪除自己的留言' },
+    { name: 'post:delete:any', description: '刪除任何人的留言 (管理員)' },
     { name: 'user:manage', description: '管理使用者權限' },
   ];
 
@@ -27,17 +30,27 @@ async function main() {
     {
       name: 'superadmin',
       description: '系統最高權限管理員',
-      permissions: ['post:create', 'post:delete', 'user:manage'],
+      permissions: [
+        'post:create',
+        'post:edit:any',
+        'post:delete:any',
+        'user:manage',
+      ],
     },
     {
       name: 'admin',
       description: '管理員',
-      permissions: ['post:create', 'post:delete', 'user:manage'],
+      permissions: [
+        'post:create',
+        'post:edit:own',
+        'post:delete:any',
+        'user:manage',
+      ],
     },
     {
       name: 'editor',
       description: '編輯者',
-      permissions: ['post:create', 'post:delete'],
+      permissions: ['post:create', 'post:edit:own', 'post:delete:own'],
     },
     {
       name: 'viewer',

@@ -49,6 +49,19 @@ const UserModel = {
     });
   },
 
+  findPermissionsById: async (id) => {
+    return await prisma.user.findUnique({
+      where: { id: id },
+      include: {
+        role: {
+          include: {
+            permissions: { include: { permission: true } },
+          },
+        },
+      },
+    });
+  },
+
   // ==========================================
   // 🛠️ 2. 通用資料更新 (Generic Update)
   // ==========================================

@@ -1,6 +1,7 @@
 import PostLikeModel from '../models/postLikeModel.js';
 import PostModel from '../models/postModel.js';
 import UserModel from '../models/userModel.js';
+import { PostPolicy } from '../policies/PostPolicy.js';
 import AppError from '../utils/AppError.js';
 import { sendNotification } from '../utils/sseManager.js';
 
@@ -9,24 +10,28 @@ export const createPost = async (userId, content) => {
   return await PostModel.createPost(userId, { content });
 };
 
-export const updatePost = async (userId, postId, content) => {
+export const updatePost = async (user, postId, content) => {
   if (!content) throw new AppError('留言內容不能為空', 400);
 
   const post = await PostModel.findById(postId);
   if (!post) throw new AppError('留言不存在', 404);
 
-  if (post.userId !== userId) {
-    throw new AppError('你只能編輯自己的留言', 403);
+  if (!PostPolicy.canEdit(user, post)) {
+    throw new AppError('你沒有權限編輯這篇留言', 403);
   }
 
   return await PostModel.updatePost(postId, { content });
 };
 
-export const deletePost = async (postId) => {
+export const deletePost = async (user, postId) => {
   const post = await PostModel.findById(postId);
   if (!post) throw new AppError('留言不存在', 404);
 
-  await PostModel.deleteById(postId);
+  if (!PostPolicy.canDelete(user, post)) {
+    throw new AppError('你沒有權限刪除這篇留言', 403);
+  }
+
+  return await PostModel.deleteById(postId);
 };
 
 export const toggleLike = async (operatorId, postId) => {

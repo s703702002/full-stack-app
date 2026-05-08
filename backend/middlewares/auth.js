@@ -11,11 +11,19 @@ export const checkAuthenticated = (req, res, next) => {
           new AppError('登入憑證已過期，請重新登入', 401, 'TOKEN_EXPIRED'),
         );
       }
-
-      return next(new AppError(info?.message || '權限不足或未登入', 401));
+      return next(new AppError(info?.message || '請先登入', 401));
     }
 
-    req.user = user;
+    const userPermissions =
+      user.role?.permissions?.map((p) => p.permission.name) || [];
+
+    req.user = {
+      id: user.id,
+      username: user.username,
+      role: user.role?.name,
+      permissions: userPermissions,
+    };
+
     next();
   })(req, res, next);
 };

@@ -25,7 +25,15 @@ router.post(
   createPost,
 );
 router.post('/:id/like', toggleLikePost);
-router.put('/:id', updatePost);
-router.delete('/:id', checkPermission('post:delete'), deletePost);
+router.put(
+  '/:id',
+  checkPermission(['post:edit:own', 'post:edit:any']),
+  updatePost,
+);
+router.delete(
+  '/:id',
+  checkPermission(['post:delete:own', 'post:delete:any']),
+  deletePost,
+);
 
 export default router;

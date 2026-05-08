@@ -1,17 +1,20 @@
-import * as PermissionService from '../services/permissionService.js';
 import AppError from '../utils/AppError.js';
 
-export const checkPermission = (requiredPermission) => {
-  return async (req, res, next) => {
-    const user = req.user;
+export const checkPermission = (allowedPermissions) => {
+  // 為了方便，允許傳入單一字串 'user:manage' 或陣列 ['post:delete:own', 'post:delete:any']
+  const permissionsToCheck = Array.isArray(allowedPermissions)
+    ? allowedPermissions
+    : [allowedPermissions];
 
-    const permissionCheck = await PermissionService.verifyUserPermission(
-      user.id,
-      requiredPermission,
+  return (req, res, next) => {
+    const userPermissions = req.user?.permissions || [];
+
+    const hasPermission = permissionsToCheck.some((p) =>
+      userPermissions.includes(p),
     );
 
-    if (!permissionCheck) {
-      throw new AppError(`權限不足：需要 [${requiredPermission}] 權限`, 403);
+    if (!hasPermission) {
+      throw new AppError(`權限不足：請確認您是否有操作權限`, 403);
     }
 
     next();
