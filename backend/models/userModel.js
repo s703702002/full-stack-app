@@ -2,7 +2,7 @@ import prisma from '../config/db.js';
 
 const UserModel = {
   // ==========================================
-  // 🔍 1. 查詢類 (Read)
+  // 查詢類 (Read)
   // ==========================================
 
   findByUsername: async (username, includeRole = false) => {
@@ -49,21 +49,8 @@ const UserModel = {
     });
   },
 
-  findPermissionsById: async (id) => {
-    return await prisma.user.findUnique({
-      where: { id: id },
-      include: {
-        role: {
-          include: {
-            permissions: { include: { permission: true } },
-          },
-        },
-      },
-    });
-  },
-
   // ==========================================
-  // 🛠️ 2. 通用資料更新 (Generic Update)
+  // 通用資料更新 (Generic Update)
   // ==========================================
 
   updateUser: async (userId, data) => {
@@ -74,7 +61,7 @@ const UserModel = {
   },
 
   // ==========================================
-  // 🧠 3. 核心商業邏輯 (Business Logic & Side-effects)
+  // 核心商業邏輯 (Business Logic & Side-effects)
   // ==========================================
 
   createUser: async ({ username, password, name, roleId, googleId, email }) => {

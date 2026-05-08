@@ -14,15 +14,7 @@ export const checkAuthenticated = (req, res, next) => {
       return next(new AppError(info?.message || '請先登入', 401));
     }
 
-    const userPermissions =
-      user.role?.permissions?.map((p) => p.permission.name) || [];
-
-    req.user = {
-      id: user.id,
-      username: user.username,
-      role: user.role?.name,
-      permissions: userPermissions,
-    };
+    req.user = user;
 
     next();
   })(req, res, next);

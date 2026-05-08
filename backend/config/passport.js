@@ -6,6 +6,7 @@ import RoleModel from '../models/roleModel.js';
 import { compareHash } from '../utils/hashHelper.js';
 import { getAccessToken } from '../utils/cookieHelper.js';
 import { readFileSync } from '../utils/fsHelper.js';
+import PermissionModel from '../models/permissionModel.js';
 
 const { Strategy: LocalStrategy } = passportLocal;
 const { Strategy: JwtStrategy } = passportJwt;
@@ -52,13 +53,14 @@ export default function setupPassport(passport) {
   passport.use(
     new JwtStrategy(jwtOptions, async (jwt_payload, done) => {
       try {
-        const user = await UserModel.findPermissionsById(jwt_payload.id);
+        const permissions = await PermissionModel.getByRoleId(
+          jwt_payload.roleId,
+        );
 
-        if (!user) {
-          return done(null, false);
-        }
-
-        return done(null, user);
+        return done(null, {
+          ...jwt_payload,
+          permissions: permissions.map((p) => p.name) || [],
+        });
       } catch (err) {
         return done(err, false);
       }
