@@ -28,7 +28,7 @@ export const login = (req, res, next) => {
       if (err) return next(err);
       if (!user) return next(new AppError(info?.message || '登入失敗', 401));
 
-      if (user.isTwoFactorEnabled && !user._skip2FA) {
+      if (user.twoFactorAuth?.isEnabled && !user._skip2FA) {
         const tempToken = AuthService.generate2FAToken(user);
         setTempTokenCookie(res, tempToken);
         return sendSuccess(

@@ -7,7 +7,7 @@ import PostModel from '../models/postModel.js';
 
 export const getMe = async (req, res) => {
   const userId = req.user.id;
-  const user = await UserModel.findById(userId, true);
+  const user = await UserModel.findById(userId, { role: true });
 
   if (!user) {
     throw new AppError('找不到使用者帳號', 404);

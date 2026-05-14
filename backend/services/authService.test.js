@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as AuthService from './authService.js';
 import UserModel from '../models/userModel.js';
 import RoleModel from '../models/roleModel.js';
+import PasswordResetTokenModel from '../models/PasswordResetTokenModel.js';
 import redisClient from '../config/redis.js';
 import {
   getAccountRateLimitKey,
@@ -11,10 +12,10 @@ import * as jwtHelper from '../utils/jwtHelper.js';
 import * as hashHelper from '../utils/hashHelper.js';
 import * as cryptoHelper from '../utils/cryptoHelper.js';
 import * as twoFAHelper from '../utils/twoFAHelper.js';
-import logger from '../utils/logger.js';
 
 vi.mock('../models/userModel.js');
 vi.mock('../models/roleModel.js');
+vi.mock('../models/PasswordResetTokenModel.js');
 
 // 針對有 default export 的第三方或設定檔，安全起見手動 Mock 結構
 vi.mock('../config/redis.js', () => ({
@@ -30,7 +31,7 @@ vi.mock('../utils/hashHelper.js');
 vi.mock('../utils/cryptoHelper.js');
 vi.mock('../utils/twoFAHelper.js');
 
-describe('AuthService (魔王級測試)', () => {
+describe('AuthService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -38,7 +39,7 @@ describe('AuthService (魔王級測試)', () => {
   describe('generateAuthTokens', () => {
     it('應該要產生 Access/Refresh Token 並將 Refresh Token 存入 Redis', async () => {
       const mockUser = {
-        id: 1,
+        id: '1',
         username: 'stanley',
         roleId: 2,
         role: { name: 'admin' },
@@ -53,7 +54,7 @@ describe('AuthService (魔王級測試)', () => {
         refreshToken: 'mock-refresh-token',
       });
       expect(jwtHelper.signAccessToken).toHaveBeenCalledWith({
-        id: 1,
+        id: '1',
         username: 'stanley',
         roleId: 2,
         roleName: 'admin',
@@ -70,7 +71,7 @@ describe('AuthService (魔王級測試)', () => {
 
   describe('registerUser', () => {
     it('帳號若已存在，應拋出 409 錯誤', async () => {
-      UserModel.findByUsername.mockResolvedValue({ id: 1 }); // 模擬帳號已存在
+      UserModel.findByUsername.mockResolvedValue({ id: '1' }); // 模擬帳號已存在
       await expect(
         AuthService.registerUser('stanley', '123', 'Stan'),
       ).rejects.toThrow('這個帳號已經被註冊過了');
@@ -80,7 +81,7 @@ describe('AuthService (魔王級測試)', () => {
       UserModel.findByUsername.mockResolvedValue(null);
       RoleModel.findByName.mockResolvedValue({ id: 99 });
       hashHelper.hashString.mockResolvedValue('hashed-password');
-      UserModel.createUser.mockResolvedValue({ id: 1, username: 'stanley' });
+      UserModel.createUser.mockResolvedValue({ id: '1', username: 'stanley' });
 
       const result = await AuthService.registerUser('stanley', '123', 'Stan');
 
@@ -91,14 +92,14 @@ describe('AuthService (魔王級測試)', () => {
         name: 'Stan',
         roleId: 99,
       });
-      expect(result.id).toBe(1);
+      expect(result.id).toBe('1');
     });
   });
 
   describe('logoutUser', () => {
     it('登出時應該去 Redis 刪除 Refresh Token', async () => {
-      await AuthService.logoutUser(5);
-      const expectedKey = getRefreshTokenKey(5);
+      await AuthService.logoutUser('5');
+      const expectedKey = getRefreshTokenKey('5');
       expect(redisClient.del).toHaveBeenCalledWith(expectedKey);
     });
   });
@@ -118,9 +119,12 @@ describe('AuthService (魔王級測試)', () => {
       jwtHelper.verifyTempToken.mockReturnValue({ id: 1, purpose: '2fa' });
       UserModel.findById.mockResolvedValue({
         id: 1,
-        twoFactorSecret: 'secret-key',
+        twoFactorAuth: {
+          isEnabled: true,
+          secret: 'secret-key',
+        },
       });
-      twoFAHelper.otpVerify.mockResolvedValue(true); // 模擬 OTP 驗證通過
+      twoFAHelper.otpVerify.mockResolvedValue(true);
 
       const user = await AuthService.verify2FALogin('token', '123456');
 
@@ -134,10 +138,13 @@ describe('AuthService (魔王級測試)', () => {
 
   describe('verifyAndEnable2FA', () => {
     it('如果還沒 setup 產生 secret，應該阻擋', async () => {
-      UserModel.findById.mockResolvedValue({ id: 1, twoFactorSecret: null });
-      await expect(AuthService.verifyAndEnable2FA(1, '123456')).rejects.toThrow(
-        '尚未產生 2FA 金鑰',
-      );
+      UserModel.findById.mockResolvedValue({
+        id: '1',
+        twoFactorAuth: null,
+      });
+      await expect(
+        AuthService.verifyAndEnable2FA('1', '123456'),
+      ).rejects.toThrow('尚未產生 2FA 金鑰');
     });
   });
 
@@ -165,35 +172,34 @@ describe('AuthService (魔王級測試)', () => {
 
     it('找到帳號時，應該產生 Token 並寫入 DB 與發送信件通知', async () => {
       UserModel.findByUsername.mockResolvedValue({
-        id: 5,
+        id: '5',
         username: 'stanley',
       });
       cryptoHelper.generateRandomToken.mockReturnValue('random-abc');
 
       await AuthService.processForgotPassword('stanley');
 
-      expect(UserModel.updateUser).toHaveBeenCalledWith(
-        5,
+      expect(PasswordResetTokenModel.createResetToken).toHaveBeenCalledWith(
         expect.objectContaining({
-          resetToken: 'random-abc',
-          resetTokenExpires: expect.any(Date),
+          userId: '5',
+          token: 'random-abc',
+          expiresAt: expect.any(Date),
         }),
       );
-      expect(logger.info).toHaveBeenCalled(); // 驗證有印出寄信 log
     });
   });
 
   describe('processResetPassword', () => {
     it('密碼重設成功後，應該刪除登入失敗的 Rate Limit 快取', async () => {
       UserModel.findByValidResetToken.mockResolvedValue({
-        id: 5,
+        id: '5',
         username: 'stanley',
       });
       hashHelper.hashString.mockResolvedValue('new-hash');
 
       await AuthService.processResetPassword('valid-token', 'newPassword');
 
-      expect(UserModel.resetPassword).toHaveBeenCalledWith(5, 'new-hash');
+      expect(UserModel.resetPassword).toHaveBeenCalledWith('5', 'new-hash');
       expect(redisClient.del).toHaveBeenCalledWith(
         getAccountRateLimitKey('stanley'),
       );

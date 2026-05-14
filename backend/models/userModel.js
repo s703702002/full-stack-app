@@ -1,35 +1,45 @@
 import prisma from '../config/db.js';
 
+const DEFAULT_INCLUDE = {
+  role: false,
+  twoFactorAuth: false,
+  oauthAccounts: false,
+};
+
+const buildInclude = (options = {}) => {
+  const opts = { ...DEFAULT_INCLUDE, ...options };
+  const include = {};
+
+  if (opts.role) include.role = true;
+  if (opts.twoFactorAuth) include.twoFactorAuth = true;
+  if (opts.oauthAccounts) include.oauthAccounts = true;
+
+  return Object.keys(include).length > 0 ? include : undefined;
+};
+
 const UserModel = {
   // ==========================================
   // 查詢類 (Read)
   // ==========================================
 
-  findByUsername: async (username, includeRole = false) => {
+  findByUsername: async (username, options = {}) => {
     return await prisma.user.findUnique({
       where: { username },
-      include: includeRole ? { role: true } : undefined,
+      include: buildInclude(options),
     });
   },
 
-  findById: async (id, includeRole = false) => {
+  findById: async (id, options = {}) => {
     return await prisma.user.findUnique({
-      where: { id: id },
-      include: includeRole ? { role: true } : undefined,
+      where: { id },
+      include: buildInclude(options),
     });
   },
 
-  findByEmail: async (email, includeRole = false) => {
+  findByEmail: async (email, options = {}) => {
     return await prisma.user.findUnique({
-      where: { email: email },
-      include: includeRole ? { role: true } : undefined,
-    });
-  },
-
-  findByGoogleId: async (id, includeRole = false) => {
-    return await prisma.user.findUnique({
-      where: { googleId: id },
-      include: includeRole ? { role: true } : undefined,
+      where: { email },
+      include: buildInclude(options),
     });
   },
 
@@ -41,12 +51,14 @@ const UserModel = {
   },
 
   findByValidResetToken: async (token) => {
-    return await prisma.user.findFirst({
+    const resetToken = await prisma.passwordResetToken.findFirst({
       where: {
-        resetToken: token,
-        resetTokenExpires: { gt: new Date() },
+        token,
+        expiresAt: { gt: new Date() },
       },
+      include: { user: true },
     });
+    return resetToken?.user ?? null;
   },
 
   // ==========================================
@@ -64,31 +76,48 @@ const UserModel = {
   // 核心商業邏輯 (Business Logic & Side-effects)
   // ==========================================
 
-  createUser: async ({ username, password, name, roleId, googleId, email }) => {
+  createUser: async ({ username, password, name, roleId, email }) => {
     return await prisma.user.create({
       data: {
         username,
         password,
         name,
-        roleId: roleId,
-        googleId,
+        roleId,
         email,
       },
     });
   },
 
-  // 因為重設密碼伴隨清除 2FA 與 Token 等多個副作用，必須獨立封裝防呆
-  resetPassword: async (userId, newHashedPassword) => {
-    return await prisma.user.update({
-      where: { id: userId },
-      data: {
-        password: newHashedPassword,
-        resetToken: null,
-        resetTokenExpires: null,
-        twoFactorSecret: null,
-        isTwoFactorEnabled: false,
-      },
+  createUserWithOAuth: async (
+    { email, name, username, roleId },
+    { provider, providerId },
+  ) => {
+    return await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { email, name, username, roleId },
+      });
+      await tx.oAuthAccount.create({
+        data: { userId: user.id, provider, providerId },
+      });
+      return user;
     });
+  },
+
+  resetPassword: async (userId, newHashedPassword) => {
+    return await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          password: newHashedPassword,
+        },
+      }),
+      prisma.twoFactorAuth.deleteMany({
+        where: { userId },
+      }),
+      prisma.passwordResetToken.deleteMany({
+        where: { userId },
+      }),
+    ]);
   },
 };
 

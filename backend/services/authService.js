@@ -17,6 +17,8 @@ import { generateRandomToken } from '../utils/cryptoHelper.js';
 import { generate2FA, otpVerify } from '../utils/twoFAHelper.js';
 import logger from '../utils/logger.js';
 import RoleModel from '../models/roleModel.js';
+import PasswordResetTokenModel from '../models/PasswordResetTokenModel.js';
+import TwoFactorAuthModel from '../models/TwoFactorAuthMode.js';
 
 export const generate2FAToken = (user) => {
   const tempToken = signTempToken({ id: user.id, purpose: '2fa' });
@@ -59,10 +61,13 @@ export const verify2FALogin = async (tempToken, totpCode) => {
   const decoded = verifyTempToken(tempToken);
   if (decoded.purpose !== '2fa') throw new AppError('無效的憑證類型', 403);
 
-  const user = await UserModel.findById(decoded.id, true);
+  const user = await UserModel.findById(decoded.id, {
+    role: true,
+    twoFactorAuth: true,
+  });
   if (!user) throw new AppError('找不到該使用者', 401);
 
-  await otpVerify({ token: totpCode, secret: user.twoFactorSecret });
+  await otpVerify({ token: totpCode, secret: user.twoFactorAuth?.secret });
   return user;
 };
 
@@ -80,7 +85,7 @@ export const refreshAccessToken = async (refreshToken) => {
     throw new AppError('Refresh Token 無效或已被撤銷，請重新登入', 403);
   }
 
-  const user = await UserModel.findById(decoded.id, true);
+  const user = await UserModel.findById(decoded.id, { role: true });
   if (!user) throw new AppError('帳號不存在', 403);
 
   return signAccessToken({
@@ -94,15 +99,19 @@ export const refreshAccessToken = async (refreshToken) => {
 export const processForgotPassword = async (username) => {
   const user = await UserModel.findByUsername(username);
 
-  // 💡 為了防範帳號枚舉攻擊，就算找不到帳號也不 throw error，直接 return 讓流程結束
+  // 為了防範帳號枚舉攻擊，就算找不到帳號也不 throw error，直接 return 讓流程結束
   if (!user) return;
+
+  // 先刪掉這個 user 所有舊的 reset token
+  await PasswordResetTokenModel.deleteByUserId(user.id);
 
   const resetToken = generateRandomToken();
   const resetExpires = new Date(Date.now() + 3600000);
 
-  await UserModel.updateUser(user.id, {
-    resetToken,
-    resetTokenExpires: resetExpires,
+  await PasswordResetTokenModel.createResetToken({
+    userId: user.id,
+    token: resetToken,
+    expiresAt: resetExpires,
   });
 
   logger.info(
@@ -124,16 +133,18 @@ export const processResetPassword = async (token, newPassword) => {
 
 export const setupUser2FA = async (userId, username) => {
   const { secret, qrCodeImage } = await generate2FA(username);
-  await UserModel.updateUser(userId, { twoFactorSecret: secret });
+  await TwoFactorAuthModel.upsertTwoFactorAuth(userId, secret);
   return { secret, qrCodeImage };
 };
 
 export const verifyAndEnable2FA = async (userId, totpCode) => {
-  const user = await UserModel.findById(userId);
-  if (!user?.twoFactorSecret) {
+  const twoFactorAuth = await TwoFactorAuthModel.findByUserId(userId);
+  if (!twoFactorAuth) {
     throw new AppError('尚未產生 2FA 金鑰，請先執行 setup', 400);
   }
 
-  await otpVerify({ token: totpCode, secret: user.twoFactorSecret });
-  await UserModel.updateUser(userId, { isTwoFactorEnabled: true });
+  const { secret, id } = twoFactorAuth;
+
+  await otpVerify({ token: totpCode, secret: secret });
+  await TwoFactorAuthModel.enableById(id);
 };
