@@ -14,7 +14,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!data) return;
-    if (data.require2FA) {
+
+    if (data.data.require2FA) {
       navigate('/login/2fa');
       return;
     }
