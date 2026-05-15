@@ -26,6 +26,7 @@ export const setTempTokenCookie = (res, token) => {
   res.cookie('tempToken', token, {
     ...baseCookieOptions,
     maxAge: 5 * 60 * 1000, // 5m
+    path: '/api/auth/login-2fa',
   });
 };
 

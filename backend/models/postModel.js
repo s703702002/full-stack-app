@@ -11,13 +11,6 @@ const PostModel = {
     });
   },
 
-  findAllByUserId: async (userId) => {
-    return await prisma.post.findMany({
-      where: { userId: userId },
-      orderBy: { createdAt: 'desc' },
-    });
-  },
-
   findAllWithDetails: async (currentUserId = null) => {
     return await prisma.post.findMany({
       include: {

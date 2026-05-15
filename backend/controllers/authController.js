@@ -20,7 +20,6 @@ export const register = async (req, res) => {
 };
 
 export const login = (req, res, next) => {
-  // Passport 本身是 Middleware 且高度綁定 req/res，所以保留在 Controller 層最為合適
   passport.authenticate(
     'local',
     { session: false },
@@ -31,12 +30,7 @@ export const login = (req, res, next) => {
       if (user.twoFactorAuth?.isEnabled && !user._skip2FA) {
         const tempToken = AuthService.generate2FAToken(user);
         setTempTokenCookie(res, tempToken);
-        return sendSuccess(
-          res,
-          200,
-          { tempToken, require2FA: true },
-          '請輸入 2FA 驗證碼',
-        );
+        return sendSuccess(res, 200, { require2FA: true }, '請輸入 2FA 驗證碼');
       }
 
       const { accessToken, refreshToken } =

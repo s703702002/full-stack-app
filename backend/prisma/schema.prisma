@@ -7,6 +7,10 @@ datasource db {
   provider = "postgresql"
 }
 
+// ============================================
+// Auth
+// ============================================
+
 model User {
   id       String  @id @default(cuid())
   username String  @unique @db.VarChar(50)
@@ -22,6 +26,8 @@ model User {
 
   // relations
   role           Role?          @relation(fields: [roleId], references: [id])
+  sentRequests     Friendship[] @relation("SentRequests")
+  receivedRequests Friendship[] @relation("ReceivedRequests")
   posts          Post[]
   likedPosts     PostLike[]
   oauthAccounts  OAuthAccount[]
@@ -62,6 +68,10 @@ model OAuthAccount {
   @@map("oauth_accounts")
 }
 
+// ============================================
+// RBAC
+// ============================================
+
 model Role {
   id          Int       @id @default(autoincrement())
   name        String    @unique @db.VarChar(50)
@@ -96,6 +106,10 @@ model RolePermission {
   @@map("role_permissions")
 }
 
+// ============================================
+// Post
+// ============================================
+
 model Post {
   id        String    @id @default(cuid())
   userId    String?   @map("user_id") 
@@ -119,4 +133,28 @@ model PostLike {
 
   @@id([userId, postId]) 
   @@map("post_likes")
+}
+
+model Friendship {
+  id         String           @id @default(cuid())
+  
+  requesterId String @map("requester_id")  // 發送申請的人
+  receiverId  String @map("receiver_id")   // 收到申請的人
+  
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  requester User @relation("SentRequests", fields: [requesterId], references: [id])
+  receiver  User @relation("ReceivedRequests", fields: [receiverId], references: [id])
+
+  @@unique([requesterId, receiverId])  // 防止重複申請
+  @@map("friendships")
+}
+
+enum FriendshipStatus {
+  PENDING   // 申請中
+  ACCEPTED  // 已接受，正式好友
+  REJECTED  // 已拒絕
+  BLOCKED   // 封鎖
 }

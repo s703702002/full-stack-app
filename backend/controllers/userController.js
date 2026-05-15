@@ -1,5 +1,5 @@
 import UserModel from '../models/userModel.js';
-import { sanitizeUser } from '../utils/formatters.js';
+import { sanitizeUser, formatPost } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import AppError from '../utils/AppError.js';
 import * as UserService from '../services/userService.js';
@@ -64,7 +64,8 @@ export const getUserTimeline = async (req, res) => {
   const targetUser = await UserModel.findById(id);
   if (!targetUser) throw new AppError('找不到該使用者', 404);
 
-  const posts = await PostModel.findAllByUserId(targetUser.id);
+  const posts = await PostModel.findAllWithDetails(req.user.id);
+  const formattedPosts = posts.map(formatPost);
 
-  sendSuccess(res, 200, { posts });
+  sendSuccess(res, 200, { posts: formattedPosts });
 };
