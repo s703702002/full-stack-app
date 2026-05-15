@@ -64,6 +64,36 @@ const friendshipModel = {
     });
   },
 
+  findFriends: async (userId) => {
+    return await prisma.friendship.findMany({
+      where: {
+        status: 'ACCEPTED',
+        OR: [{ requesterId: userId }, { receiverId: userId }],
+      },
+      include: {
+        requester: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatarUrl: true,
+            bio: true,
+          },
+        },
+        receiver: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatarUrl: true,
+            bio: true,
+          },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+  },
+
   createFriendRequest: async (requesterId, receiverId) => {
     return await prisma.friendship.create({
       data: { requesterId, receiverId },
@@ -74,6 +104,21 @@ const friendshipModel = {
     return await prisma.friendship.update({
       where: { id },
       data: { status },
+    });
+  },
+
+  deleteFriendship: async (id) => {
+    return await prisma.friendship.delete({ where: { id } });
+  },
+
+  resetFriendRequest: async (id, requesterId, receiverId) => {
+    return await prisma.friendship.update({
+      where: { id },
+      data: {
+        status: 'PENDING',
+        requesterId, // 更新成這次發送的人
+        receiverId,
+      },
     });
   },
 };

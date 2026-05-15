@@ -57,3 +57,23 @@ export const formatFriendRequest = (friendship, perspective = 'received') => {
     },
   };
 };
+
+export const formatFriend = (friendship, currentUserId) => {
+  // 我是 requester，對方就是 receiver，反之亦然
+  const friend =
+    friendship.requesterId === currentUserId
+      ? friendship.receiver
+      : friendship.requester;
+
+  return {
+    friendshipId: friendship.id,
+    since: friendship.updatedAt, // 成為好友的時間
+    user: {
+      id: friend.id,
+      name: friend.name,
+      username: friend.username,
+      avatarUrl: withBaseUrl(friend.avatarUrl),
+      bio: friend.bio,
+    },
+  };
+};

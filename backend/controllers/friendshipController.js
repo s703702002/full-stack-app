@@ -1,27 +1,29 @@
 import * as FriendshipService from '../services/friendshipService.js';
-import { formatFriendRequest } from '../utils/formatters.js';
+import { formatFriend, formatFriendRequest } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
+
+export const getFriends = async (req, res) => {
+  const friends = await FriendshipService.getFriends(req.user.id);
+
+  sendSuccess(res, 200, {
+    friends: friends.map((f) => formatFriend(f, req.user.id)),
+  });
+};
 
 export const getReceivedRequests = async (req, res) => {
   const requests = await FriendshipService.getReceivedRequests(req.user.id);
 
-  sendSuccess(
-    res,
-    200,
-    { requests: requests.map((r) => formatFriendRequest(r, 'received')) },
-    '取得成功',
-  );
+  sendSuccess(res, 200, {
+    requests: requests.map((r) => formatFriendRequest(r, 'received')),
+  });
 };
 
 export const getSentRequests = async (req, res) => {
   const requests = await FriendshipService.getSentRequests(req.user.id);
 
-  sendSuccess(
-    res,
-    200,
-    { requests: requests.map((r) => formatFriendRequest(r, 'sent')) },
-    '取得成功',
-  );
+  sendSuccess(res, 200, {
+    requests: requests.map((r) => formatFriendRequest(r, 'sent')),
+  });
 };
 
 export const getFriendshipStatus = async (req, res) => {
@@ -29,7 +31,7 @@ export const getFriendshipStatus = async (req, res) => {
     req.user.id,
     req.params.targetUserId,
   );
-  sendSuccess(res, 200, { status }, '取得成功');
+  sendSuccess(res, 200, { status });
 };
 
 export const sendFriendRequest = async (req, res) => {
@@ -46,7 +48,7 @@ export const sendFriendRequest = async (req, res) => {
 export const respondToFriendRequest = async (req, res) => {
   const receiverId = req.user.id;
   const { requesterId } = req.params;
-  const { action } = req.body; // 'accept' | 'reject'
+  const { action } = req.body;
 
   const friendship = await FriendshipService.respondToFriendRequest(
     requesterId,
@@ -59,4 +61,9 @@ export const respondToFriendRequest = async (req, res) => {
     { friendship },
     action === 'accept' ? '已接受好友申請' : '已拒絕好友申請',
   );
+};
+
+export const removeFriend = async (req, res) => {
+  await FriendshipService.removeFriend(req.user.id, req.params.friendId);
+  sendSuccess(res, 200, {}, '已解除好友關係');
 };
