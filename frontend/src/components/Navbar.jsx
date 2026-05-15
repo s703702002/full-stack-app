@@ -49,6 +49,12 @@ export default function Navbar() {
           {/* 使用者專屬區塊 */}
           {user ? (
             <div className="flex items-center gap-4">
+              <Link
+                to="/friend-requests"
+                className="hover:text-primary transition"
+              >
+                好友申請
+              </Link>
               <Link to="/profile" className="hover:text-primary transition">
                 個人設定
               </Link>

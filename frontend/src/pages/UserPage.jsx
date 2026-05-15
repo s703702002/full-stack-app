@@ -4,6 +4,7 @@ import useApiAction from '../hooks/useApiAction';
 import { privateApi } from '../api';
 import CreatePostBox from '../components/CreatePostBox';
 import Avatar from '../components/Avatar';
+import FriendshipButton from '../components/FriendshipButton';
 
 export default function UserPage() {
   const { userId } = useParams();
@@ -17,7 +18,14 @@ export default function UserPage() {
   );
 
   const profile = profileData?.data?.user;
+
+  const { data: friendshipData } = useApiAction(
+    () => privateApi.get(`/api/friend-requests/status/${userId}`),
+    { runOnMount: profile?.isOwnProfile === false, successToast: false },
+  );
+
   const posts = postsData?.data?.posts ?? [];
+  const friendshipStatus = friendshipData?.data?.status;
 
   if (!profile) return <div>載入中...</div>;
 
@@ -50,6 +58,15 @@ export default function UserPage() {
               {profile.bio || '這個人很懶，什麼都沒寫。'}
             </p>
           </div>
+
+          {!profile.isOwnProfile && friendshipStatus && (
+            <div className="mt-2">
+              <FriendshipButton
+                targetUserId={userId}
+                initialStatus={friendshipStatus}
+              />
+            </div>
+          )}
         </div>
       </div>
 

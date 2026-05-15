@@ -16,6 +16,7 @@ import Setup2FAPage from './pages/Setup2FAPage';
 import MessageBoard from './pages/MessageBoard';
 import AdminUserPage from './pages/AdminUserPage';
 import UserPage from './pages/UserPage';
+import FriendRequestsPage from './pages/FriendRequestsPage';
 
 // Context
 import { AuthProvider } from './context/AuthContext';
@@ -45,6 +46,7 @@ function App() {
               <Route path="/profile/2fa-setup" element={<Setup2FAPage />} />
               <Route path="/message-board" element={<MessageBoard />} />
               <Route path="/admin/users" element={<AdminUserPage />} />
+              <Route path="/friend-requests" element={<FriendRequestsPage />} />
             </Route>
           </Routes>
         </main>
