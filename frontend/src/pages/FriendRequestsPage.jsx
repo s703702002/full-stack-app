@@ -1,7 +1,57 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Avatar from '../components/Avatar';
 import useApiAction from '../hooks/useApiAction';
 import { privateApi } from '../api';
+import { formatDateTime } from '../utils/format';
+
+function FriendCard({ friend, onRemove, removing }) {
+  const { user, friendshipId, since } = friend;
+
+  const sinceDate = since ? formatDateTime(since) : null;
+
+  const handleRemoveClick = () => {
+    if (confirm('確定解除？')) {
+      onRemove(user.id, friendshipId);
+    }
+  };
+
+  return (
+    <div
+      className={`flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-4 transition-all duration-300 ${
+        removing
+          ? 'opacity-0 translate-x-4 overflow-hidden'
+          : 'opacity-100 translate-x-0'
+      }`}
+    >
+      <Link to={`/profile/${user.id}`}>
+        <Avatar name={user.name} avatarUrl={user.avatarUrl} />
+      </Link>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-gray-900 text-sm">{user.name}</span>
+          <span className="text-xs text-gray-400">@{user.username}</span>
+        </div>
+        {user.bio && (
+          <p className="text-xs text-gray-500 mt-0.5 truncate">{user.bio}</p>
+        )}
+        {sinceDate && (
+          <p className="text-xs text-gray-400 mt-0.5">好友自 {sinceDate}</p>
+        )}
+      </div>
+
+      <div className="shrink-0">
+        <button
+          onClick={handleRemoveClick}
+          className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-all"
+        >
+          解除好友
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function ReceivedCard({ request, onAccept, onReject, removing }) {
   const { user } = request;
@@ -66,7 +116,11 @@ function SentCard({ request }) {
 }
 
 export default function FriendRequestsPage() {
-  const [tab, setTab] = useState('received');
+  const [tab, setTab] = useState('friends');
+  const { data: friendsData } = useApiAction(
+    () => privateApi.get('/api/friend-requests/friends'),
+    { runOnMount: true, successToast: false },
+  );
   const { data: receivedData } = useApiAction(
     () => privateApi.get('/api/friend-requests/received'),
     { runOnMount: true, successToast: false },
@@ -78,7 +132,11 @@ export default function FriendRequestsPage() {
   const { execute: respond } = useApiAction((payload) =>
     privateApi.patch(`/api/friend-requests/${payload.id}`, payload),
   );
+  const { execute: removeFriend } = useApiAction((friendId) =>
+    privateApi.delete(`/api/friend-requests/friends/${friendId}`),
+  );
 
+  const friends = friendsData?.data?.friends ?? [];
   const received = receivedData?.data?.requests ?? [];
   const sent = sentData?.data?.requests ?? [];
 
@@ -89,6 +147,16 @@ export default function FriendRequestsPage() {
   const handleReject = (id) => {
     respond({ id, action: 'reject' });
   };
+
+  const handleRemoveFriend = (userId) => {
+    removeFriend(userId);
+  };
+
+  const tabs = [
+    { key: 'friends', label: '好友列表', count: friends.length },
+    { key: 'received', label: '收到的申請', count: received.length },
+    { key: 'sent', label: '送出的申請', count: sent.length },
+  ];
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
@@ -104,10 +172,7 @@ export default function FriendRequestsPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-100 mb-5">
-        {[
-          { key: 'received', label: '收到的申請', count: received.length },
-          { key: 'sent', label: '送出的申請', count: sent.length },
-        ].map(({ key, label, count }) => (
+        {tabs.map(({ key, label, count }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -127,7 +192,25 @@ export default function FriendRequestsPage() {
         ))}
       </div>
 
-      {/* Received Tab */}
+      {tab === 'friends' && (
+        <div className="flex flex-col gap-3">
+          {friends.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <div className="text-3xl mb-3">🤝</div>
+              <p className="text-sm">還沒有好友，去交朋友吧！</p>
+            </div>
+          ) : (
+            friends.map((friend) => (
+              <FriendCard
+                key={friend.friendshipId}
+                friend={friend}
+                onRemove={handleRemoveFriend}
+              />
+            ))
+          )}
+        </div>
+      )}
+
       {tab === 'received' && (
         <div className="flex flex-col gap-3">
           {received.length === 0 ? (
@@ -148,7 +231,6 @@ export default function FriendRequestsPage() {
         </div>
       )}
 
-      {/* Sent Tab */}
       {tab === 'sent' && (
         <div className="flex flex-col gap-3">
           {sent.length === 0 ? (

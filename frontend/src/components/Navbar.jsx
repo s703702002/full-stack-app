@@ -53,7 +53,7 @@ export default function Navbar() {
                 to="/friend-requests"
                 className="hover:text-primary transition"
               >
-                好友申請
+                好友管理
               </Link>
               <Link to="/profile" className="hover:text-primary transition">
                 個人設定
