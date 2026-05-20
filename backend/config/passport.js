@@ -1,19 +1,37 @@
 import passportLocal from 'passport-local';
-import passportJwt from 'passport-jwt';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import UserModel from '../models/userModel.js';
 import RoleModel from '../models/roleModel.js';
 import { compareHash } from '../utils/hashHelper.js';
-import { getAccessToken } from '../utils/cookieHelper.js';
-import { readFileSync } from '../utils/fsHelper.js';
 import PermissionModel from '../models/permissionModel.js';
 import OAuthAccountModel from '../models/OAuthAccountModel.js';
 import { parseDevUsername } from '../utils/devBackdoor.js';
 
 const { Strategy: LocalStrategy } = passportLocal;
-const { Strategy: JwtStrategy } = passportJwt;
 
 export default function setupPassport(passport) {
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await UserModel.findById(id);
+      if (!user) return done(null, false);
+
+      const permissions = await PermissionModel.getByRoleId(user.roleId);
+
+      const userWithPermissions = {
+        ...user,
+        permissions: permissions.map((p) => p.name) || [],
+      };
+
+      done(null, userWithPermissions);
+    } catch (err) {
+      done(err);
+    }
+  });
+
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
@@ -32,30 +50,6 @@ export default function setupPassport(passport) {
         return done(null, user);
       } catch (err) {
         return done(err);
-      }
-    }),
-  );
-
-  const publicKey = readFileSync('./jwtRS256.key.pub');
-
-  const jwtOptions = {
-    jwtFromRequest: getAccessToken,
-    secretOrKey: publicKey,
-  };
-
-  passport.use(
-    new JwtStrategy(jwtOptions, async (jwt_payload, done) => {
-      try {
-        const permissions = await PermissionModel.getByRoleId(
-          jwt_payload.roleId,
-        );
-
-        return done(null, {
-          ...jwt_payload,
-          permissions: permissions.map((p) => p.name) || [],
-        });
-      } catch (err) {
-        return done(err, false);
       }
     }),
   );

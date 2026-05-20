@@ -10,7 +10,6 @@ import {
   signRefreshToken,
   signTempToken,
   verifyRefreshToken,
-  verifyTempToken,
 } from '../utils/jwtHelper.js';
 import { hashString } from '../utils/hashHelper.js';
 import { generateRandomToken } from '../utils/cryptoHelper.js';
@@ -57,11 +56,8 @@ export const registerUser = async (username, password, name) => {
   });
 };
 
-export const verify2FALogin = async (tempToken, totpCode) => {
-  const decoded = verifyTempToken(tempToken);
-  if (decoded.purpose !== '2fa') throw new AppError('無效的憑證類型', 403);
-
-  const user = await UserModel.findById(decoded.id, {
+export const verify2FALogin = async (tempUserId, totpCode) => {
+  const user = await UserModel.findById(tempUserId, {
     role: true,
     twoFactorAuth: true,
   });

@@ -1,22 +1,20 @@
 import 'dotenv/config';
-import { fileURLToPath } from 'node:url';
 import express from 'express';
 import passport from 'passport';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import pinoHttp from 'pino-http';
+import session from 'express-session';
+import { RedisStore } from 'connect-redis';
 
 import setupPassport from './config/passport.js';
 import apiRoutes from './routes/index.js';
 import { globalErrorHandler } from './middlewares/errorMiddleware.js';
 import { checkHealth } from './controllers/healthController.js';
-import { dirname, join } from './utils/pathHelper.js';
 import logger from './utils/logger.js';
+import redisClient from './config/redis.js';
+import { PREFIX } from './constants/redisKeys.js';
 
-setupPassport(passport);
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const app = express();
 
 app.get('/health', checkHealth);
@@ -30,12 +28,30 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
+app.use(
+  session({
+    store: new RedisStore({
+      client: redisClient,
+      prefix: PREFIX.SESSION,
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false, // 是否每次請求都重新儲存 session，設為 false 減少效能消耗
+    saveUninitialized: false, // 是否自動儲存未初始化的 session，設 false 免得浪費空間
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: Number.parseInt(process.env.SESSION_EXPIRY) || 360000, // default 1 hr
+    },
+  }),
+);
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 app.set('trust proxy', 1);
+setupPassport(passport);
 app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(
   pinoHttp({
@@ -60,7 +76,6 @@ app.use(
 );
 
 // --- 掛載路由 ---
-app.use(express.static(join(__dirname, 'public')));
 app.use('/', apiRoutes);
 app.use(globalErrorHandler);
 

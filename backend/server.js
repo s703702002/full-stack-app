@@ -16,7 +16,7 @@ const startServer = async () => {
       logger.info(`伺服器已啟動: http://localhost:${PORT}`);
     });
   } catch (error) {
-    logger.error('啟動伺服器時發生嚴重錯誤:', error);
+    logger.error(error, '啟動伺服器時發生嚴重錯誤');
     process.exit(1);
   }
 };

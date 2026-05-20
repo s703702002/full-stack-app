@@ -6,11 +6,7 @@ import AppError from '../utils/AppError.js';
 import {
   setAccessTokenCookie,
   clearAllAuthCookies,
-  getRefreshToken,
-  getTempToken,
-  setTempTokenCookie,
   setRefreshTokenCookie,
-  clearTempTokenCookie,
 } from '../utils/cookieHelper.js';
 
 export const register = async (req, res) => {
@@ -20,63 +16,56 @@ export const register = async (req, res) => {
 };
 
 export const login = (req, res, next) => {
-  passport.authenticate(
-    'local',
-    { session: false },
-    async (err, user, info) => {
-      if (err) return next(err);
-      if (!user) return next(new AppError(info?.message || '登入失敗', 401));
+  passport.authenticate('local', async (err, user, info) => {
+    if (err) return next(err);
+    if (!user) return next(new AppError(info?.message || '登入失敗', 401));
 
-      if (user.twoFactorAuth?.isEnabled && !user._skip2FA) {
-        const tempToken = AuthService.generate2FAToken(user);
-        setTempTokenCookie(res, tempToken);
+    if (user.twoFactorAuth?.isEnabled && !user._skip2FA) {
+      req.session.tempUserId = user.id;
+
+      // 確保 Session 已經寫入記憶體/資料庫後再回傳前端
+      return req.session.save((err) => {
+        if (err) return next(err);
         return sendSuccess(res, 200, { require2FA: true }, '請輸入 2FA 驗證碼');
-      }
+      });
+    }
 
-      const { accessToken, refreshToken } =
-        await AuthService.generateAuthTokens(user);
-
-      setAccessTokenCookie(res, accessToken);
-      setRefreshTokenCookie(res, refreshToken);
+    req.login(user, (err) => {
+      if (err) return next(err);
 
       return sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
-    },
-  )(req, res, next);
+    });
+  })(req, res, next);
 };
 
-export const login2FA = async (req, res) => {
+export const login2FA = async (req, res, next) => {
   const { totpCode } = req.body;
-  const tempToken = getTempToken(req);
 
-  if (!tempToken) throw new AppError('缺少驗證資訊', 400);
+  const tempUserId = req.session.tempUserId;
+  if (!tempUserId) {
+    throw new AppError('缺少驗證資訊或驗證時效已過', 400);
+  }
 
-  const user = await AuthService.verify2FALogin(tempToken, totpCode);
+  const user = await AuthService.verify2FALogin(tempUserId, totpCode);
 
-  const { accessToken, refreshToken } =
-    await AuthService.generateAuthTokens(user);
+  req.login(user, (err) => {
+    if (err) return next(err);
 
-  setAccessTokenCookie(res, accessToken);
-  setRefreshTokenCookie(res, refreshToken);
-  clearTempTokenCookie(res);
+    // 登入成功後，把臨時的暫存欄位清空，避免佔用空間
+    delete req.session.tempUserId;
 
-  sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
+    sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
+  });
 };
 
-export const logout = async (req, res) => {
-  await AuthService.logoutUser(req.user.id);
-  clearAllAuthCookies(res);
-  sendSuccess(res, 200, {}, '登出成功');
-};
-
-export const refreshToken = async (req, res) => {
-  const currentRefreshToken = getRefreshToken(req);
-  if (!currentRefreshToken) throw new AppError('未提供 Refresh Token', 401);
-
-  const newAccessToken =
-    await AuthService.refreshAccessToken(currentRefreshToken);
-  setAccessTokenCookie(res, newAccessToken);
-
-  sendSuccess(res, 200, {});
+export const logout = async (req, res, next) => {
+  req.logout((err) => {
+    if (err) return next(err);
+    req.session.destroy(() => {
+      clearAllAuthCookies(res);
+      sendSuccess(res, 200, {}, '登出成功');
+    });
+  });
 };
 
 export const forgotPassword = async (req, res) => {

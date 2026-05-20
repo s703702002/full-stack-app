@@ -35,7 +35,5 @@ export const clearTempTokenCookie = (res) => {
 };
 
 export const clearAllAuthCookies = (res) => {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
-  res.clearCookie('tempToken');
+  res.clearCookie('connect.sid');
 };

@@ -5,7 +5,6 @@ import {
   register,
   forgotPassword,
   resetPassword,
-  refreshToken,
   logout,
   setup2FA,
   verify2FA,
@@ -29,7 +28,6 @@ router.post('/login-2fa', validate(login2FASchema), login2FA);
 router.post('/register', validate(registerSchema), register);
 router.post('/forgot-password', apiLimiter, forgotPassword);
 router.post('/reset-password/:token', resetPassword);
-router.post('/refresh', refreshToken);
 router.get('/google', googleAuth);
 router.get('/google/callback', googleCallback);
 
