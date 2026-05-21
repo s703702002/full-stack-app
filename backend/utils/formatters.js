@@ -23,7 +23,6 @@ export const formatPost = (post) => {
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
     userId: post.userId,
-    username: post.author?.username,
     authorName: post.author?.name,
     authorAvatarUrl: withBaseUrl(post.author?.avatarUrl),
     likeCount: post._count?.likes || 0,

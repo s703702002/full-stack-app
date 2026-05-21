@@ -11,23 +11,27 @@ const PostModel = {
     });
   },
 
-  findAllWithDetails: async (currentUserId = null) => {
+  findAllWithDetails: async () => {
     return await prisma.post.findMany({
       include: {
         author: {
-          select: { username: true, name: true, avatarUrl: true },
+          select: { name: true, avatarUrl: true },
         },
         _count: {
           select: { likes: true },
         },
-        // 只有當 currentUserId 有值時，才去查詢「我」有沒有按讚
-        ...(currentUserId
-          ? {
-              likes: {
-                where: { userId: currentUserId },
-              },
-            }
-          : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  },
+
+  findAllByUserId: async (userId) => {
+    return await prisma.post.findMany({
+      where: { userId: userId },
+      include: {
+        author: {
+          select: { name: true, avatarUrl: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

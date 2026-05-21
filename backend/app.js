@@ -16,6 +16,7 @@ import redisClient from './config/redis.js';
 import { PREFIX } from './constants/redisKeys.js';
 
 const app = express();
+const SESSION_MAX_AGE = Number.parseInt(process.env.SESSION_EXPIRY) || 3600000;
 
 app.get('/health', checkHealth);
 
@@ -33,14 +34,17 @@ app.use(
     store: new RedisStore({
       client: redisClient,
       prefix: PREFIX.SESSION,
+      ttl: SESSION_MAX_AGE / 1000, // RedisStore 的 ttl 單位是秒
     }),
     secret: process.env.SESSION_SECRET,
+    rolling: true,
     resave: false, // 是否每次請求都重新儲存 session，設為 false 減少效能消耗
     saveUninitialized: false, // 是否自動儲存未初始化的 session，設 false 免得浪費空間
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      maxAge: Number.parseInt(process.env.SESSION_EXPIRY) || 360000, // default 1 hr
+      sameSite: 'lax',
+      maxAge: SESSION_MAX_AGE,
     },
   }),
 );
