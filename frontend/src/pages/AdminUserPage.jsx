@@ -2,6 +2,7 @@ import { privateApi } from '../api';
 import { useAuth } from '../context/useAuth';
 import { canEditTargetUser } from '../utils/roleHelper';
 import useApiAction from '../hooks/useApiAction';
+import { useEffect } from 'react';
 
 const getUsersApi = () => privateApi.get('/api/users');
 
@@ -12,7 +13,7 @@ export default function AdminUserPage() {
     message,
     loading,
     data,
-  } = useApiAction(getUsersApi, { successToast: false, runOnMount: true });
+  } = useApiAction(getUsersApi, { successToast: false });
   const { execute } = useApiAction((payload) =>
     privateApi.put(`/api/users/${payload.targetUserId}/role`, payload),
   );
@@ -21,6 +22,10 @@ export default function AdminUserPage() {
     await execute({ targetUserId, newRoleName });
     await fetchUsers();
   };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   if (loading)
     return <div className="text-center mt-20 text-slate-500">載入中...</div>;

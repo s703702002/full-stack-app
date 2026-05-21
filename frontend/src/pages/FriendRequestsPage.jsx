@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from '../components/Avatar';
 import useApiAction from '../hooks/useApiAction';
@@ -117,17 +117,17 @@ function SentCard({ request }) {
 
 export default function FriendRequestsPage() {
   const [tab, setTab] = useState('friends');
-  const { data: friendsData } = useApiAction(
+  const { data: friendsData, execute: fetchFriends } = useApiAction(
     () => privateApi.get('/api/friend-requests/friends'),
-    { runOnMount: true, successToast: false },
+    { successToast: false },
   );
-  const { data: receivedData } = useApiAction(
+  const { data: receivedData, execute: fetchReceive } = useApiAction(
     () => privateApi.get('/api/friend-requests/received'),
-    { runOnMount: true, successToast: false },
+    { successToast: false },
   );
-  const { data: sentData } = useApiAction(
+  const { data: sentData, execute: fetchSend } = useApiAction(
     () => privateApi.get('/api/friend-requests/sent'),
-    { runOnMount: true, successToast: false },
+    { successToast: false },
   );
   const { execute: respond } = useApiAction((payload) =>
     privateApi.patch(`/api/friend-requests/${payload.id}`, payload),
@@ -157,6 +157,18 @@ export default function FriendRequestsPage() {
     { key: 'received', label: '收到的申請', count: received.length },
     { key: 'sent', label: '送出的申請', count: sent.length },
   ];
+
+  useEffect(() => {
+    fetchFriends();
+  }, [fetchFriends]);
+
+  useEffect(() => {
+    fetchReceive();
+  }, [fetchReceive]);
+
+  useEffect(() => {
+    fetchSend();
+  }, [fetchSend]);
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">

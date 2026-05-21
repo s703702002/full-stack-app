@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import PostCard from '../components/PostCard';
 import useApiAction from '../hooks/useApiAction';
@@ -8,24 +9,36 @@ import FriendshipButton from '../components/FriendshipButton';
 
 export default function UserPage() {
   const { userId } = useParams();
-  const { data: profileData } = useApiAction(
-    () => privateApi.get(`/api/users/${userId}`),
-    { runOnMount: true, successToast: false },
+  const { data: profileData, execute: fetchProfile } = useApiAction(
+    (id) => privateApi.get(`/api/users/${id}`),
+    { successToast: false },
   );
-  const { data: postsData, execute } = useApiAction(
-    () => privateApi.get(`/api/users/${userId}/posts`),
-    { runOnMount: true, successToast: false },
+  const { data: postsData, execute: fetchPosts } = useApiAction(
+    (id) => privateApi.get(`/api/users/${id}/posts`),
+    { successToast: false },
   );
-
-  const profile = profileData?.data?.user;
-
-  const { data: friendshipData } = useApiAction(
-    () => privateApi.get(`/api/friend-requests/status/${userId}`),
-    { runOnMount: profile?.isOwnProfile === false, successToast: false },
+  const { data: friendshipData, execute: fetchFriendship } = useApiAction(
+    (id) => privateApi.get(`/api/friend-requests/status/${id}`),
+    { successToast: false },
   );
 
   const posts = postsData?.data?.posts ?? [];
   const friendshipStatus = friendshipData?.data?.status;
+  const profile = profileData?.data?.user;
+
+  useEffect(() => {
+    fetchProfile(userId);
+  }, [fetchProfile, userId]);
+
+  useEffect(() => {
+    fetchPosts(userId);
+  }, [fetchPosts, userId]);
+
+  useEffect(() => {
+    if (profile?.isOwnProfile === false) {
+      fetchFriendship(userId);
+    }
+  }, [fetchFriendship, profile?.isOwnProfile, userId]);
 
   if (!profile) return <div>載入中...</div>;
 
@@ -75,7 +88,7 @@ export default function UserPage() {
         <h2 className="font-bold text-lg text-slate-700 px-1">貼文</h2>
 
         {profile.isOwnProfile && (
-          <CreatePostBox currentUser={profile} onPostCreated={execute} />
+          <CreatePostBox currentUser={profile} onPostCreated={fetchPosts} />
         )}
 
         {posts.length === 0 ? (
@@ -85,9 +98,9 @@ export default function UserPage() {
             <PostCard
               key={post.id}
               post={post}
-              onDelete={execute}
-              onEdit={execute}
-              onToggleLike={execute}
+              onDelete={fetchPosts}
+              onEdit={fetchPosts}
+              onToggleLike={fetchPosts}
             />
           ))
         )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { privateApi } from '../api';
 import PostForm from '../components/PostForm';
 import PostCard from '../components/PostCard';
@@ -9,10 +9,7 @@ export default function MessageBoard() {
   const [showLikersModal, setShowLikersModal] = useState(false);
   const { data, execute: getAllPosts } = useApiAction(
     () => privateApi.get('/api/posts'),
-    {
-      runOnMount: true,
-      successToast: false,
-    },
+    { successToast: false },
   );
   const {
     data: currentLikersData,
@@ -70,6 +67,10 @@ export default function MessageBoard() {
     setShowLikersModal(true);
     getCurrentLikers(postId);
   };
+
+  useEffect(() => {
+    getAllPosts();
+  }, [getAllPosts]);
 
   return (
     <div className="max-w-3xl mx-auto mt-10 p-4 relative">

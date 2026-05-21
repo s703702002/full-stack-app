@@ -3,7 +3,7 @@ import { useToast } from './useToast';
 
 export default function useApiAction(
   apiFunc,
-  { successToast = true, errorToast = true, runOnMount = false } = {},
+  { successToast = true, errorToast = true } = {},
 ) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -21,7 +21,6 @@ export default function useApiAction(
   useEffect(() => {
     isMounted.current = true;
     return () => {
-      // 當元件卸載時，把標記設為 false
       isMounted.current = false;
     };
   }, []);
@@ -59,12 +58,6 @@ export default function useApiAction(
     },
     [errorToast, successToast, success, error],
   );
-
-  useEffect(() => {
-    if (runOnMount) {
-      execute();
-    }
-  }, [runOnMount, execute]);
 
   return { execute, loading, message, data, clearError: () => setMessage('') };
 }

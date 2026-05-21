@@ -5,15 +5,13 @@ import InputField from '../components/InputField';
 import Button from '../components/Button';
 import useApiAction from '../hooks/useApiAction';
 
-const setup = () => privateApi.post('/api/auth/2fa/setup');
-
 export default function Setup2FAPage() {
   const navigate = useNavigate();
   const [totpCode, setTotpCode] = useState('');
-  const { data } = useApiAction(setup, {
-    successToast: false,
-    runOnMount: true,
-  });
+  const { data, execute: fetch2FA } = useApiAction(
+    () => privateApi.post('/api/auth/2fa/setup'),
+    { successToast: false },
+  );
   const {
     data: verifyData,
     execute,
@@ -27,6 +25,10 @@ export default function Setup2FAPage() {
       navigate('/profile');
     }
   }, [navigate, verifyData?.success]);
+
+  useEffect(() => {
+    fetch2FA();
+  }, [fetch2FA]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
