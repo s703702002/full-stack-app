@@ -5,12 +5,6 @@ import {
   getRefreshTokenKey,
 } from '../constants/redisKeys.js';
 import AppError from '../utils/AppError.js';
-import {
-  signAccessToken,
-  signRefreshToken,
-  signTempToken,
-  verifyRefreshToken,
-} from '../utils/jwtHelper.js';
 import { hashString } from '../utils/hashHelper.js';
 import { generateRandomToken } from '../utils/cryptoHelper.js';
 import { generate2FA, otpVerify } from '../utils/twoFAHelper.js';
@@ -18,27 +12,6 @@ import logger from '../utils/logger.js';
 import RoleModel from '../models/roleModel.js';
 import PasswordResetTokenModel from '../models/PasswordResetTokenModel.js';
 import TwoFactorAuthModel from '../models/TwoFactorAuthMode.js';
-
-export const generate2FAToken = (user) => {
-  const tempToken = signTempToken({ id: user.id, purpose: '2fa' });
-  return tempToken;
-};
-
-export const generateAuthTokens = async (user) => {
-  const accessToken = signAccessToken({
-    id: user.id,
-    username: user.username,
-    roleId: user.roleId,
-    roleName: user.role?.name,
-  });
-
-  const refreshToken = signRefreshToken({ id: user.id });
-
-  const redisKey = getRefreshTokenKey(user.id);
-  await redisClient.setEx(redisKey, 7 * 24 * 60 * 60, refreshToken);
-
-  return { accessToken, refreshToken };
-};
 
 export const registerUser = async (username, password, name) => {
   const userExists = await UserModel.findByUsername(username);
@@ -70,26 +43,6 @@ export const verify2FALogin = async (tempUserId, totpCode) => {
 export const logoutUser = async (userId) => {
   const redisKey = getRefreshTokenKey(userId);
   await redisClient.del(redisKey);
-};
-
-export const refreshAccessToken = async (refreshToken) => {
-  const decoded = verifyRefreshToken(refreshToken);
-  const redisKey = getRefreshTokenKey(decoded.id);
-  const storedToken = await redisClient.get(redisKey);
-
-  if (!storedToken || storedToken !== refreshToken) {
-    throw new AppError('Refresh Token 無效或已被撤銷，請重新登入', 403);
-  }
-
-  const user = await UserModel.findById(decoded.id, { role: true });
-  if (!user) throw new AppError('帳號不存在', 403);
-
-  return signAccessToken({
-    id: user.id,
-    username: user.username,
-    roleId: user.roleId,
-    roleName: user.role?.name,
-  });
 };
 
 export const processForgotPassword = async (username) => {
