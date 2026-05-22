@@ -10,7 +10,10 @@ import {
 import { checkAuthenticated } from '../middlewares/auth.js';
 import { checkPermission } from '../middlewares/rbac.js';
 import validate from '../middlewares/validateMiddleware.js';
-import { createPostSchema } from '../validators/postValidator.js';
+import {
+  createPostSchema,
+  updatePostSchema,
+} from '../validators/postValidator.js';
 
 const router = express.Router();
 
@@ -27,6 +30,7 @@ router.post(
 router.post('/:id/like', toggleLikePost);
 router.put(
   '/:id',
+  validate(updatePostSchema),
   checkPermission(['post:edit:own', 'post:edit:any']),
   updatePost,
 );
