@@ -3,6 +3,7 @@ import Avatar from './Avatar';
 import { formatDateTime } from '../utils/format';
 import useApiAction from '../hooks/useApiAction';
 import { privateApi } from '../api';
+import { Link } from 'react-router-dom';
 
 export default function PostCard({
   post,
@@ -57,11 +58,13 @@ export default function PostCard({
   return (
     <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col">
       <div className="flex items-center mb-3 space-x-3">
-        <Avatar
-          name={post.authorName}
-          avatarUrl={post.authorAvatarUrl}
-          className="w-10 h-10"
-        />
+        <Link to={`/profile/${post.userId}`}>
+          <Avatar
+            name={post.authorName}
+            avatarUrl={post.authorAvatarUrl}
+            className="w-10 h-10"
+          />
+        </Link>
         <div className="flex flex-col">
           <span className="font-bold text-slate-700 leading-tight">
             {post.authorName}
