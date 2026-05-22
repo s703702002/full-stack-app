@@ -1,6 +1,6 @@
 import prisma from '../config/db';
 
-const friendshipModel = {
+const FriendshipModel = {
   findReceivedRequests: async (userId) => {
     return await prisma.friendship.findMany({
       where: {
@@ -49,6 +49,18 @@ const friendshipModel = {
         OR: [
           { requesterId: operatorUserId, receiverId: targetUserId },
           { requesterId: targetUserId, receiverId: operatorUserId },
+        ],
+      },
+    });
+  },
+
+  findAcceptedByPair: async (userId, targetUserId) => {
+    return await prisma.friendship.findFirst({
+      where: {
+        status: 'ACCEPTED',
+        OR: [
+          { requesterId: userId, receiverId: targetUserId },
+          { requesterId: targetUserId, receiverId: userId },
         ],
       },
     });
@@ -123,4 +135,4 @@ const friendshipModel = {
   },
 };
 
-export default friendshipModel;
+export default FriendshipModel;

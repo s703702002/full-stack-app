@@ -11,23 +11,9 @@ const PostModel = {
     });
   },
 
-  findAllWithDetails: async () => {
+  findAllByUserId: async (profileUserId) => {
     return await prisma.post.findMany({
-      include: {
-        author: {
-          select: { name: true, avatarUrl: true },
-        },
-        _count: {
-          select: { likes: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  },
-
-  findAllByUserId: async (userId) => {
-    return await prisma.post.findMany({
-      where: { userId: userId },
+      where: { targetUserId: profileUserId },
       include: {
         author: {
           select: { name: true, avatarUrl: true },
@@ -53,11 +39,12 @@ const PostModel = {
   // 🛠️ 2. 通用資料操作 (Generic CRUD)
   // ==========================================
 
-  createPost: async (userId, data) => {
+  createPost: async (userId, content, targetUserId = userId) => {
     return await prisma.post.create({
       data: {
         userId: userId,
-        ...data,
+        targetUserId: targetUserId,
+        content: content,
       },
     });
   },

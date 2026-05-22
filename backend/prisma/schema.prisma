@@ -28,7 +28,8 @@ model User {
   role           Role?          @relation(fields: [roleId], references: [id])
   sentRequests     Friendship[] @relation("SentRequests")
   receivedRequests Friendship[] @relation("ReceivedRequests")
-  posts          Post[]
+  posts         Post[] @relation("AuthoredPosts")   // 我寫的文章
+  receivedPosts Post[] @relation("ReceivedPosts")   // 別人貼在我版上的
   likedPosts     PostLike[]
   oauthAccounts  OAuthAccount[]
   twoFactorAuth  TwoFactorAuth?
@@ -111,14 +112,16 @@ model RolePermission {
 // ============================================
 
 model Post {
-  id        String    @id @default(cuid())
-  userId    String?   @map("user_id") 
-  content   String
-  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
+  id           String    @id @default(cuid())
+  userId       String   @map("user_id")        // 作者
+  targetUserId String   @map("target_user_id") // 貼到誰的版（null = 自己的版）
+  content      String
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
 
-  author User?      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  likes  PostLike[]
+  author     User?      @relation("AuthoredPosts", fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  targetUser User?      @relation("ReceivedPosts", fields: [targetUserId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  likes      PostLike[]
 
   @@map("posts")
 }

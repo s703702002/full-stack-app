@@ -1,14 +1,10 @@
 import PostModel from '../models/postModel.js';
 import * as PostService from '../services/postService.js';
-import { formatLikers, formatPost } from '../utils/formatters.js';
+import { formatLikers } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 
 export const getAllPosts = async (req, res) => {
-  const currentUserId = req.user.id;
-  const posts = await PostModel.findAllWithDetails(currentUserId);
-  const formattedPosts = posts.map(formatPost);
-
-  sendSuccess(res, 200, { posts: formattedPosts });
+  sendSuccess(res, 200, { posts: [] });
 };
 
 export const getPostLikers = async (req, res) => {
@@ -20,10 +16,10 @@ export const getPostLikers = async (req, res) => {
 };
 
 export const createPost = async (req, res) => {
-  const { content } = req.body;
+  const { content, targetUserId } = req.body;
   const userId = req.user.id;
 
-  const newPost = await PostService.createPost(userId, content);
+  const newPost = await PostService.createPost(userId, content, targetUserId);
   sendSuccess(res, 201, { post: newPost }, '留言發布成功');
 };
 
