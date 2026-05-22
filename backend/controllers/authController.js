@@ -3,11 +3,7 @@ import * as AuthService from '../services/authService.js';
 import { sanitizeUser } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import AppError from '../utils/AppError.js';
-import {
-  setAccessTokenCookie,
-  clearAllAuthCookies,
-  setRefreshTokenCookie,
-} from '../utils/cookieHelper.js';
+import { clearAllAuthCookies } from '../utils/cookieHelper.js';
 
 export const register = async (req, res) => {
   const { username, password, name } = req.body;
@@ -104,26 +100,20 @@ export const googleAuth = passport.authenticate('google', {
 
 // 使用者在 Google 按下同意後，Google 會把人導向回這支 API
 export const googleCallback = (req, res, next) => {
-  passport.authenticate('google', { session: false }, async (err, user) => {
-    try {
-      if (err || !user) {
-        console.error('🚨 [Google OAuth 系統錯誤]:', err);
+  passport.authenticate('google', async (err, user) => {
+    if (err || !user) {
+      console.error('🚨 [Google OAuth 系統錯誤]:', err);
 
-        // 登入失敗，導回前端的登入頁面並帶上錯誤訊息
-        return res.redirect(
-          'http://localhost:5173/login?error=google_login_failed',
-        );
-      }
+      // 登入失敗，導回前端的登入頁面並帶上錯誤訊息
+      return res.redirect(
+        'http://localhost:5173/login?error=google_login_failed',
+      );
+    }
 
-      const { accessToken, refreshToken } =
-        await AuthService.generateAuthTokens(user);
-
-      setAccessTokenCookie(res, accessToken);
-      setRefreshTokenCookie(res, refreshToken);
+    req.login(user, (err) => {
+      if (err) return next(err);
 
       return res.redirect('http://localhost:5173/profile');
-    } catch (error) {
-      next(error);
-    }
+    });
   })(req, res, next);
 };
