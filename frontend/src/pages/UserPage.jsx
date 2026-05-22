@@ -42,6 +42,9 @@ export default function UserPage() {
 
   if (!profile) return <div>載入中...</div>;
 
+  const isFriend = friendshipStatus?.state === 'ACCEPTED';
+  const canCreatePost = profile.isOwnProfile || isFriend;
+
   return (
     <div className="max-w-3xl mx-auto pb-10">
       {/* 🖼️ 上半部：封面與個人資訊 (Profile Header) */}
@@ -87,8 +90,11 @@ export default function UserPage() {
       <div className="space-y-4">
         <h2 className="font-bold text-lg text-slate-700 px-1">貼文</h2>
 
-        {profile.isOwnProfile && (
-          <CreatePostBox currentUser={profile} onPostCreated={fetchPosts} />
+        {canCreatePost && (
+          <CreatePostBox
+            currentUser={profile}
+            onPostCreated={() => fetchPosts(userId)}
+          />
         )}
 
         {posts.length === 0 ? (
@@ -98,9 +104,9 @@ export default function UserPage() {
             <PostCard
               key={post.id}
               post={post}
-              onDelete={fetchPosts}
-              onEdit={fetchPosts}
-              onToggleLike={fetchPosts}
+              onDelete={() => fetchPosts(userId)}
+              onEdit={() => fetchPosts(userId)}
+              onToggleLike={() => fetchPosts(userId)}
             />
           ))
         )}

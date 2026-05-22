@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import Avatar from './Avatar';
 import useApiAction from '../hooks/useApiAction';
+import { useAuth } from '../context/useAuth';
 import { privateApi } from '../api';
 
 export default function CreatePostBox({ currentUser, onPostCreated }) {
+  const { user } = useAuth();
   const [content, setContent] = useState('');
   const { execute, loading } = useApiAction((payload) =>
     privateApi.post('/api/posts', payload),
@@ -12,9 +14,14 @@ export default function CreatePostBox({ currentUser, onPostCreated }) {
   const handleSubmit = async () => {
     if (!content.trim()) return;
 
-    await execute({ content: content });
+    const { success } = await execute({
+      content: content,
+      targetUserId: currentUser.id,
+      userId: user.id,
+    });
+
     setContent('');
-    if (onPostCreated) {
+    if (success && onPostCreated) {
       onPostCreated();
     }
   };

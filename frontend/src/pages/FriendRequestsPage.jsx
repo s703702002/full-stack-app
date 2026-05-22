@@ -121,7 +121,7 @@ export default function FriendRequestsPage() {
     () => privateApi.get('/api/friend-requests/friends'),
     { successToast: false },
   );
-  const { data: receivedData, execute: fetchReceive } = useApiAction(
+  const { data: receivedData, execute: fetchReceived } = useApiAction(
     () => privateApi.get('/api/friend-requests/received'),
     { successToast: false },
   );
@@ -140,16 +140,20 @@ export default function FriendRequestsPage() {
   const received = receivedData?.data?.requests ?? [];
   const sent = sentData?.data?.requests ?? [];
 
-  const handleAccept = (id) => {
-    respond({ id, action: 'accept' });
+  const handleAccept = async (id) => {
+    await respond({ id, action: 'accept' });
+    fetchReceived();
+    fetchFriends();
   };
 
-  const handleReject = (id) => {
-    respond({ id, action: 'reject' });
+  const handleReject = async (id) => {
+    await respond({ id, action: 'reject' });
+    fetchReceived();
   };
 
-  const handleRemoveFriend = (userId) => {
-    removeFriend(userId);
+  const handleRemoveFriend = async (userId) => {
+    await removeFriend(userId);
+    fetchFriends();
   };
 
   const tabs = [
@@ -163,8 +167,8 @@ export default function FriendRequestsPage() {
   }, [fetchFriends]);
 
   useEffect(() => {
-    fetchReceive();
-  }, [fetchReceive]);
+    fetchReceived();
+  }, [fetchReceived]);
 
   useEffect(() => {
     fetchSend();
