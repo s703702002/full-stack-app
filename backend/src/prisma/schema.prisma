@@ -22,7 +22,7 @@ model User {
   coverUrl  String? @map("cover_url")
   bio       String? @db.VarChar(160)
 
-  roleId Int? @map("role_id")
+  roleId Int @map("role_id")
 
   // relations
   role           Role?          @relation(fields: [roleId], references: [id])

@@ -1,9 +1,10 @@
 import { createClient } from 'redis';
-import logger from '../utils/logger';
+import logger from '../utils/logger.js';
+import { env } from '../utils/validateEnv.js';
 
 const redisClient = createClient({
-  socket: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT },
-  database: process.env.REDIS_SHARED_DB,
+  socket: { host: env.REDIS_HOST, port: Number(env.REDIS_PORT) },
+  database: Number(env.REDIS_SHARED_DB),
 });
 
 export const connectRedis = async () => {

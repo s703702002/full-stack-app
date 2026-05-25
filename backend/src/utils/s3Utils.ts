@@ -3,19 +3,20 @@ import {
   DeleteObjectCommand,
   HeadBucketCommand,
 } from '@aws-sdk/client-s3';
+import { env } from './validateEnv.js';
 
-export const BUCKET_NAME = process.env.S3_BUCKET;
+export const BUCKET_NAME = env.S3_BUCKET;
 
 export const s3Client = new S3Client({
   credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID,
-    secretAccessKey: process.env.S3_ACCESS_SECRET,
+    accessKeyId: env.S3_ACCESS_KEY_ID,
+    secretAccessKey: env.S3_ACCESS_SECRET,
   },
-  endpoint: process.env.S3_ENDPOINT_URL,
-  forcePathStyle: true, // 🚀 關鍵：使用 MinIO 必須設定為 true
+  endpoint: env.S3_ENDPOINT_URL,
+  forcePathStyle: true, // 使用 MinIO 必須設定為 true
 });
 
-export const deleteFromS3 = async (fileKey) => {
+export const deleteFromS3 = async (fileKey: string) => {
   const command = new DeleteObjectCommand({
     Bucket: BUCKET_NAME,
     Key: fileKey,

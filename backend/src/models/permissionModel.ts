@@ -1,7 +1,7 @@
 import prisma from '../config/db.js';
 
 const PermissionModel = {
-  getByRoleId: async (roleId) => {
+  getByRoleId: async (roleId: string | number) => {
     return await prisma.permission.findMany({
       where: {
         roles: {
@@ -13,7 +13,7 @@ const PermissionModel = {
     });
   },
 
-  checkUserHasPermission: async (userId, permissionName) => {
+  checkUserHasPermission: async (userId: string, permissionName: string) => {
     const count = await prisma.rolePermission.count({
       where: {
         role: {

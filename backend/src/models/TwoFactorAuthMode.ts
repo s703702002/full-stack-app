@@ -1,12 +1,12 @@
-import prisma from '../config/db';
+import prisma from '../config/db.js';
 
 const TwoFactorAuthModel = {
-  findByUserId: async (userId) => {
+  findByUserId: async (userId: string) => {
     return await prisma.twoFactorAuth.findUnique({
       where: { userId },
     });
   },
-  upsertTwoFactorAuth: async (userId, secret) => {
+  upsertTwoFactorAuth: async (userId: string, secret: string) => {
     return await prisma.twoFactorAuth.upsert({
       where: { userId },
       update: {
@@ -20,7 +20,7 @@ const TwoFactorAuthModel = {
       },
     });
   },
-  enableById: async (id) => {
+  enableById: async (id: string) => {
     return await prisma.twoFactorAuth.update({
       where: { id },
       data: { isEnabled: true },

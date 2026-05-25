@@ -1,8 +1,14 @@
-const baseUrl = process.env.IMAGE_BASE_URL;
+import type { User, Post, PostLike, Friendship } from '../generated/client.js';
+import { env } from './validateEnv.js';
 
-export const withBaseUrl = (path) => (path ? `${baseUrl}/${path}` : null);
+export const withBaseUrl = (path: string | null | undefined): string | null =>
+  path ? `${env.IMAGE_BASE_URL}/${path}` : null;
 
-export const sanitizeUser = (user) => {
+type UserWithRole = User & {
+  role?: { name: string } | null;
+};
+
+export const sanitizeUser = (user: UserWithRole | null) => {
   if (!user) return null;
 
   return {
@@ -16,7 +22,13 @@ export const sanitizeUser = (user) => {
   };
 };
 
-export const formatPost = (post) => {
+type PostWithRelations = Post & {
+  author?: { name: string; avatarUrl: string | null } | null;
+  likes?: PostLike[];
+  _count?: { likes: number };
+};
+
+export const formatPost = (post: PostWithRelations) => {
   return {
     id: post.id,
     content: post.content,
@@ -25,21 +37,31 @@ export const formatPost = (post) => {
     userId: post.userId,
     authorName: post.author?.name,
     authorAvatarUrl: withBaseUrl(post.author?.avatarUrl),
-    likeCount: post._count?.likes || 0,
-    isLikedByMe: post.likes && post.likes.length > 0,
+    likeCount: post._count?.likes ?? 0,
+    isLikedByMe: post.likes ? post.likes.length > 0 : false,
   };
 };
 
-export const formatLikers = (like) => {
-  const user = like.user;
+type LikeWithUser = PostLike & {
+  user: User;
+};
 
+export const formatLikers = (like: LikeWithUser) => {
   return {
-    ...user,
-    avatarUrl: withBaseUrl(user.avatarUrl),
+    ...like.user,
+    avatarUrl: withBaseUrl(like.user.avatarUrl),
   };
 };
 
-export const formatFriendRequest = (friendship, perspective = 'received') => {
+type FriendshipWithUsers = Friendship & {
+  requester: User;
+  receiver: User;
+};
+
+export const formatFriendRequest = (
+  friendship: FriendshipWithUsers,
+  perspective: 'received' | 'sent' = 'received',
+) => {
   const user =
     perspective === 'received' ? friendship.requester : friendship.receiver;
 
@@ -57,8 +79,10 @@ export const formatFriendRequest = (friendship, perspective = 'received') => {
   };
 };
 
-export const formatFriend = (friendship, currentUserId) => {
-  // 我是 requester，對方就是 receiver，反之亦然
+export const formatFriend = (
+  friendship: FriendshipWithUsers,
+  currentUserId: string,
+) => {
   const friend =
     friendship.requesterId === currentUserId
       ? friendship.receiver
@@ -66,7 +90,7 @@ export const formatFriend = (friendship, currentUserId) => {
 
   return {
     friendshipId: friendship.id,
-    since: friendship.updatedAt, // 成為好友的時間
+    since: friendship.updatedAt,
     user: {
       id: friend.id,
       name: friend.name,

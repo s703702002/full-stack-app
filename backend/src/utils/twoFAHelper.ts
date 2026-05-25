@@ -1,3 +1,4 @@
+import type { OTPVerifyOptions } from 'otplib';
 import { generateSecret, verify, generateURI } from 'otplib';
 import qrcode from 'qrcode';
 import AppError from './AppError.js';
@@ -5,7 +6,7 @@ import AppError from './AppError.js';
 /**
  * 產生 2FA 密鑰與 QR Code
  */
-export const generate2FA = async (label, issuer = 'MissionApp') => {
+export const generate2FA = async (label: string, issuer = 'MissionApp') => {
   const secret = generateSecret();
   const otpauthUrl = generateURI({ issuer, label, secret });
   const qrCodeImage = await qrcode.toDataURL(otpauthUrl);
@@ -16,7 +17,7 @@ export const generate2FA = async (label, issuer = 'MissionApp') => {
 /**
  * 驗證 2FA Token
  */
-export const otpVerify = async ({ token, secret }) => {
+export const otpVerify = async ({ token, secret }: OTPVerifyOptions) => {
   const verificationResult = await verify({ token, secret });
   const isValid =
     typeof verificationResult === 'boolean'

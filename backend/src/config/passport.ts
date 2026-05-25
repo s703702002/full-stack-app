@@ -1,20 +1,22 @@
 import passportLocal from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import type { PassportStatic } from 'passport';
 import UserModel from '../models/userModel.js';
 import RoleModel from '../models/roleModel.js';
 import { compareHash } from '../utils/hashHelper.js';
 import PermissionModel from '../models/permissionModel.js';
 import OAuthAccountModel from '../models/OAuthAccountModel.js';
 import { parseDevUsername } from '../utils/devBackdoor.js';
+import { env } from '../utils/validateEnv.js';
 
 const { Strategy: LocalStrategy } = passportLocal;
 
-export default function setupPassport(passport) {
+export default function setupPassport(passport: PassportStatic): void {
   passport.serializeUser((user, done) => {
-    done(null, user.id);
+    done(null, user);
   });
 
-  passport.deserializeUser(async (id, done) => {
+  passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await UserModel.findById(id);
       if (!user) return done(null, false);
@@ -23,7 +25,7 @@ export default function setupPassport(passport) {
 
       const userWithPermissions = {
         ...user,
-        permissions: permissions.map((p) => p.name) || [],
+        permissions: permissions.map((p) => p.name),
       };
 
       done(null, userWithPermissions);
@@ -42,12 +44,17 @@ export default function setupPassport(passport) {
         });
         if (!user) return done(null, false, { message: '帳號不存在' });
 
+        if (!user.password)
+          return done(null, false, { message: '此帳號使用第三方登入' });
+
         const isMatch = await compareHash(password, user.password);
         if (!isMatch) return done(null, false, { message: '密碼錯誤' });
 
-        if (skip2FA) user._skip2FA = true;
+        // _skip2FA 不在 Prisma schema 上，用 unknown 轉型擴充
+        const userWithFlag = user as typeof user & { _skip2FA?: boolean };
+        if (skip2FA) userWithFlag._skip2FA = true;
 
-        return done(null, user);
+        return done(null, userWithFlag);
       } catch (err) {
         return done(err);
       }
@@ -57,24 +64,23 @@ export default function setupPassport(passport) {
   passport.use(
     new GoogleStrategy(
       {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        clientID: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
         callbackURL: 'http://localhost:3000/api/auth/google/callback',
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
           const googleId = profile.id;
-          const email = profile.emails[0].value;
+          const email = profile.emails?.[0]?.value;
 
-          // 先用 googleId 找 OAuthAccount
+          if (!email) return done(new Error('Google 帳號沒有 email'));
+
           let user = await OAuthAccountModel.findByGoogleId(googleId);
           if (user) return done(null, user);
 
-          // 如果沒找到，看看他的 Email 是不是以前用帳密註冊過
           user = await UserModel.findByEmail(email);
 
           if (user) {
-            // 曾經用帳密註冊過，幫他建立 OAuthAccount 綁定
             await OAuthAccountModel.createOauthAccount({
               userId: user.id,
               provider: 'google',
@@ -83,8 +89,9 @@ export default function setupPassport(passport) {
             return done(null, user);
           }
 
-          // 真的完全沒註冊過，直接幫他建立一個新帳號！
           const defaultRole = await RoleModel.findByName('viewer');
+          if (!defaultRole) return done(new Error('找不到預設角色'));
+
           const newUser = await UserModel.createUserWithOAuth(
             {
               email,
@@ -97,7 +104,7 @@ export default function setupPassport(passport) {
 
           return done(null, newUser);
         } catch (error) {
-          return done(error, null);
+          return done(error as Error);
         }
       },
     ),

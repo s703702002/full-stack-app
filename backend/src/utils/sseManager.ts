@@ -24,7 +24,10 @@ const subClient = redisClient.duplicate();
   });
 })();
 
-export const sendNotification = async (targetUserId, notificationData) => {
+export const sendNotification = async (
+  targetUserId: string,
+  notificationData: any,
+) => {
   const payload = JSON.stringify({
     targetUserId,
     notificationData,

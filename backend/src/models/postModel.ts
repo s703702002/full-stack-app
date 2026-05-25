@@ -1,17 +1,14 @@
 import prisma from '../config/db.js';
+import type { Prisma } from '../generated/client.js';
 
 const PostModel = {
-  // ==========================================
-  // 🔍 1. 查詢類 (Read)
-  // ==========================================
-
-  findById: async (id) => {
+  findById: async (id: string) => {
     return await prisma.post.findUnique({
       where: { id: id },
     });
   },
 
-  findAllByUserId: async (profileUserId) => {
+  findAllByUserId: async (profileUserId: string) => {
     return await prisma.post.findMany({
       where: { targetUserId: profileUserId },
       include: {
@@ -23,7 +20,7 @@ const PostModel = {
     });
   },
 
-  getPostLikers: async (postId) => {
+  getPostLikers: async (postId: string) => {
     return await prisma.postLike.findMany({
       where: { postId: postId },
       orderBy: { createdAt: 'desc' },
@@ -35,11 +32,11 @@ const PostModel = {
     });
   },
 
-  // ==========================================
-  // 🛠️ 2. 通用資料操作 (Generic CRUD)
-  // ==========================================
-
-  createPost: async (userId, content, targetUserId = userId) => {
+  createPost: async (
+    userId: string,
+    content: string,
+    targetUserId = userId,
+  ) => {
     return await prisma.post.create({
       data: {
         userId: userId,
@@ -49,14 +46,14 @@ const PostModel = {
     });
   },
 
-  updatePost: async (id, data) => {
+  updatePost: async (id: string, data: Prisma.PostUpdateInput) => {
     return await prisma.post.update({
       where: { id: id },
       data,
     });
   },
 
-  deleteById: async (id) => {
+  deleteById: async (id: string) => {
     return await prisma.post.delete({
       where: { id: id },
     });

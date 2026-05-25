@@ -1,14 +1,24 @@
 import prisma from '../config/db.js';
+import type { Prisma } from '../generated/client.js';
 
-const DEFAULT_INCLUDE = {
+// ── Include 選項型別 ───────────────────────────────────────────
+interface IncludeOptions {
+  role?: boolean;
+  twoFactorAuth?: boolean;
+  oauthAccounts?: boolean;
+}
+
+const DEFAULT_INCLUDE: Required<IncludeOptions> = {
   role: false,
   twoFactorAuth: false,
   oauthAccounts: false,
 };
 
-const buildInclude = (options = {}) => {
+const buildInclude = (
+  options: IncludeOptions = {},
+): Prisma.UserInclude | undefined => {
   const opts = { ...DEFAULT_INCLUDE, ...options };
-  const include = {};
+  const include: Prisma.UserInclude = {};
 
   if (opts.role) include.role = true;
   if (opts.twoFactorAuth) include.twoFactorAuth = true;
@@ -17,26 +27,43 @@ const buildInclude = (options = {}) => {
   return Object.keys(include).length > 0 ? include : undefined;
 };
 
-const UserModel = {
-  // ==========================================
-  // 查詢類 (Read)
-  // ==========================================
+// ── createUser 參數型別 ────────────────────────────────────────
+interface CreateUserInput {
+  username: string;
+  password: string;
+  name: string;
+  roleId: number;
+  email?: string;
+}
 
-  findByUsername: async (username, options = {}) => {
+interface CreateUserWithOAuthInput {
+  email: string;
+  name: string;
+  username: string;
+  roleId: number;
+}
+
+interface OAuthProviderInput {
+  provider: string;
+  providerId: string;
+}
+
+const UserModel = {
+  findByUsername: async (username: string, options: IncludeOptions = {}) => {
     return await prisma.user.findUnique({
       where: { username },
       include: buildInclude(options),
     });
   },
 
-  findById: async (id, options = {}) => {
+  findById: async (id: string, options: IncludeOptions = {}) => {
     return await prisma.user.findUnique({
       where: { id },
       include: buildInclude(options),
     });
   },
 
-  findByEmail: async (email, options = {}) => {
+  findByEmail: async (email: string, options: IncludeOptions = {}) => {
     return await prisma.user.findUnique({
       where: { email },
       include: buildInclude(options),
@@ -50,7 +77,7 @@ const UserModel = {
     });
   },
 
-  findByValidResetToken: async (token) => {
+  findByValidResetToken: async (token: string) => {
     const resetToken = await prisma.passwordResetToken.findFirst({
       where: {
         token,
@@ -61,36 +88,28 @@ const UserModel = {
     return resetToken?.user ?? null;
   },
 
-  // ==========================================
-  // 通用資料更新 (Generic Update)
-  // ==========================================
-
-  updateUser: async (userId, data) => {
+  updateUser: async (userId: string, data: Prisma.UserUpdateInput) => {
     return await prisma.user.update({
       where: { id: userId },
       data,
     });
   },
 
-  // ==========================================
-  // 核心商業邏輯 (Business Logic & Side-effects)
-  // ==========================================
-
-  createUser: async ({ username, password, name, roleId, email }) => {
+  createUser: async ({
+    username,
+    password,
+    name,
+    roleId,
+    email,
+  }: CreateUserInput) => {
     return await prisma.user.create({
-      data: {
-        username,
-        password,
-        name,
-        roleId,
-        email,
-      },
+      data: { username, password, name, roleId, email },
     });
   },
 
   createUserWithOAuth: async (
-    { email, name, username, roleId },
-    { provider, providerId },
+    { email, name, username, roleId }: CreateUserWithOAuthInput,
+    { provider, providerId }: OAuthProviderInput,
   ) => {
     return await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
@@ -103,13 +122,11 @@ const UserModel = {
     });
   },
 
-  resetPassword: async (userId, newHashedPassword) => {
+  resetPassword: async (userId: string, newHashedPassword: string) => {
     return await prisma.$transaction([
       prisma.user.update({
         where: { id: userId },
-        data: {
-          password: newHashedPassword,
-        },
+        data: { password: newHashedPassword },
       }),
       prisma.twoFactorAuth.deleteMany({
         where: { userId },
