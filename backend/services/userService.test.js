@@ -3,12 +3,10 @@ import { changeUserRole, updateProfile } from '../services/userService.js';
 import UserModel from '../models/userModel.js';
 import RoleModel from '../models/roleModel.js';
 import * as s3Utils from '../utils/s3Utils.js';
-import * as PermissionService from './permissionService.js';
 
 vi.mock('../models/userModel.js');
 vi.mock('../models/roleModel.js');
 vi.mock('../utils/s3Utils.js');
-vi.mock('./permissionService.js');
 
 describe('UserService', () => {
   beforeEach(() => {
@@ -91,19 +89,6 @@ describe('UserService', () => {
       expect(UserModel.updateUser).toHaveBeenCalledWith(targetUserId, {
         roleId: mockRoleId,
       });
-
-      // 驗證是否有呼叫「清空快取」的函式，且參數是正確的 targetUserId
-      expect(PermissionService.clearUserPermissionCache).toHaveBeenCalledWith(
-        targetUserId,
-      );
-
-      // 確保它是「在資料庫更新後」才呼叫 (選用，增加信心)
-      const updateUserOrder = vi.mocked(UserModel.updateUser).mock
-        .invocationCallOrder[0];
-      const clearCacheOrder = vi.mocked(
-        PermissionService.clearUserPermissionCache,
-      ).mock.invocationCallOrder[0];
-      expect(clearCacheOrder).toBeGreaterThan(updateUserOrder);
     });
   });
 

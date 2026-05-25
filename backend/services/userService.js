@@ -2,7 +2,6 @@ import RoleModel from '../models/roleModel.js';
 import UserModel from '../models/userModel.js';
 import AppError from '../utils/AppError.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
-import { clearUserPermissionCache } from './permissionService.js';
 
 export const changeUserRole = async (operatorId, targetUserId, newRoleName) => {
   if (newRoleName === 'superadmin') {
@@ -26,8 +25,6 @@ export const changeUserRole = async (operatorId, targetUserId, newRoleName) => {
   const updatedUser = await UserModel.updateUser(targetUserId, {
     roleId: newRole.id,
   });
-
-  await clearUserPermissionCache(targetUserId);
 
   return updatedUser;
 };

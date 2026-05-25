@@ -6,6 +6,7 @@ import UserModel from '../models/userModel.js';
 import * as sseManager from '../utils/sseManager.js';
 import AppError from '../utils/AppError.js';
 
+vi.mock('../config/redis.js');
 vi.mock('../models/postModel.js');
 vi.mock('../models/postLikeModel.js');
 vi.mock('../models/userModel.js');
@@ -53,7 +54,6 @@ describe('PostService - toggleLike', () => {
     expect(result).toBe(true);
     expect(PostLikeModel.createLike).toHaveBeenCalledWith(1, 1);
 
-    // 🚀 最精彩的地方：驗證有沒有正確呼叫通知系統！
     expect(sseManager.sendNotification).toHaveBeenCalledWith(
       2,
       expect.objectContaining({
