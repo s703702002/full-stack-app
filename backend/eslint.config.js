@@ -7,7 +7,14 @@ import tsParser from '@typescript-eslint/parser';
 
 export default [
   {
-    ignores: ['node_modules/**', 'dist/**', 'generated/**', 'prisma.config.ts'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'generated/**',
+      'prisma.config.ts',
+      'vitest.config.ts',
+      'vitest.setup.ts',
+    ],
   },
   js.configs.recommended,
   // JS 檔案（維持原本設定）
