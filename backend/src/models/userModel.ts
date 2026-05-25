@@ -8,23 +8,18 @@ interface IncludeOptions {
   oauthAccounts?: boolean;
 }
 
-const DEFAULT_INCLUDE: Required<IncludeOptions> = {
-  role: false,
-  twoFactorAuth: false,
-  oauthAccounts: false,
-};
-
-const buildInclude = (
-  options: IncludeOptions = {},
-): Prisma.UserInclude | undefined => {
-  const opts = { ...DEFAULT_INCLUDE, ...options };
-  const include: Prisma.UserInclude = {};
-
-  if (opts.role) include.role = true;
-  if (opts.twoFactorAuth) include.twoFactorAuth = true;
-  if (opts.oauthAccounts) include.oauthAccounts = true;
-
-  return Object.keys(include).length > 0 ? include : undefined;
+const buildInclude = <T extends IncludeOptions>(
+  options: T,
+): Prisma.UserInclude => {
+  const include: Prisma.UserInclude = {
+    role: false,
+    twoFactorAuth: false,
+    oauthAccounts: false,
+  };
+  if (options.role) include.role = true;
+  if (options.twoFactorAuth) include.twoFactorAuth = true;
+  if (options.oauthAccounts) include.oauthAccounts = true;
+  return include;
 };
 
 // ── createUser 參數型別 ────────────────────────────────────────
@@ -88,7 +83,7 @@ const UserModel = {
     return resetToken?.user ?? null;
   },
 
-  updateUser: async (userId: string, data: Prisma.UserUpdateInput) => {
+  updateUser: async (userId: string, data: Prisma.UserUncheckedUpdateInput) => {
     return await prisma.user.update({
       where: { id: userId },
       data,

@@ -8,12 +8,16 @@ import PermissionModel from '../models/permissionModel.js';
 import OAuthAccountModel from '../models/OAuthAccountModel.js';
 import { parseDevUsername } from '../utils/devBackdoor.js';
 import { env } from '../utils/validateEnv.js';
+import type { AuthUser } from '../types/auth.js';
 
 const { Strategy: LocalStrategy } = passportLocal;
 
+const toPassportUser = (user: object) =>
+  ({ ...user, permissions: [] }) as unknown as AuthUser;
+
 export default function setupPassport(passport: PassportStatic): void {
   passport.serializeUser((user, done) => {
-    done(null, user);
+    done(null, user.id);
   });
 
   passport.deserializeUser(async (id: string, done) => {
@@ -23,7 +27,7 @@ export default function setupPassport(passport: PassportStatic): void {
 
       const permissions = await PermissionModel.getByRoleId(user.roleId);
 
-      const userWithPermissions = {
+      const userWithPermissions: AuthUser = {
         ...user,
         permissions: permissions.map((p) => p.name),
       };
@@ -54,7 +58,7 @@ export default function setupPassport(passport: PassportStatic): void {
         const userWithFlag = user as typeof user & { _skip2FA?: boolean };
         if (skip2FA) userWithFlag._skip2FA = true;
 
-        return done(null, userWithFlag);
+        return done(null, toPassportUser(userWithFlag));
       } catch (err) {
         return done(err);
       }
@@ -76,7 +80,7 @@ export default function setupPassport(passport: PassportStatic): void {
           if (!email) return done(new Error('Google 帳號沒有 email'));
 
           let user = await OAuthAccountModel.findByGoogleId(googleId);
-          if (user) return done(null, user);
+          if (user) return done(null, toPassportUser(user));
 
           user = await UserModel.findByEmail(email);
 
@@ -86,7 +90,7 @@ export default function setupPassport(passport: PassportStatic): void {
               provider: 'google',
               providerId: googleId,
             });
-            return done(null, user);
+            return done(null, toPassportUser(user));
           }
 
           const defaultRole = await RoleModel.findByName('viewer');
@@ -102,7 +106,7 @@ export default function setupPassport(passport: PassportStatic): void {
             { provider: 'google', providerId: googleId },
           );
 
-          return done(null, newUser);
+          return done(null, toPassportUser(newUser));
         } catch (error) {
           return done(error as Error);
         }

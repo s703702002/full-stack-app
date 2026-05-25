@@ -5,8 +5,13 @@ import FriendshipModel from '../models/friendshipModel.js';
 import { PostPolicy } from '../policies/PostPolicy.js';
 import AppError from '../utils/AppError.js';
 import { sendNotification } from '../utils/sseManager.js';
+import type { AuthUser } from '../types/auth.js';
 
-export const createPost = async (userId, content, targetUserId) => {
+export const createPost = async (
+  userId: string,
+  content: string,
+  targetUserId: string,
+): Promise<void> => {
   if (userId !== targetUserId) {
     const friendship = await FriendshipModel.findAcceptedByPair(
       userId,
@@ -17,10 +22,14 @@ export const createPost = async (userId, content, targetUserId) => {
     }
   }
 
-  return await PostModel.createPost(userId, content, targetUserId);
+  await PostModel.createPost(userId, content, targetUserId);
 };
 
-export const updatePost = async (user, postId, content) => {
+export const updatePost = async (
+  user: AuthUser,
+  postId: string,
+  content: string,
+) => {
   const post = await PostModel.findById(postId);
   if (!post) throw new AppError('留言不存在', 404);
 
@@ -31,7 +40,7 @@ export const updatePost = async (user, postId, content) => {
   return await PostModel.updatePost(postId, { content });
 };
 
-export const deletePost = async (user, postId) => {
+export const deletePost = async (user: AuthUser, postId: string) => {
   const post = await PostModel.findById(postId);
   if (!post) throw new AppError('留言不存在', 404);
 
@@ -42,7 +51,10 @@ export const deletePost = async (user, postId) => {
   return await PostModel.deleteById(postId);
 };
 
-export const toggleLike = async (operatorId, postId) => {
+export const toggleLike = async (
+  operatorId: string,
+  postId: string,
+): Promise<boolean> => {
   const post = await PostModel.findById(postId);
   if (!post) throw new AppError('留言不存在', 404);
 
@@ -53,16 +65,14 @@ export const toggleLike = async (operatorId, postId) => {
   } else {
     await PostLikeModel.createLike(operatorId, postId);
 
-    // 按讚且不是按自己的讚，發送通知
     if (post.userId !== operatorId) {
       const operator = await UserModel.findById(operatorId);
-      // 加上防呆，如果找不到 name 就用 username，再沒有就顯示 '有人'
-      const displayName = operator?.name || operator?.username || '有人';
+      const displayName = operator?.name ?? operator?.username ?? '有人';
 
       sendNotification(post.userId, {
         type: 'NEW_LIKE',
         message: `${displayName} 剛剛對你的留言按了讚！`,
-        postId: postId,
+        postId,
         timestamp: new Date(),
       });
     }

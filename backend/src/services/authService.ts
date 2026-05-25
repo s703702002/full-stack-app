@@ -13,7 +13,11 @@ import RoleModel from '../models/roleModel.js';
 import PasswordResetTokenModel from '../models/PasswordResetTokenModel.js';
 import TwoFactorAuthModel from '../models/TwoFactorAuthMode.js';
 
-export const registerUser = async (username, password, name) => {
+export const registerUser = async (
+  username: string,
+  password: string,
+  name: string,
+) => {
   const userExists = await UserModel.findByUsername(username);
   if (userExists) throw new AppError('這個帳號已經被註冊過了', 409);
 
@@ -29,29 +33,31 @@ export const registerUser = async (username, password, name) => {
   });
 };
 
-export const verify2FALogin = async (tempUserId, totpCode) => {
+export const verify2FALogin = async (tempUserId: string, totpCode: string) => {
   const user = await UserModel.findById(tempUserId, {
     role: true,
     twoFactorAuth: true,
   });
   if (!user) throw new AppError('找不到該使用者', 401);
 
-  await otpVerify({ token: totpCode, secret: user.twoFactorAuth?.secret });
+  await otpVerify({
+    token: totpCode,
+    secret: user.twoFactorAuth?.secret ?? '',
+  });
   return user;
 };
 
-export const logoutUser = async (userId) => {
+export const logoutUser = async (userId: string): Promise<void> => {
   const redisKey = getRefreshTokenKey(userId);
   await redisClient.del(redisKey);
 };
 
-export const processForgotPassword = async (username) => {
+export const processForgotPassword = async (
+  username: string,
+): Promise<void> => {
   const user = await UserModel.findByUsername(username);
-
-  // 為了防範帳號枚舉攻擊，就算找不到帳號也不 throw error，直接 return 讓流程結束
   if (!user) return;
 
-  // 先刪掉這個 user 所有舊的 reset token
   await PasswordResetTokenModel.deleteByUserId(user.id);
 
   const resetToken = generateRandomToken();
@@ -69,7 +75,10 @@ export const processForgotPassword = async (username) => {
   );
 };
 
-export const processResetPassword = async (token, newPassword) => {
+export const processResetPassword = async (
+  token: string,
+  newPassword: string,
+): Promise<void> => {
   const user = await UserModel.findByValidResetToken(token);
   if (!user) throw new AppError('連結無效或已過期', 400);
 
@@ -80,20 +89,22 @@ export const processResetPassword = async (token, newPassword) => {
   await redisClient.del(redisKey);
 };
 
-export const setupUser2FA = async (userId, username) => {
+export const setupUser2FA = async (userId: string, username: string) => {
   const { secret, qrCodeImage } = await generate2FA(username);
   await TwoFactorAuthModel.upsertTwoFactorAuth(userId, secret);
   return { secret, qrCodeImage };
 };
 
-export const verifyAndEnable2FA = async (userId, totpCode) => {
+export const verifyAndEnable2FA = async (
+  userId: string,
+  totpCode: string,
+): Promise<void> => {
   const twoFactorAuth = await TwoFactorAuthModel.findByUserId(userId);
   if (!twoFactorAuth) {
     throw new AppError('尚未產生 2FA 金鑰，請先執行 setup', 400);
   }
 
   const { secret, id } = twoFactorAuth;
-
-  await otpVerify({ token: totpCode, secret: secret });
+  await otpVerify({ token: totpCode, secret });
   await TwoFactorAuthModel.enableById(id);
 };

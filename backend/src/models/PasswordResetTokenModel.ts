@@ -2,7 +2,9 @@ import prisma from '../config/db.js';
 import type { Prisma } from '../generated/client.js';
 
 const PasswordResetTokenModel = {
-  createResetToken: async (data: Prisma.PasswordResetTokenCreateInput) => {
+  createResetToken: async (
+    data: Prisma.PasswordResetTokenUncheckedCreateInput,
+  ) => {
     return await prisma.passwordResetToken.create({
       data,
     });

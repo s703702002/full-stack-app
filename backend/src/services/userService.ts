@@ -2,13 +2,18 @@ import RoleModel from '../models/roleModel.js';
 import UserModel from '../models/userModel.js';
 import AppError from '../utils/AppError.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
+import type { Prisma } from '../generated/client.js';
 
-export const changeUserRole = async (operatorId, targetUserId, newRoleName) => {
+export const changeUserRole = async (
+  operatorId: string,
+  targetUserId: string,
+  newRoleName: string,
+): Promise<void> => {
   if (newRoleName === 'superadmin') {
     throw new AppError('權限不足：無法將使用者指派為系統最高管理員！', 403);
   }
 
-  if (Number.parseInt(targetUserId) === operatorId) {
+  if (targetUserId === operatorId) {
     throw new AppError('你不能更改自己的角色！', 400);
   }
 
@@ -22,21 +27,20 @@ export const changeUserRole = async (operatorId, targetUserId, newRoleName) => {
   const newRole = await RoleModel.findByName(newRoleName);
   if (!newRole) throw new AppError('找不到該角色', 400);
 
-  const updatedUser = await UserModel.updateUser(targetUserId, {
-    roleId: newRole.id,
-  });
-
-  return updatedUser;
+  await UserModel.updateUser(targetUserId, { roleId: newRole.id });
 };
 
-export const updateProfile = async (userId, newProfile, newAvatarKey) => {
-  const updateData = { ...newProfile };
+export const updateProfile = async (
+  userId: string,
+  newProfile: Prisma.UserUpdateInput,
+  newAvatarKey?: string,
+) => {
+  const updateData: Prisma.UserUpdateInput = { ...newProfile };
 
   if (newAvatarKey) {
     updateData.avatarUrl = newAvatarKey;
 
     const currentUser = await UserModel.findById(userId);
-
     if (currentUser?.avatarUrl) {
       await deleteFromS3(currentUser.avatarUrl);
     }

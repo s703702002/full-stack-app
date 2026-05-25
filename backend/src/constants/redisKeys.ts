@@ -7,11 +7,11 @@ export const PREFIX = {
   USER_PERMISSION: 'user_perms:',
 };
 
-export const getAccountRateLimitKey = (username) =>
+export const getAccountRateLimitKey = (username: string) =>
   `${PREFIX.RATE_LIMIT_ACCOUNT}${username}`;
 
-export const getRefreshTokenKey = (userId) =>
+export const getRefreshTokenKey = (userId: string) =>
   `${PREFIX.REFRESH_TOKEN}${userId}`;
 
-export const getUserPermissionKey = (userId) =>
+export const getUserPermissionKey = (userId: string) =>
   `${PREFIX.USER_PERMISSION}${userId}`;
