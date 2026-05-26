@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  PORT: z.string().optional().default('3000'),
+
   REDIS_HOST: z.string(),
   REDIS_PORT: z.string(),
   REDIS_SHARED_DB: z.string(),
