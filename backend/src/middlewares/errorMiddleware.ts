@@ -1,24 +1,31 @@
+import type { Request, Response, NextFunction } from 'express';
 import AppError from '../utils/AppError.js';
 import logger from '../utils/logger.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
 
-export const globalErrorHandler = (err, req, res, _next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || '伺服器發生異常';
-  // 如果是 AppError，或者是主動拋出的 4xx 錯誤，都算 Operational (預期內的業務阻擋)
-  const isOperational = err.isOperational || err instanceof AppError;
+interface HttpError extends Error {
+  statusCode?: number;
+  isOperational?: boolean;
+  errorCode?: string | null;
+}
 
-  // 暫存錯誤訊息給 Pino Logger
+export const globalErrorHandler = (
+  err: HttpError,
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const statusCode = err.statusCode ?? 500;
+  const message = err.message || '伺服器發生異常';
+  const isOperational = err.isOperational ?? err instanceof AppError;
+
   res.locals.errorMessage = message;
 
   if (req.file?.key) {
-    deleteFromS3(req.file.key)
-      .then(() =>
-        logger.info(`[錯誤攔截] 孤兒檔案已從 S3 移除: ${req.file.key}`),
-      )
-      .catch((e) =>
-        logger.error(e, `[錯誤攔截] 移除 S3 檔案失敗: ${req.file.key}`),
-      );
+    const key = req.file.key;
+    deleteFromS3(key)
+      .then(() => logger.info(`[錯誤攔截] 孤兒檔案已從 S3 移除: ${key}`))
+      .catch((e) => logger.error(e, `[錯誤攔截] 移除 S3 檔案失敗: ${key}`));
   }
 
   if (isOperational && statusCode !== 500) {
@@ -30,8 +37,8 @@ export const globalErrorHandler = (err, req, res, _next) => {
   if (isOperational && statusCode !== 500) {
     return res.status(statusCode).json({
       success: false,
-      message: message,
-      errorCode: err.errorCode || null,
+      message,
+      errorCode: err.errorCode ?? null,
     });
   }
 

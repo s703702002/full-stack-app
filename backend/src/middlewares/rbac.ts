@@ -1,12 +1,13 @@
+import type { Request, Response, NextFunction } from 'express';
 import AppError from '../utils/AppError.js';
 
-export const checkPermission = (allowedPermissions) => {
+export const checkPermission = (allowedPermissions: string | string[]) => {
   // 為了方便，允許傳入單一字串 'user:manage' 或陣列 ['post:delete:own', 'post:delete:any']
   const permissionsToCheck = Array.isArray(allowedPermissions)
     ? allowedPermissions
     : [allowedPermissions];
 
-  return (req, res, next) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const userPermissions = req.user?.permissions || [];
 
     const hasPermission = permissionsToCheck.some((p) =>

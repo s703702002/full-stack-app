@@ -3,7 +3,7 @@ import { RedisStore } from 'rate-limit-redis';
 import redisClient from '../config/redis.js';
 import { PREFIX } from '../constants/redisKeys.js';
 
-const createRedisStore = (prefixName) => {
+const createRedisStore = (prefixName: string) => {
   return new RedisStore({
     sendCommand: (...args) => redisClient.sendCommand(args),
     prefix: prefixName,

@@ -6,7 +6,6 @@ import UserModel from '../models/userModel.js';
 import * as sseManager from '../utils/sseManager.js';
 import AppError from '../utils/AppError.js';
 
-vi.mock('../config/redis.js');
 vi.mock('../models/postModel.js');
 vi.mock('../models/postLikeModel.js');
 vi.mock('../models/userModel.js');

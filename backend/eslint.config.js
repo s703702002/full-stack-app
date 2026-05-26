@@ -41,7 +41,7 @@ export default [
       parserOptions: {
         project: './tsconfig.json',
       },
-      globals: { ...globals.node },
+      globals: { ...globals.node, Express: 'readonly' },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
