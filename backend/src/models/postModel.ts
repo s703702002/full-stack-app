@@ -1,6 +1,21 @@
 import prisma from '../config/db.js';
 import type { Prisma } from '../generated/client.js';
 
+const likerSelect = {
+  id: true,
+  username: true,
+  name: true,
+  avatarUrl: true,
+} as const;
+
+type LikeSelectArgs = {
+  include: {
+    user: { select: typeof likerSelect };
+  };
+};
+
+export type LikeWithUser = Prisma.PostLikeGetPayload<LikeSelectArgs>;
+
 const PostModel = {
   findById: async (id: string) => {
     return await prisma.post.findUnique({
@@ -26,7 +41,7 @@ const PostModel = {
       orderBy: { createdAt: 'desc' },
       include: {
         user: {
-          select: { id: true, username: true, name: true, avatarUrl: true },
+          select: likerSelect,
         },
       },
     });

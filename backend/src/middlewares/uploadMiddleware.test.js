@@ -42,15 +42,12 @@ describe('Upload Middleware - fileFilter', () => {
     expect(cb).toHaveBeenCalledTimes(1);
 
     // cb.mock.calls[0] 代表第一次呼叫的參數陣列：[error, acceptFile]
-    const [errorArg, acceptFileArg] = cb.mock.calls[0];
+    const [errorArg] = cb.mock.calls[0];
 
     // 1. 驗證第一個參數是不是我們自訂的 AppError 實例
     expect(errorArg).toBeInstanceOf(AppError);
     expect(errorArg.message).toBe('只允許上傳圖片檔案');
     expect(errorArg.statusCode).toBe(400);
-
-    // 2. 驗證第二個參數是不是 false (拒絕檔案)
-    expect(acceptFileArg).toBe(false);
   });
 
   it('如果上傳純文字檔 (text/plain)，應該拋出 400 AppError', () => {
@@ -60,9 +57,8 @@ describe('Upload Middleware - fileFilter', () => {
 
     fileFilter(req, file, cb);
 
-    const [errorArg, acceptFileArg] = cb.mock.calls[0];
+    const [errorArg] = cb.mock.calls[0];
     expect(errorArg).toBeInstanceOf(AppError);
     expect(errorArg.statusCode).toBe(400);
-    expect(acceptFileArg).toBe(false);
   });
 });

@@ -1,5 +1,13 @@
-import type { User, Post, PostLike, Friendship } from '../generated/client.js';
+import type { User, Post, PostLike } from '../generated/client.js';
 import { env } from './validateEnv.js';
+import type {
+  FriendshipWithUsers,
+  ReceivedFriendship,
+  SentFriendship,
+} from '../models/friendshipModel.js';
+import type { LikeWithUser } from '../models/postModel.js';
+
+type FriendRequestInput = ReceivedFriendship | SentFriendship;
 
 export const withBaseUrl = (path: string | null | undefined): string | null =>
   path ? `${env.IMAGE_BASE_URL}/${path}` : null;
@@ -42,10 +50,6 @@ export const formatPost = (post: PostWithRelations) => {
   };
 };
 
-type LikeWithUser = PostLike & {
-  user: User;
-};
-
 export const formatLikers = (like: LikeWithUser) => {
   return {
     ...like.user,
@@ -53,17 +57,14 @@ export const formatLikers = (like: LikeWithUser) => {
   };
 };
 
-type FriendshipWithUsers = Friendship & {
-  requester: User;
-  receiver: User;
-};
-
 export const formatFriendRequest = (
-  friendship: FriendshipWithUsers,
-  perspective: 'received' | 'sent' = 'received',
+  friendship: FriendRequestInput,
+  perspective: 'received' | 'sent',
 ) => {
   const user =
-    perspective === 'received' ? friendship.requester : friendship.receiver;
+    perspective === 'received'
+      ? (friendship as ReceivedFriendship).requester
+      : (friendship as SentFriendship).receiver;
 
   return {
     id: friendship.id,

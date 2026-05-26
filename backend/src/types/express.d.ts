@@ -1,4 +1,5 @@
 import 'multer';
+import 'express-session';
 import type { AuthUser } from './auth.js';
 
 declare global {
@@ -13,5 +14,16 @@ declare global {
         bucket?: string;
       }
     }
+  }
+}
+
+declare module 'express-session' {
+  interface SessionData {
+    tempUserId?: string;
+    captcha?: {
+      text: string;
+      image: string;
+      createdAt: number;
+    };
   }
 }

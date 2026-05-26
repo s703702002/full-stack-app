@@ -12,8 +12,8 @@ import type { AuthUser } from '../types/auth.js';
 
 const { Strategy: LocalStrategy } = passportLocal;
 
-const toPassportUser = (user: object) =>
-  ({ ...user, permissions: [] }) as unknown as AuthUser;
+export const toPassportUser = (user: object) =>
+  ({ ...user, permissions: [] }) as unknown as Express.User;
 
 export default function setupPassport(passport: PassportStatic): void {
   passport.serializeUser((user, done) => {

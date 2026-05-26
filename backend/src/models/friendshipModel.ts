@@ -1,5 +1,5 @@
 import prisma from '../config/db.js';
-import type { FriendshipStatus } from '../generated/client.js';
+import type { Prisma, FriendshipStatus } from '../generated/client.js';
 
 const userSelect = {
   id: true,
@@ -8,6 +8,30 @@ const userSelect = {
   avatarUrl: true,
   bio: true,
 } as const;
+
+type FriendSelectArgs = {
+  include: {
+    requester: { select: typeof userSelect };
+    receiver: { select: typeof userSelect };
+  };
+};
+
+type ReceivedSelectArgs = {
+  include: {
+    requester: { select: typeof userSelect };
+  };
+};
+
+type SentSelectArgs = {
+  include: {
+    receiver: { select: typeof userSelect };
+  };
+};
+
+export type FriendshipWithUsers = Prisma.FriendshipGetPayload<FriendSelectArgs>;
+export type ReceivedFriendship =
+  Prisma.FriendshipGetPayload<ReceivedSelectArgs>;
+export type SentFriendship = Prisma.FriendshipGetPayload<SentSelectArgs>;
 
 const FriendshipModel = {
   findReceivedRequests: async (userId: string) => {
