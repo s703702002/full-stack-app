@@ -1,5 +1,5 @@
 import express from 'express';
-import { checkAuthenticated } from '../middlewares/auth';
+import { checkAuthenticated } from '../middlewares/auth.js';
 import {
   getFriends,
   getFriendshipStatus,
@@ -8,9 +8,9 @@ import {
   removeFriend,
   respondToFriendRequest,
   sendFriendRequest,
-} from '../controllers/friendshipController';
-import validate from '../middlewares/validateMiddleware';
-import { respondFriendRequestSchema } from '../validators/friendshipValidator';
+} from '../controllers/friendshipController.js';
+import validate from '../middlewares/validateMiddleware.js';
+import { respondFriendRequestSchema } from '../validators/friendshipValidator.js';
 
 const router = express.Router();
 

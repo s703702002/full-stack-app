@@ -2,6 +2,7 @@ import express from 'express';
 import { checkAuthenticated } from '../middlewares/auth.js';
 import { connectedClients } from '../utils/sseManager.js';
 import logger from '../utils/logger.js';
+import { getAuthUser } from '../utils/requestHelper.js';
 
 const router = express.Router();
 
@@ -11,7 +12,8 @@ router.get('/stream', checkAuthenticated, (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders(); // 立刻把 Header 送出，建立長連線
 
-  const userId = req.user.id;
+  const user = getAuthUser(req);
+  const userId = user.id;
 
   connectedClients.set(userId, res);
   logger.info(`📡 User ${userId} 開始收聽 SSE 廣播`);
