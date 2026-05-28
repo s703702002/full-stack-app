@@ -21,6 +21,8 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string(),
 
   DATABASE_URL: z.string(),
+
+  LOG_LEVEL: z.string().optional().default('info'),
 });
 
 export const env = envSchema.parse(process.env);

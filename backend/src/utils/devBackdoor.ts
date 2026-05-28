@@ -1,5 +1,7 @@
+import { env } from '../utils/validateEnv.js';
+
 export const parseDevUsername = (username: string) => {
-  if (process.env.NODE_ENV !== 'development') {
+  if (env.NODE_ENV !== 'development') {
     return { queryUsername: username, skip2FA: false };
   }
   if (username.startsWith('!!')) {

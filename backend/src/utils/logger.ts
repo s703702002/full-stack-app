@@ -1,10 +1,10 @@
 import pino from 'pino';
+import { env } from '../utils/validateEnv.js';
 
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = env.NODE_ENV !== 'production';
 
 const logger = pino({
-  // 設定最低要印出的層級 (trace, debug, info, warn, error, fatal)
-  level: process.env.LOG_LEVEL || 'info',
+  level: env.LOG_LEVEL,
 
   redact: {
     paths: [
@@ -16,13 +16,12 @@ const logger = pino({
     ],
   },
 
-  // 開發環境套用 pino-pretty 讓終端機變漂亮
   ...(isDev && {
     transport: {
       target: 'pino-pretty',
       options: {
-        colorize: true, // 彩色輸出
-        translateTime: 'SYS:yyyy-mm-dd HH:MM:ss', // 人類可讀的時間格式
+        colorize: true,
+        translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
         ignore: 'pid,hostname', // 隱藏比較不需要的機器資訊
       },
     },

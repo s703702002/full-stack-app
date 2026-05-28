@@ -1,8 +1,9 @@
 import type { Request, Response, CookieOptions } from 'express';
+import { env } from '../utils/validateEnv.js';
 
 const baseCookieOptions: CookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  secure: env.NODE_ENV === 'production',
   sameSite: 'strict',
 };
 
