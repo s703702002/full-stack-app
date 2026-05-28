@@ -1,4 +1,5 @@
 import redisClient from '../config/redis.js';
+import logger from './logger.js';
 
 export const connectedClients = new Map();
 
@@ -32,6 +33,8 @@ export const sendNotification = async (
     targetUserId,
     notificationData,
   });
+
+  logger.info(notificationData, `📣 發送通知給 User ${targetUserId}`);
 
   await pubClient.publish('system_notifications', payload);
 };

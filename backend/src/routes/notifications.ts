@@ -1,6 +1,6 @@
 import express from 'express';
 import { checkAuthenticated } from '../middlewares/auth.js';
-import { connectedClients } from '../utils/sseManager.js';
+import { connectedClients, sendNotification } from '../utils/sseManager.js';
 import logger from '../utils/logger.js';
 import { getAuthUser } from '../utils/requestHelper.js';
 
@@ -16,12 +16,8 @@ router.get('/stream', checkAuthenticated, (req, res) => {
   const userId = user.id;
 
   connectedClients.set(userId, res);
-  logger.info(`📡 User ${userId} 開始收聽 SSE 廣播`);
 
-  // 發送一個初始連線成功的訊號 (SSE 的格式必須是 data: ... \n\n)
-  res.write(
-    `data: ${JSON.stringify({ type: 'CONNECTED', message: '通知頻道連線成功' })}\n\n`,
-  );
+  sendNotification(userId, { type: 'CONNECTED', message: '通知頻道連線成功' });
 
   req.on('close', () => {
     logger.info(`🔌 User ${userId} 斷開了 SSE 連線`);

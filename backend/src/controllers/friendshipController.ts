@@ -49,6 +49,7 @@ export const sendFriendRequest = async (
   const friendship = await FriendshipService.sendFriendRequest(
     user.id,
     req.params.receiverId,
+    user.name,
   );
   sendSuccess(res, 201, { friendship }, '好友申請已送出');
 };

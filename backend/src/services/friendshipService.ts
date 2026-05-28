@@ -2,6 +2,7 @@ import FriendshipModel from '../models/friendshipModel.js';
 import UserModel from '../models/userModel.js';
 import AppError from '../utils/AppError.js';
 import type { FriendshipStatus } from '../generated/client.js';
+import { sendNotification } from '../utils/sseManager.js';
 
 export const getReceivedRequests = async (userId: string) => {
   return await FriendshipModel.findReceivedRequests(userId);
@@ -40,6 +41,7 @@ export const getFriendshipStatus = async (
 export const sendFriendRequest = async (
   requesterId: string,
   receiverId: string,
+  requesterName: string,
 ) => {
   if (requesterId === receiverId) {
     throw new AppError('不能加自己為好友', 400);
@@ -57,17 +59,23 @@ export const sendFriendRequest = async (
       throw new AppError('你們已經是好友了', 400);
     if (existing.status === 'PENDING')
       throw new AppError('好友申請已送出，等待對方回應', 400);
+  }
 
-    if (existing.status === 'REJECTED') {
-      return await FriendshipModel.resetFriendRequest(
+  const result = existing
+    ? await FriendshipModel.resetFriendRequest(
         existing.id,
         requesterId,
         receiverId,
-      );
-    }
-  }
+      )
+    : await FriendshipModel.createFriendRequest(requesterId, receiverId);
 
-  return await FriendshipModel.createFriendRequest(requesterId, receiverId);
+  sendNotification(receiverId, {
+    type: 'RECEIVED_FRIEND_REQUEST',
+    message: `${requesterName} 剛剛對你送出交友邀請！`,
+    timestamp: new Date(),
+  });
+
+  return result;
 };
 
 export const respondToFriendRequest = async (

@@ -108,7 +108,7 @@ export default function setupPassport(passport: PassportStatic): void {
 
           return done(null, toPassportUser(newUser));
         } catch (error) {
-          return done(error as Error);
+          return done(error);
         }
       },
     ),

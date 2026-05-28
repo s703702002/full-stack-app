@@ -7,6 +7,11 @@ import AppError from '../utils/AppError.js';
 import { clearAllAuthCookies } from '../utils/cookieHelper.js';
 import { toPassportUser } from '../config/passport.js';
 import { getAuthUser } from '../utils/requestHelper.js';
+import type {
+  PassportLocalCallback,
+  PassportGoogleCallback,
+} from '../types/passport.js';
+import logger from '../utils/logger.js';
 
 export const register = async (req: Request, res: Response) => {
   const { username, password, name } = req.body as {
@@ -19,41 +24,26 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = (req: Request, res: Response, next: NextFunction) => {
-  passport.authenticate(
-    'local',
-    async (
-      err: Error | null,
-      user:
-        | (Express.User & {
-            twoFactorAuth?: { isEnabled: boolean };
-            _skip2FA?: boolean;
-          })
-        | false,
-      info?: { message?: string },
-    ) => {
-      if (err) return next(err);
-      if (!user) return next(new AppError(info?.message || '登入失敗', 401));
+  const localAuthCallback: PassportLocalCallback = async (err, user, info) => {
+    if (err) return next(err);
+    if (!user) return next(new AppError(info?.message || '登入失敗', 401));
 
-      if (user.twoFactorAuth?.isEnabled && !user._skip2FA) {
-        req.session.tempUserId = user.id;
+    if (user.twoFactorAuth?.isEnabled && !user._skip2FA) {
+      req.session.tempUserId = user.id;
 
-        return req.session.save((err) => {
-          if (err) return next(err);
-          return sendSuccess(
-            res,
-            200,
-            { require2FA: true },
-            '請輸入 2FA 驗證碼',
-          );
-        });
-      }
-
-      req.login(user, (err) => {
+      return req.session.save((err) => {
         if (err) return next(err);
-        return sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
+        return sendSuccess(res, 200, { require2FA: true }, '請輸入 2FA 驗證碼');
       });
-    },
-  )(req, res, next);
+    }
+
+    req.login(user, (err) => {
+      if (err) return next(err);
+      return sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
+    });
+  };
+
+  passport.authenticate('local', localAuthCallback)(req, res, next);
 };
 
 export const login2FA = async (
@@ -130,20 +120,19 @@ export const googleCallback = (
   res: Response,
   next: NextFunction,
 ) => {
-  passport.authenticate(
-    'google',
-    async (err: Error | null, user: Express.User | false) => {
-      if (err || !user) {
-        console.error('🚨 [Google OAuth 系統錯誤]:', err);
-        return res.redirect(
-          'http://localhost:5173/login?error=google_login_failed',
-        );
-      }
+  const googleAuthCallback: PassportGoogleCallback = async (err, user) => {
+    if (err || !user) {
+      logger.error(err, '🚨 [Google OAuth 系統錯誤]:');
+      return res.redirect(
+        'http://localhost:5173/login?error=google_login_failed',
+      );
+    }
 
-      req.login(user, (err) => {
-        if (err) return next(err);
-        return res.redirect('http://localhost:5173/profile');
-      });
-    },
-  )(req, res, next);
+    req.login(user, (err) => {
+      if (err) return next(err);
+      return res.redirect('http://localhost:5173/profile');
+    });
+  };
+
+  passport.authenticate('google', googleAuthCallback)(req, res, next);
 };
