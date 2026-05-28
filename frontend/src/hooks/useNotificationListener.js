@@ -20,7 +20,7 @@ export default function useNotificationListener() {
       const data = JSON.parse(event.data);
       console.log('🔔 收到新通知：', data);
 
-      if (data.type === 'NEW_LIKE') {
+      if (data.type === 'NEW_LIKE' || data.type === 'RECEIVED_FRIEND_REQUEST') {
         notify(data.message);
       }
     };

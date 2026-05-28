@@ -5,7 +5,7 @@ export const useToast = () => {
   const notify = useCallback(
     (message) =>
       toast(message, {
-        icon: '❤️',
+        icon: '🔔',
         style: {
           borderRadius: '10px',
           background: '#333',
