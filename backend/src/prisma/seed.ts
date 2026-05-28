@@ -1,5 +1,6 @@
 import { hashString } from '../utils/hashHelper.js';
 import prisma from '../config/db.js';
+import type { Permission } from '../generated/client.js';
 
 async function main() {
   console.log('🌱 開始種植系統核心權限與角色...');
@@ -14,7 +15,7 @@ async function main() {
     { name: 'user:manage', description: '管理使用者權限' },
   ];
 
-  const permissions = {};
+  const permissions: Record<string, Permission> = {};
   for (const p of permissionsData) {
     const createdP = await prisma.permission.upsert({
       where: { name: p.name },
@@ -99,14 +100,17 @@ async function main() {
       where: { name: 'superadmin' },
     });
 
-    await prisma.user.create({
-      data: {
-        username: 'root',
-        password: hashedRootPassword,
-        name: '系統創世神',
-        roleId: superAdminRole.id,
-      },
-    });
+    if (superAdminRole) {
+      await prisma.user.create({
+        data: {
+          username: 'root',
+          password: hashedRootPassword,
+          name: '系統創世神',
+          roleId: superAdminRole.id,
+        },
+      });
+    }
+
     console.log('✅ 預設 root 帳號建立完成');
   }
 

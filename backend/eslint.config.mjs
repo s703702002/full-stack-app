@@ -10,29 +10,13 @@ export default [
     ignores: [
       'node_modules/**',
       'dist/**',
-      'generated/**',
+      '**/generated/**',
       'prisma.config.ts',
       'vitest.config.ts',
       'vitest.setup.ts',
     ],
   },
   js.configs.recommended,
-  // JS 檔案（維持原本設定）
-  {
-    files: ['**/*.js'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: { ...globals.node },
-    },
-    plugins: {
-      prettier: prettierPlugin,
-    },
-    rules: {
-      'prettier/prettier': 'error',
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    },
-  },
   // TS 檔案
   {
     files: ['**/*.ts'],
