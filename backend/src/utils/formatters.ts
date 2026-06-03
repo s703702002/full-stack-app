@@ -1,16 +1,15 @@
 import type { User } from '../generated/client.js';
 import { env } from './validateEnv.js';
 import type {
-  FriendshipWithUsers,
-  ReceivedFriendship,
-  SentFriendship,
+  FindReceivedRequestsResult,
+  FindSentRequestsResult,
+  FindFriendsResult,
+  UserInFriendship,
 } from '../models/friendshipModel.js';
 import type {
   FindAllByUserIdResult,
   GetPostLikersResult,
 } from '../models/postModel.js';
-
-type FriendRequestInput = ReceivedFriendship | SentFriendship;
 
 export const withBaseUrl = (path: string | null | undefined): string | null =>
   path ? `${env.IMAGE_BASE_URL}/${path}` : null;
@@ -58,14 +57,11 @@ export const formatLikers = (like: GetPostLikersResult[number]) => {
 };
 
 export const formatFriendRequest = (
-  friendship: FriendRequestInput,
-  perspective: 'received' | 'sent',
+  friendship:
+    | FindReceivedRequestsResult[number]
+    | FindSentRequestsResult[number],
+  user: UserInFriendship,
 ) => {
-  const user =
-    perspective === 'received'
-      ? (friendship as ReceivedFriendship).requester
-      : (friendship as SentFriendship).receiver;
-
   return {
     id: friendship.id,
     status: friendship.status,
@@ -81,7 +77,7 @@ export const formatFriendRequest = (
 };
 
 export const formatFriend = (
-  friendship: FriendshipWithUsers,
+  friendship: FindFriendsResult[number],
   currentUserId: string,
 ) => {
   const friend =

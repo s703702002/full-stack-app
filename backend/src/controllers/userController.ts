@@ -16,7 +16,7 @@ export const getMe = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await UserModel.findAllWithRole();
-  sendSuccess(res, 200, { users: users.map(sanitizeUser) });
+  sendSuccess(res, 200, { users: users.map((user) => sanitizeUser(user)) });
 };
 
 export const updateUserRole = async (

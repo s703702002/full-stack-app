@@ -27,7 +27,7 @@ const subClient = redisClient.duplicate();
 
 export const sendNotification = async (
   targetUserId: string,
-  notificationData: any,
+  notificationData: unknown,
 ) => {
   const payload = JSON.stringify({
     targetUserId,

@@ -17,7 +17,7 @@ export const getReceivedRequests = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
   const requests = await FriendshipService.getReceivedRequests(user.id);
   sendSuccess(res, 200, {
-    requests: requests.map((r) => formatFriendRequest(r, 'received')),
+    requests: requests.map((r) => formatFriendRequest(r, r.requester)),
   });
 };
 
@@ -25,7 +25,7 @@ export const getSentRequests = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
   const requests = await FriendshipService.getSentRequests(user.id);
   sendSuccess(res, 200, {
-    requests: requests.map((r) => formatFriendRequest(r, 'sent')),
+    requests: requests.map((r) => formatFriendRequest(r, r.receiver)),
   });
 };
 
