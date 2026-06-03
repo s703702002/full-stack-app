@@ -1,6 +1,21 @@
 import prisma from '../config/db.js';
 import type { Prisma } from '../generated/client.js';
 
+type CreateUserInput = Pick<
+  Prisma.UserUncheckedCreateInput,
+  'username' | 'password' | 'name' | 'email' | 'roleId'
+>;
+
+type CreateUserWithOAuthInput = Pick<
+  Prisma.UserUncheckedCreateInput,
+  'email' | 'name' | 'username' | 'roleId'
+>;
+
+type OAuthProviderInput = Pick<
+  Prisma.OAuthAccountCreateInput,
+  'provider' | 'providerId'
+>;
+
 // ── Include 選項型別 ───────────────────────────────────────────
 interface IncludeOptions {
   role?: boolean;
@@ -8,40 +23,13 @@ interface IncludeOptions {
   oauthAccounts?: boolean;
 }
 
-const buildInclude = <T extends IncludeOptions>(
-  options: T,
-): Prisma.UserInclude => {
-  const include: Prisma.UserInclude = {
-    role: false,
-    twoFactorAuth: false,
-    oauthAccounts: false,
+const buildInclude = (options: IncludeOptions): Prisma.UserInclude => {
+  return {
+    role: !!options.role,
+    twoFactorAuth: !!options.twoFactorAuth,
+    oauthAccounts: !!options.oauthAccounts,
   };
-  if (options.role) include.role = true;
-  if (options.twoFactorAuth) include.twoFactorAuth = true;
-  if (options.oauthAccounts) include.oauthAccounts = true;
-  return include;
 };
-
-// ── createUser 參數型別 ────────────────────────────────────────
-interface CreateUserInput {
-  username: string;
-  password: string;
-  name: string;
-  roleId: number;
-  email?: string;
-}
-
-interface CreateUserWithOAuthInput {
-  email: string;
-  name: string;
-  username: string;
-  roleId: number;
-}
-
-interface OAuthProviderInput {
-  provider: string;
-  providerId: string;
-}
 
 const UserModel = {
   findByUsername: async (username: string, options: IncludeOptions = {}) => {
