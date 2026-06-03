@@ -1,11 +1,14 @@
-import type { User, Post, PostLike } from '../generated/client.js';
+import type { User } from '../generated/client.js';
 import { env } from './validateEnv.js';
 import type {
   FriendshipWithUsers,
   ReceivedFriendship,
   SentFriendship,
 } from '../models/friendshipModel.js';
-import type { LikeWithUser } from '../models/postModel.js';
+import type {
+  FindAllByUserIdResult,
+  GetPostLikersResult,
+} from '../models/postModel.js';
 
 type FriendRequestInput = ReceivedFriendship | SentFriendship;
 
@@ -30,13 +33,10 @@ export const sanitizeUser = (user: UserWithRole | null) => {
   };
 };
 
-type PostWithRelations = Post & {
-  author?: { name: string; avatarUrl: string | null } | null;
-  likes?: PostLike[];
-  _count?: { likes: number };
-};
-
-export const formatPost = (post: PostWithRelations) => {
+export const formatPost = (
+  post: FindAllByUserIdResult[number],
+  reqUserId: string,
+) => {
   return {
     id: post.id,
     content: post.content,
@@ -45,12 +45,12 @@ export const formatPost = (post: PostWithRelations) => {
     userId: post.userId,
     authorName: post.author?.name,
     authorAvatarUrl: withBaseUrl(post.author?.avatarUrl),
-    likeCount: post._count?.likes ?? 0,
-    isLikedByMe: post.likes ? post.likes.length > 0 : false,
+    likeCount: post.likes.length ?? 0,
+    isLikedByMe: post.likes.some((like) => like.userId === reqUserId),
   };
 };
 
-export const formatLikers = (like: LikeWithUser) => {
+export const formatLikers = (like: GetPostLikersResult[number]) => {
   return {
     ...like.user,
     avatarUrl: withBaseUrl(like.user.avatarUrl),

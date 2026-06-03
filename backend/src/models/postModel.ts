@@ -1,20 +1,13 @@
 import prisma from '../config/db.js';
 import type { Prisma } from '../generated/client.js';
 
-const likerSelect = {
-  id: true,
-  username: true,
-  name: true,
-  avatarUrl: true,
-} as const;
+export type FindAllByUserIdResult = Awaited<
+  ReturnType<typeof PostModel.findAllByUserId>
+>;
 
-type LikeSelectArgs = {
-  include: {
-    user: { select: typeof likerSelect };
-  };
-};
-
-export type LikeWithUser = Prisma.PostLikeGetPayload<LikeSelectArgs>;
+export type GetPostLikersResult = Awaited<
+  ReturnType<typeof PostModel.getPostLikers>
+>;
 
 const PostModel = {
   findById: async (id: string) => {
@@ -27,9 +20,8 @@ const PostModel = {
     return await prisma.post.findMany({
       where: { targetUserId: profileUserId },
       include: {
-        author: {
-          select: { name: true, avatarUrl: true },
-        },
+        author: { select: { name: true, avatarUrl: true } },
+        likes: { select: { userId: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -41,7 +33,7 @@ const PostModel = {
       orderBy: { createdAt: 'desc' },
       include: {
         user: {
-          select: likerSelect,
+          select: { id: true, username: true, name: true, avatarUrl: true },
         },
       },
     });

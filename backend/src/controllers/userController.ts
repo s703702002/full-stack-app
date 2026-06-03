@@ -65,9 +65,13 @@ export const getUserTimeline = async (
   req: Request<{ id: string }>,
   res: Response,
 ) => {
+  const user = getAuthUser(req);
   const targetUser = await UserModel.findById(req.params.id);
   if (!targetUser) throw new AppError('找不到該使用者', 404);
 
   const posts = await PostModel.findAllByUserId(targetUser.id);
-  sendSuccess(res, 200, { posts: posts.map(formatPost) });
+
+  sendSuccess(res, 200, {
+    posts: posts.map((post) => formatPost(post, user.id)),
+  });
 };
