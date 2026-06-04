@@ -1,35 +1,60 @@
+import { useEffect, useState } from 'react';
 import { privateApi } from '../api';
 import { useAuth } from '../context/useAuth';
-import { canEditTargetUser } from '../utils/roleHelper';
+import { canEditUser } from '../utils/roleHelper';
 import useApiAction from '../hooks/useApiAction';
-import { useEffect } from 'react';
+import BanModal from '../components/BanModal';
 
-const getUsersApi = () => privateApi.get('/api/users');
+const getRoleLabelStyles = (roleName) =>
+  ({
+    superadmin: 'bg-purple-100 text-purple-800',
+    admin: 'bg-blue-100 text-blue-800',
+    editor: 'bg-green-100 text-green-800',
+    viewer: 'bg-slate-100 text-slate-600',
+  })[roleName] ?? 'bg-slate-100 text-slate-600';
 
 export default function AdminUserPage() {
   const { user } = useAuth();
+  const [banTarget, setBanTarget] = useState(null);
+
   const {
     execute: fetchUsers,
-    message,
     loading,
+    message,
     data,
-  } = useApiAction(getUsersApi, { successToast: false });
-  const { execute } = useApiAction((payload) =>
+  } = useApiAction(() => privateApi.get('/api/users'), { successToast: false });
+  const { execute: changeRole } = useApiAction((payload) =>
     privateApi.put(`/api/users/${payload.targetUserId}/role`, payload),
   );
-
-  const handleRoleChange = async (targetUserId, newRoleName) => {
-    await execute({ targetUserId, newRoleName });
-    await fetchUsers();
-  };
+  const { execute: banUser } = useApiAction((payload) =>
+    privateApi.post(`/api/users/${payload.userId}/ban`, payload),
+  );
+  const { execute: liftBanUser } = useApiAction((userId) =>
+    privateApi.delete(`/api/users/${userId}/ban`),
+  );
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
+  const handleRoleChange = async (targetUserId, newRoleName) => {
+    await changeRole({ targetUserId, newRoleName });
+    await fetchUsers();
+  };
+
+  const handleBanConfirm = async ({ reason, durationMinutes }) => {
+    await banUser({ userId: banTarget.id, reason, durationMinutes });
+    setBanTarget(null);
+    await fetchUsers();
+  };
+
+  const handleLiftBan = async (userId) => {
+    await liftBanUser(userId);
+    await fetchUsers();
+  };
+
   if (loading)
     return <div className="text-center mt-20 text-slate-500">載入中...</div>;
-
   if (message)
     return (
       <div className="text-center mt-20 text-red-500 font-bold">{message}</div>
@@ -49,71 +74,113 @@ export default function AdminUserPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-600">
-              <th className="p-4 font-medium">ID</th>
-              <th className="p-4 font-medium">帳號 (Username)</th>
-              <th className="p-4 font-medium">姓名 (Name)</th>
-              <th className="p-4 font-medium">當前角色</th>
-              <th className="p-4 font-medium">操作設定</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {users.map((targetUser) => {
-              const hasPermission = canEditTargetUser(
-                user.roleName,
-                targetUser.roleName,
-              );
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[1000px]">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th className="p-4 font-medium">ID</th>
+                <th className="p-4 font-medium">帳號</th>
+                <th className="p-4 font-medium">姓名</th>
+                <th className="p-4 font-medium">角色</th>
+                <th className="p-4 font-medium">狀態</th>
+                <th className="p-4 font-medium">角色設定</th>
+                <th className="p-4 font-medium">Ban 操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {users.map((u) => {
+                const hasPermission = canEditUser(user.roleName, u.roleName);
+                const isBanned = !!u.activeBan;
 
-              return (
-                <tr
-                  key={targetUser.id}
-                  className="hover:bg-slate-50 transition-colors"
-                >
-                  <td className="p-4 text-slate-500">{targetUser.id}</td>
-                  <td className="p-4 font-medium text-slate-800">
-                    {targetUser.username}
-                  </td>
-                  <td className="p-4 text-slate-600">{targetUser.name}</td>
-                  <td className="p-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        targetUser.roleName === 'admin'
-                          ? 'bg-purple-100 text-purple-700'
-                          : targetUser.roleName === 'editor'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-slate-100 text-slate-600'
-                      }`}
+                return (
+                  <tr
+                    key={u.id}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
+                    <td
+                      className="p-4 text-slate-500 max-w-[120px] truncate"
+                      title={u.id}
                     >
-                      {targetUser.roleName || '無角色'}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    {hasPermission ? (
-                      <select
-                        defaultValue={targetUser.roleName}
-                        onChange={(e) =>
-                          handleRoleChange(targetUser.id, e.target.value)
-                        }
-                        className="border border-slate-300 rounded p-1"
+                      {u.id}
+                    </td>
+                    <td
+                      className="p-4 font-medium text-slate-800 max-w-[120px] truncate"
+                      title={u.username}
+                    >
+                      {`@${u.username}`}
+                    </td>
+                    <td className="p-4 text-slate-600">{u.name}</td>
+                    <td className="p-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${getRoleLabelStyles(u.roleName)}`}
                       >
-                        <option value="admin">Admin</option>
-                        <option value="editor">Editor</option>
-                        <option value="viewer">Viewer</option>
-                      </select>
-                    ) : (
-                      <span className="text-slate-500 bg-slate-100 px-2 py-1 rounded cursor-not-allowed">
-                        🔒 {targetUser.roleName}
+                        {u.roleName || '無角色'}
                       </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="p-4">
+                      {isBanned ? (
+                        <span
+                          className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 cursor-help"
+                          title={`原因：${u.activeBan.reason}\n到期：${u.activeBan.expiresAt ? new Date(u.activeBan.expiresAt).toLocaleString() : '永久'}`}
+                        >
+                          已停用
+                        </span>
+                      ) : (
+                        <span className="text-sm text-slate-400">正常</span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {hasPermission ? (
+                        <select
+                          defaultValue={u.roleName}
+                          onChange={(e) =>
+                            handleRoleChange(u.id, e.target.value)
+                          }
+                          className="border border-slate-300 rounded p-1"
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="editor">Editor</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+                      ) : (
+                        <span className="text-slate-500 bg-slate-100 px-2 py-1 rounded cursor-not-allowed">
+                          🔒 {u.roleName}
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="p-4">
+                      {isBanned ? (
+                        <button
+                          onClick={() => handleLiftBan(u.id)}
+                          className="text-sm text-emerald-600 hover:text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-3 py-1 rounded transition-colors"
+                        >
+                          解除停用
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setBanTarget(u)}
+                          className="text-sm text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1 rounded transition-colors"
+                        >
+                          停用
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {banTarget && (
+        <BanModal
+          target={banTarget}
+          onConfirm={handleBanConfirm}
+          onClose={() => setBanTarget(null)}
+        />
+      )}
     </div>
   );
 }
