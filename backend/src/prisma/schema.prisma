@@ -33,19 +33,8 @@ model User {
   likedPosts     PostLike[]
   oauthAccounts  OAuthAccount[]
   twoFactorAuth  TwoFactorAuth?
-  resetTokens    PasswordResetToken[]
-
+  
   @@map("users")
-}
-
-model PasswordResetToken {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  token     String   @db.VarChar(255)
-  expiresAt DateTime @map("expires_at")
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@map("password_reset_tokens")
 }
 
 model TwoFactorAuth {

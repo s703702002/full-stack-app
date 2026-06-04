@@ -3,7 +3,6 @@ import { vi, test, describe, expect } from 'vitest';
 // ── mock 所有外部依賴 ──────────────────────────────────────────
 vi.mock('../models/userModel.js');
 vi.mock('../models/roleModel.js');
-vi.mock('../models/PasswordResetTokenModel.js');
 vi.mock('../models/TwoFactorAuthMode.js');
 vi.mock('../config/redis.js');
 vi.mock('../utils/hashHelper.js');
@@ -13,7 +12,6 @@ vi.mock('../utils/logger.js', () => ({ default: { info: vi.fn() } }));
 
 import UserModel from '../models/userModel.js';
 import RoleModel from '../models/roleModel.js';
-import PasswordResetTokenModel from '../models/PasswordResetTokenModel.js';
 import TwoFactorAuthModel from '../models/TwoFactorAuthMode.js';
 import redisClient from '../config/redis.js';
 import { hashString } from '../utils/hashHelper.js';
@@ -29,6 +27,7 @@ import {
   setupUser2FA,
   verifyAndEnable2FA,
 } from '../services/authService.js';
+import { getResetPasswordKey } from '../constants/redisKeys.js';
 
 // ── 共用 fixtures ──────────────────────────────────────────────
 const mockUser = {
@@ -154,23 +153,21 @@ describe('logoutUser', () => {
 // processForgotPassword
 // ══════════════════════════════════════════════════════════════
 describe('processForgotPassword', () => {
-  test('帳號存在時產生 reset token', async () => {
+  test('帳號存在時產生 reset token 並存入 redis，有效期 30 分鐘', async () => {
     UserModel.findByUsername.mockResolvedValue(mockUser);
-    PasswordResetTokenModel.deleteByUserId.mockResolvedValue();
     generateRandomToken.mockReturnValue('random-token-abc');
-    PasswordResetTokenModel.createResetToken.mockResolvedValue();
 
     await processForgotPassword('testuser');
 
-    expect(PasswordResetTokenModel.deleteByUserId).toHaveBeenCalledWith(
+    expect(redisClient.set).toHaveBeenCalledWith(
+      getResetPasswordKey('random-token-abc'),
       mockUser.id,
-    );
-    expect(PasswordResetTokenModel.createResetToken).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: mockUser.id,
-        token: 'random-token-abc',
-        expiresAt: expect.any(Date),
-      }),
+      {
+        expiration: {
+          type: 'EX',
+          value: 60 * 30,
+        },
+      }
     );
   });
 
@@ -179,24 +176,7 @@ describe('processForgotPassword', () => {
 
     await expect(processForgotPassword('nonexistent')).resolves.toBeUndefined();
 
-    expect(PasswordResetTokenModel.deleteByUserId).not.toHaveBeenCalled();
-    expect(PasswordResetTokenModel.createResetToken).not.toHaveBeenCalled();
-  });
-
-  test('reset token 有效期限為 1 小時後', async () => {
-    UserModel.findByUsername.mockResolvedValue(mockUser);
-    PasswordResetTokenModel.deleteByUserId.mockResolvedValue();
-    generateRandomToken.mockReturnValue('token');
-    PasswordResetTokenModel.createResetToken.mockResolvedValue();
-
-    const before = Date.now();
-    await processForgotPassword('testuser');
-    const after = Date.now();
-
-    const { expiresAt } =
-      PasswordResetTokenModel.createResetToken.mock.calls[0][0];
-    expect(expiresAt.getTime()).toBeGreaterThanOrEqual(before + 3600000);
-    expect(expiresAt.getTime()).toBeLessThanOrEqual(after + 3600000);
+    expect(redisClient.set).not.toHaveBeenCalled();
   });
 });
 
@@ -205,36 +185,27 @@ describe('processForgotPassword', () => {
 // ══════════════════════════════════════════════════════════════
 describe('processResetPassword', () => {
   test('合法 token 時成功重設密碼', async () => {
-    UserModel.findByValidResetToken.mockResolvedValue(mockUser);
+    redisClient.get.mockResolvedValue('test-user-id')
     hashString.mockResolvedValue('new-hashed-password');
-    UserModel.resetPassword.mockResolvedValue();
-    redisClient.del.mockResolvedValue(1);
 
     await processResetPassword('valid-token', 'newPassword123');
 
     expect(hashString).toHaveBeenCalledWith('newPassword123', 10);
-    expect(UserModel.resetPassword).toHaveBeenCalledWith(
-      mockUser.id,
-      'new-hashed-password',
-    );
     expect(redisClient.del).toHaveBeenCalled();
   });
 
   test('token 無效或過期時拋出 400', async () => {
-    UserModel.findByValidResetToken.mockResolvedValue(null);
+    redisClient.get.mockResolvedValue(null);
 
     await expect(
       processResetPassword('invalid-token', 'newPassword123'),
     ).rejects.toMatchObject({ statusCode: 400, message: '連結無效或已過期' });
-
-    expect(UserModel.resetPassword).not.toHaveBeenCalled();
   });
 
-  test('重設成功後清除 rate limit key', async () => {
-    UserModel.findByValidResetToken.mockResolvedValue(mockUser);
+  test('重設成功後清除 redis key', async () => {
+    redisClient.get.mockResolvedValue('test-user-id');
     hashString.mockResolvedValue('hashed');
     UserModel.resetPassword.mockResolvedValue();
-    redisClient.del.mockResolvedValue(1);
 
     await processResetPassword('valid-token', 'newPassword123');
 

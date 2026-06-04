@@ -60,17 +60,6 @@ const UserModel = {
     });
   },
 
-  findByValidResetToken: async (token: string) => {
-    const resetToken = await prisma.passwordResetToken.findFirst({
-      where: {
-        token,
-        expiresAt: { gt: new Date() },
-      },
-      include: { user: true },
-    });
-    return resetToken?.user ?? null;
-  },
-
   updateUser: async (userId: string, data: Prisma.UserUncheckedUpdateInput) => {
     return await prisma.user.update({
       where: { id: userId },
@@ -112,9 +101,6 @@ const UserModel = {
         data: { password: newHashedPassword },
       }),
       prisma.twoFactorAuth.deleteMany({
-        where: { userId },
-      }),
-      prisma.passwordResetToken.deleteMany({
         where: { userId },
       }),
     ]);

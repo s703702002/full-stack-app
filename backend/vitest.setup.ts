@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 
 vi.mock('./src/utils/validateEnv.js', () => ({
   env: {
+    LOG_LEVEL: 'info',
     NODE_ENV: 'test',
     DATABASE_URL: 'postgresql://test',
     IMAGE_BASE_URL: 'http://localhost:3000',

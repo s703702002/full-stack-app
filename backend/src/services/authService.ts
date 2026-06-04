@@ -3,6 +3,7 @@ import redisClient from '../config/redis.js';
 import {
   getAccountRateLimitKey,
   getRefreshTokenKey,
+  getResetPasswordKey,
 } from '../constants/redisKeys.js';
 import AppError from '../utils/AppError.js';
 import { hashString } from '../utils/hashHelper.js';
@@ -10,7 +11,6 @@ import { generateRandomToken } from '../utils/cryptoHelper.js';
 import { generate2FA, otpVerify } from '../utils/twoFAHelper.js';
 import logger from '../utils/logger.js';
 import RoleModel from '../models/roleModel.js';
-import PasswordResetTokenModel from '../models/PasswordResetTokenModel.js';
 import TwoFactorAuthModel from '../models/TwoFactorAuthMode.js';
 
 export const registerUser = async (
@@ -58,15 +58,12 @@ export const processForgotPassword = async (
   const user = await UserModel.findByUsername(username);
   if (!user) return;
 
-  await PasswordResetTokenModel.deleteByUserId(user.id);
-
   const resetToken = generateRandomToken();
-  const resetExpires = new Date(Date.now() + 3600000);
-
-  await PasswordResetTokenModel.createResetToken({
-    userId: user.id,
-    token: resetToken,
-    expiresAt: resetExpires,
+  await redisClient.set(getResetPasswordKey(resetToken), user.id, {
+    expiration: {
+      type: 'EX',
+      value: 60 * 30, // 30 mins
+    },
   });
 
   logger.info(
@@ -79,14 +76,17 @@ export const processResetPassword = async (
   token: string,
   newPassword: string,
 ): Promise<void> => {
-  const user = await UserModel.findByValidResetToken(token);
-  if (!user) throw new AppError('連結無效或已過期', 400);
+  const userId = await redisClient.get(getResetPasswordKey(token));
+  if (!userId) throw new AppError('連結無效或已過期', 400);
+
+  const user = await UserModel.findById(userId);
+  if (!user) throw new AppError('找不到使用者', 404);
 
   const hashedPassword = await hashString(newPassword, 10);
-  await UserModel.resetPassword(user.id, hashedPassword);
+  await UserModel.resetPassword(userId, hashedPassword);
 
-  const redisKey = getAccountRateLimitKey(user.username);
-  await redisClient.del(redisKey);
+  await redisClient.del(getResetPasswordKey(token));
+  await redisClient.del(getAccountRateLimitKey(user.username));
 };
 
 export const setupUser2FA = async (userId: string, username: string) => {
