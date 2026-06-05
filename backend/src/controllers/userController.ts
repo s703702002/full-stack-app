@@ -78,7 +78,7 @@ export const getUserTimeline = async (
 ) => {
   const user = getAuthUser(req);
   const page = Number(req.query.page) || 1;
-  const limit = 20;
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
 
   const targetUser = await UserModel.findById(req.params.id);
   if (!targetUser) throw new AppError('找不到該使用者', 404);
