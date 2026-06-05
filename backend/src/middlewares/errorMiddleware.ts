@@ -3,21 +3,18 @@ import AppError from '../utils/AppError.js';
 import logger from '../utils/logger.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
 
-interface HttpError extends Error {
-  statusCode?: number;
-  isOperational?: boolean;
-  errorCode?: string | null;
-}
+const isAppError = (err: unknown): err is AppError => err instanceof AppError;
 
 export const globalErrorHandler = (
-  err: HttpError,
+  err: AppError | Error,
   req: Request,
   res: Response,
   _next: NextFunction,
 ) => {
-  const statusCode = err.statusCode ?? 500;
+  const statusCode = isAppError(err) ? err.statusCode : 500;
   const message = err.message || '伺服器發生異常';
-  const isOperational = err.isOperational ?? err instanceof AppError;
+  const isOperational = isAppError(err) ? err.isOperational : false;
+  const data = isAppError(err) ? err.data : null;
 
   res.locals.errorMessage = message;
 
@@ -38,7 +35,7 @@ export const globalErrorHandler = (
     return res.status(statusCode).json({
       success: false,
       message,
-      errorCode: err.errorCode ?? null,
+      data: data,
     });
   }
 

@@ -3,6 +3,7 @@ import UserModel from '../models/userModel.js';
 import AppError from '../utils/AppError.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
 import type { Prisma } from '../generated/client.js';
+import * as UserBanModel from '../models/userBanModel.js';
 
 export const changeUserRole = async (
   operatorId: string,
@@ -47,4 +48,28 @@ export const updateProfile = async (
   }
 
   return await UserModel.updateUser(userId, updateData);
+};
+
+export const banUser = async (
+  adminId: string,
+  targetUserId: string,
+  reason: string,
+  durationMinutes: number,
+) => {
+  const activeBan = await UserBanModel.findActiveBan(targetUserId);
+  if (activeBan) throw new AppError('該使用者已在停用狀態', 400);
+
+  const expiresAt =
+    durationMinutes === 0
+      ? null
+      : new Date(Date.now() + durationMinutes * 60 * 1000);
+
+  return await UserBanModel.createBan(adminId, targetUserId, reason, expiresAt);
+};
+
+export const liftBan = async (targetUserId: string) => {
+  const activeBan = await UserBanModel.findActiveBan(targetUserId);
+  if (!activeBan) throw new AppError('該使用者沒有有效的停用紀錄', 400);
+
+  return await UserBanModel.deleteById(activeBan.id);
 };

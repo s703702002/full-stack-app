@@ -1,4 +1,4 @@
-import type { User } from '../generated/client.js';
+import type { User, UserBan } from '../generated/client.js';
 import { env } from './validateEnv.js';
 import type {
   FindReceivedRequestsResult,
@@ -95,5 +95,14 @@ export const formatFriend = (
       avatarUrl: withBaseUrl(friend.avatarUrl),
       bio: friend.bio,
     },
+  };
+};
+
+export const formatBanInfo = (ban: UserBan) => {
+  return {
+    id: ban.id,
+    reason: ban.reason,
+    adminId: ban.adminId,
+    expiresAt: ban.expiresAt,
   };
 };

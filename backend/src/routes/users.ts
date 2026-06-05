@@ -6,13 +6,18 @@ import {
   updateProfile,
   getUserProfile,
   getUserTimeline,
+  banUser,
+  liftBanUser,
 } from '../controllers/userController.js';
 import { checkAuthenticated } from '../middlewares/auth.js';
 import { checkPermission } from '../middlewares/rbac.js';
 import { apiLimiter } from '../middlewares/rateLimiter.js';
 import { upload } from '../middlewares/uploadMiddleware.js';
 import validate from '../middlewares/validateMiddleware.js';
-import { updateProfileSchema } from '../validators/userValidator.js';
+import {
+  updateProfileSchema,
+  createUserBanSchema,
+} from '../validators/userValidator.js';
 
 const router = express.Router();
 
@@ -29,5 +34,12 @@ router.put(
   validate(updateProfileSchema),
   updateProfile,
 );
+router.post(
+  '/:id/ban',
+  checkPermission('user:manage'),
+  validate(createUserBanSchema),
+  banUser,
+);
+router.delete('/:id/ban', checkPermission('user:manage'), liftBanUser);
 
 export default router;

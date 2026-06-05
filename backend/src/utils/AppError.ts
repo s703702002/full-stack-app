@@ -1,19 +1,19 @@
 class AppError extends Error {
   statusCode: number;
   success: boolean;
-  errorCode: number | null;
   isOperational: boolean;
+  data: Record<string, unknown> | null;
 
   constructor(
     message: string,
     statusCode: number,
-    errorCode: number | null = null,
+    data: Record<string, unknown> | null = null,
   ) {
     super(message);
 
     this.statusCode = statusCode;
     this.success = false;
-    this.errorCode = errorCode;
+    this.data = data;
     this.isOperational = true;
 
     Error.captureStackTrace(this, this.constructor);

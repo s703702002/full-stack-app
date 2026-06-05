@@ -1,6 +1,10 @@
 import type { Request, Response } from 'express';
 import UserModel from '../models/userModel.js';
-import { sanitizeUser, formatPost } from '../utils/formatters.js';
+import {
+  sanitizeUser,
+  formatPost,
+  formatBanInfo,
+} from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import AppError from '../utils/AppError.js';
 import * as UserService from '../services/userService.js';
@@ -16,7 +20,14 @@ export const getMe = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await UserModel.findAllWithRole();
-  sendSuccess(res, 200, { users: users.map((user) => sanitizeUser(user)) });
+  sendSuccess(res, 200, {
+    users: users.map((user) => {
+      return {
+        ...sanitizeUser(user),
+        activeBan: user.bans[0] ? formatBanInfo(user.bans[0]) : null,
+      };
+    }),
+  });
 };
 
 export const updateUserRole = async (
@@ -74,4 +85,19 @@ export const getUserTimeline = async (
   sendSuccess(res, 200, {
     posts: posts.map((post) => formatPost(post, user.id)),
   });
+};
+
+export const banUser = async (req: Request<{ id: string }>, res: Response) => {
+  const user = getAuthUser(req);
+  const { reason, durationMinutes } = req.body;
+  await UserService.banUser(user.id, req.params.id, reason, durationMinutes);
+  sendSuccess(res, 200, {}, '已停用該使用者');
+};
+
+export const liftBanUser = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  await UserService.liftBan(req.params.id);
+  sendSuccess(res, 200, {}, '已解除停用');
 };

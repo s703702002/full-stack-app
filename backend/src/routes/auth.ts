@@ -31,7 +31,6 @@ router.post('/reset-password/:token', resetPassword);
 router.get('/google', googleAuth);
 router.get('/google/callback', googleCallback);
 
-// 只有這三個需要登入
 router.post('/logout', checkAuthenticated, logout);
 router.post('/2fa/setup', checkAuthenticated, setup2FA);
 router.post(

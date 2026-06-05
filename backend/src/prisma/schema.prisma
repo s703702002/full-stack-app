@@ -33,6 +33,8 @@ model User {
   likedPosts     PostLike[]
   oauthAccounts  OAuthAccount[]
   twoFactorAuth  TwoFactorAuth?
+  bans       UserBan[] @relation("BannedUser")  // 我被 ban 的紀錄
+  bannedBy   UserBan[] @relation("BanAdmin")    // 我執行的 ban 紀錄
   
   @@map("users")
 }
@@ -56,6 +58,20 @@ model OAuthAccount {
 
   @@unique([provider, providerId])
   @@map("oauth_accounts")
+}
+
+model UserBan {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  adminId   String    @map("admin_id")
+  reason    String    @db.VarChar(500)
+  expiresAt DateTime? @map("expires_at") // null = 永久
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user  User @relation("BannedUser", fields: [userId], references: [id])
+  admin User @relation("BanAdmin", fields: [adminId], references: [id])
+
+  @@map("user_bans")
 }
 
 // ============================================

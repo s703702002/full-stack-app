@@ -55,7 +55,16 @@ const UserModel = {
 
   findAllWithRole: async () => {
     return await prisma.user.findMany({
-      include: { role: true },
+      include: {
+        role: true,
+        bans: {
+          where: {
+            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+          },
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+        },
+      },
       orderBy: { id: 'asc' },
     });
   },
