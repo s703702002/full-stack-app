@@ -16,15 +16,24 @@ const PostModel = {
     });
   },
 
-  findAllByUserId: async (profileUserId: string) => {
-    return await prisma.post.findMany({
-      where: { targetUserId: profileUserId },
-      include: {
-        author: { select: { name: true, avatarUrl: true } },
-        likes: { select: { userId: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  findAllByUserId: async (profileUserId: string, page = 1, limit = 20) => {
+    const skip = (page - 1) * limit;
+
+    const [posts, total] = await prisma.$transaction([
+      prisma.post.findMany({
+        where: { targetUserId: profileUserId },
+        include: {
+          author: { select: { name: true, avatarUrl: true } },
+          likes: { select: { userId: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.post.count({ where: { targetUserId: profileUserId } }),
+    ]);
+
+    return { posts, total };
   },
 
   getPostLikers: async (postId: string) => {

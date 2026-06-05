@@ -77,13 +77,27 @@ export const getUserTimeline = async (
   res: Response,
 ) => {
   const user = getAuthUser(req);
+  const page = Number(req.query.page) || 1;
+  const limit = 20;
+
   const targetUser = await UserModel.findById(req.params.id);
   if (!targetUser) throw new AppError('找不到該使用者', 404);
 
-  const posts = await PostModel.findAllByUserId(targetUser.id);
+  const { posts, total } = await PostModel.findAllByUserId(
+    targetUser.id,
+    page,
+    limit,
+  );
 
   sendSuccess(res, 200, {
     posts: posts.map((post) => formatPost(post, user.id)),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page * limit < total,
+    },
   });
 };
 
