@@ -8,6 +8,7 @@ export default function useApiAction(
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [data, setData] = useState(null);
+  const [errorData, setErrorData] = useState(null);
   const { success, error } = useToast();
 
   const isMounted = useRef(true);
@@ -45,11 +46,20 @@ export default function useApiAction(
 
         const errorMessage =
           err.response?.data?.message || '連線錯誤，請稍後再試';
+        const errorData = err.response?.data?.data;
+
         setMessage(errorMessage);
+        setErrorData(errorData);
+
         if (errorToast) {
           error(errorMessage);
         }
-        return { success: false, error: errorMessage };
+
+        return {
+          success: false,
+          error: errorMessage,
+          data: errorData,
+        };
       } finally {
         if (isMounted.current) {
           setLoading(false);
@@ -59,5 +69,12 @@ export default function useApiAction(
     [errorToast, successToast, success, error],
   );
 
-  return { execute, loading, message, data, clearError: () => setMessage('') };
+  return {
+    execute,
+    loading,
+    message,
+    data,
+    errorData,
+    clearError: () => setMessage(''),
+  };
 }

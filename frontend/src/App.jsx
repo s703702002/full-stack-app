@@ -17,14 +17,15 @@ import MessageBoard from './pages/MessageBoard';
 import AdminUserPage from './pages/AdminUserPage';
 import UserPage from './pages/UserPage';
 import FriendRequestsPage from './pages/FriendRequestsPage';
+import BannedPage from './pages/BannedPage';
 
 // Context
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Toaster position="top-center" reverseOrder={false} />
         <Navbar />
 
@@ -39,6 +40,7 @@ function App() {
               path="/reset-password/:token"
               element={<ResetPasswordPage />}
             />
+            <Route path="/banned" element={<BannedPage />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
@@ -50,8 +52,8 @@ function App() {
             </Route>
           </Routes>
         </main>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

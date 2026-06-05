@@ -1,16 +1,19 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './useAuth';
 import { privateApi } from '../api';
 import useApiAction from '../hooks/useApiAction';
-import { useState, useEffect } from 'react';
-
-const getMe = () => privateApi.get('/api/users/me');
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [isInitialized, setIsInitialized] = useState(false);
-  const { execute, data } = useApiAction(getMe, {
-    successToast: false,
-    errorToast: false,
-  });
+  const { execute, data, errorData } = useApiAction(
+    () => privateApi.get('/api/users/me'),
+    {
+      successToast: false,
+      errorToast: false,
+    },
+  );
 
   useEffect(() => {
     const initAuth = async () => {
@@ -19,10 +22,12 @@ export const AuthProvider = ({ children }) => {
     };
 
     initAuth();
-  }, [execute]);
+  }, [execute, navigate]);
 
   return (
-    <AuthContext.Provider value={{ user: data?.data?.user, isInitialized }}>
+    <AuthContext.Provider
+      value={{ user: data?.data?.user, isInitialized, errorData: errorData }}
+    >
       {children}
     </AuthContext.Provider>
   );

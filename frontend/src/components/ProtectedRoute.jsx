@@ -3,7 +3,7 @@ import { useAuth } from '../context/useAuth';
 import useNotificationListener from '../hooks/useNotificationListener';
 
 export default function ProtectedRoute() {
-  const { user, isInitialized } = useAuth();
+  const { user, isInitialized, errorData } = useAuth();
   const location = useLocation();
   useNotificationListener();
 
@@ -13,6 +13,17 @@ export default function ProtectedRoute() {
         <span className="text-slate-500">驗證身分中...</span>
       </div>
     );
+  }
+
+  if (isInitialized && errorData) {
+    if (errorData.errorCode === 40301)
+      return (
+        <Navigate
+          to="/banned"
+          state={{ reason: errorData.reason, expiresAt: errorData.expiresAt }}
+          replace
+        />
+      );
   }
 
   if (isInitialized && !user) {
