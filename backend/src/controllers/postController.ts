@@ -5,10 +5,6 @@ import { formatPost, withBaseUrl } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import { getAuthUser } from '../utils/requestHelper.js';
 
-export const getAllPosts = async (_req: Request, res: Response) => {
-  sendSuccess(res, 200, { posts: [] });
-};
-
 export const getPostLikers = async (
   req: Request<{ id: string }>,
   res: Response,
@@ -35,7 +31,7 @@ export const createPost = async (req: Request, res: Response) => {
   };
   const user = getAuthUser(req);
   const newPost = await PostService.createPost(user.id, content, targetUserId);
-  sendSuccess(res, 201, { post: newPost }, '留言發布成功');
+  sendSuccess(res, 201, { post: formatPost(newPost) }, '留言發布成功');
 };
 
 export const updatePost = async (

@@ -1,6 +1,5 @@
 import express from 'express';
 import {
-  getAllPosts,
   getPostLikers,
   createPost,
   toggleLikePost,
@@ -19,7 +18,6 @@ const router = express.Router();
 
 router.use(checkAuthenticated);
 
-router.get('/', getAllPosts);
 router.get('/:id/likes', getPostLikers);
 router.post(
   '/',

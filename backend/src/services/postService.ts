@@ -11,7 +11,7 @@ export const createPost = async (
   userId: string,
   content: string,
   targetUserId: string,
-): Promise<void> => {
+) => {
   if (userId !== targetUserId) {
     const friendship = await FriendshipModel.findAcceptedByPair(
       userId,
@@ -22,7 +22,7 @@ export const createPost = async (
     }
   }
 
-  await PostModel.createPost(userId, content, targetUserId);
+  return await PostModel.createPost(userId, content, targetUserId);
 };
 
 export const updatePost = async (
