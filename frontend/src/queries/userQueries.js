@@ -23,7 +23,9 @@ export const getUserTimeline = (userId) => ({
   queryKey: userKeys.timeline(userId),
   queryFn: ({ pageParam = 1 }) =>
     privateApi
-      .get(`/api/users/${userId}/posts`, { params: { page: pageParam } })
+      .get(`/api/users/${userId}/posts`, {
+        params: { page: pageParam, limit: 10 },
+      })
       .then((r) => r.data.data),
 });
 
