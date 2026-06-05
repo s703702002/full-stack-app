@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import PostModel from '../models/postModel.js';
 import * as PostService from '../services/postService.js';
-import { formatLikers } from '../utils/formatters.js';
+import { formatPost, withBaseUrl } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import { getAuthUser } from '../utils/requestHelper.js';
 
@@ -13,9 +13,19 @@ export const getPostLikers = async (
   req: Request<{ id: string }>,
   res: Response,
 ) => {
-  const likes = await PostModel.getPostLikers(req.params.id);
-  const likers = likes.map(formatLikers);
-  sendSuccess(res, 200, { count: likers.length, likers }, '取得按讚名單成功');
+  const likers = await PostModel.getPostLikers(req.params.id);
+  sendSuccess(
+    res,
+    200,
+    {
+      count: likers.length,
+      likers: likers.map((liker) => ({
+        ...liker.user,
+        avatarUrl: withBaseUrl(liker.user.avatarUrl),
+      })),
+    },
+    '取得按讚名單成功',
+  );
 };
 
 export const createPost = async (req: Request, res: Response) => {
@@ -33,8 +43,12 @@ export const updatePost = async (
   res: Response,
 ) => {
   const user = getAuthUser(req);
-  await PostService.updatePost(user, req.params.id, req.body.content);
-  sendSuccess(res, 200, {}, '留言更新成功');
+  const updatedPost = await PostService.updatePost(
+    user,
+    req.params.id,
+    req.body.content,
+  );
+  sendSuccess(res, 200, { post: formatPost(updatedPost) }, '留言更新成功');
 };
 
 export const deletePost = async (

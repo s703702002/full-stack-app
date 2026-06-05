@@ -117,6 +117,25 @@ async function main() {
   console.log('🚀 所有核心資料種植完畢！');
 }
 
+// async function seedPostData() {
+//   console.log('🌱 開始種植測試貼文資料...');
+//   const dummyUserId = 'cmp4uouz80000i40igkjd6e7r';
+
+//   for (let i = 0; i < 5000; i++) {
+//     await prisma.post.create({
+//       data: {
+//         userId: dummyUserId,
+//         targetUserId: dummyUserId,
+//         content: `這是一則測試留言 #${i + 1}，用來測試分頁功能與資料庫效能。`,
+//       },
+//     });
+
+//     await new Promise((resolve) => setTimeout(resolve, 10));
+//   }
+
+//   console.log('✅ 測試貼文資料建立完成...');
+// }
+
 main()
   .catch((e) => {
     console.error(e);

@@ -1,14 +1,6 @@
 import prisma from '../config/db.js';
 import type { Prisma } from '../generated/client.js';
 
-export type FindAllByUserIdResult = Awaited<
-  ReturnType<typeof PostModel.findAllByUserId>
->;
-
-export type GetPostLikersResult = Awaited<
-  ReturnType<typeof PostModel.getPostLikers>
->;
-
 const PostModel = {
   findById: async (id: string) => {
     return await prisma.post.findUnique({

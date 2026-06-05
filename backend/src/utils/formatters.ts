@@ -1,4 +1,4 @@
-import type { User, UserBan } from '../generated/client.js';
+import type { User, UserBan, Post } from '../generated/client.js';
 import { env } from './validateEnv.js';
 import type {
   FindReceivedRequestsResult,
@@ -6,10 +6,6 @@ import type {
   FindFriendsResult,
   UserInFriendship,
 } from '../models/friendshipModel.js';
-import type {
-  FindAllByUserIdResult,
-  GetPostLikersResult,
-} from '../models/postModel.js';
 
 export const withBaseUrl = (path: string | null | undefined): string | null =>
   path ? `${env.IMAGE_BASE_URL}/${path}` : null;
@@ -32,27 +28,13 @@ export const sanitizeUser = (user: UserWithRole | null) => {
   };
 };
 
-export const formatPost = (
-  post: FindAllByUserIdResult[number],
-  reqUserId: string,
-) => {
+export const formatPost = (post: Post) => {
   return {
     id: post.id,
     content: post.content,
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
     userId: post.userId,
-    authorName: post.author?.name,
-    authorAvatarUrl: withBaseUrl(post.author?.avatarUrl),
-    likeCount: post.likes.length ?? 0,
-    isLikedByMe: post.likes.some((like) => like.userId === reqUserId),
-  };
-};
-
-export const formatLikers = (like: GetPostLikersResult[number]) => {
-  return {
-    ...like.user,
-    avatarUrl: withBaseUrl(like.user.avatarUrl),
   };
 };
 

@@ -4,6 +4,7 @@ import {
   sanitizeUser,
   formatPost,
   formatBanInfo,
+  withBaseUrl,
 } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import AppError from '../utils/AppError.js';
@@ -90,7 +91,13 @@ export const getUserTimeline = async (
   );
 
   sendSuccess(res, 200, {
-    posts: posts.map((post) => formatPost(post, user.id)),
+    posts: posts.map((post) => ({
+      ...formatPost(post),
+      authorName: post.author?.name,
+      authorAvatarUrl: withBaseUrl(post.author?.avatarUrl),
+      likeCount: post.likes.length ?? 0,
+      isLikedByMe: post.likes.some((like) => like.userId === user.id),
+    })),
     pagination: {
       page,
       limit,
