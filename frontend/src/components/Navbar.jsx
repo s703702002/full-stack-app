@@ -1,24 +1,27 @@
 import { Link } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
-import Avatar from './Avatar';
-import useApiAction from '../hooks/useApiAction';
 import { privateApi } from '../api';
+import { useToast } from '../hooks/useToast';
+import { userKeys } from '../queries/userQueries';
+import Avatar from './Avatar';
 
 export default function Navbar() {
   const { user } = useAuth();
-  const { execute: logoutApi } = useApiAction(() =>
-    privateApi.post('/api/auth/logout'),
-  );
+  const queryClient = useQueryClient();
+  const { error } = useToast();
 
   const canManageUsers =
     user?.roleName === 'superadmin' || user?.roleName === 'admin';
 
-  const handleApiLogout = async () => {
-    const { success } = await logoutApi();
-    if (success) {
+  const { mutate: logout } = useMutation({
+    mutationFn: () => privateApi.post('/api/auth/logout'),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: userKeys.me() });
       globalThis.location.href = '/login';
-    }
-  };
+    },
+    onError: () => error('登出失敗，請稍後再試'),
+  });
 
   return (
     <nav className="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-50">
@@ -60,7 +63,7 @@ export default function Navbar() {
               </Link>
 
               <button
-                onClick={handleApiLogout}
+                onClick={logout}
                 className="text-slate-500 hover:text-red-600 transition"
               >
                 登出

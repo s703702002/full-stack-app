@@ -1,30 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import { publicApi } from '../api';
+import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
-import useApiAction from '../hooks/useApiAction';
-import { useToast } from '../hooks/useToast';
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
   const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
-  const { execute, loading, data, message } = useApiAction((payload) =>
-    publicApi.post(`/api/auth/reset-password/${token}`, payload),
-  );
-  const { success } = useToast();
+  const { success, error } = useToast();
 
-  useEffect(() => {
-    if (data?.success) {
+  const {
+    mutate: resetPassword,
+    isPending,
+    isSuccess,
+  } = useMutation({
+    mutationFn: (payload) =>
+      publicApi
+        .post(`/api/auth/reset-password/${token}`, payload)
+        .then((r) => r.data),
+    onSuccess: () => {
       success('正在為您導向登入頁...');
       setTimeout(() => navigate('/login'), 3000);
-    }
-  }, [data, navigate, success]);
+    },
+    onError: (err) =>
+      error(err.response?.data?.message || '重設失敗，連結可能已過期'),
+  });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    await execute({ newPassword });
+    resetPassword({ newPassword });
   };
 
   return (
@@ -43,7 +50,7 @@ export default function ResetPasswordPage() {
             placeholder="請設定至少 6 位數密碼"
           />
           <div className="mb-8"></div>
-          <Button loading={loading} disabled={!!message}>
+          <Button loading={isPending} disabled={isSuccess}>
             確認修改
           </Button>
         </form>

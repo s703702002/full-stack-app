@@ -1,26 +1,32 @@
 import { useState, useRef } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/useAuth';
-import { privateApi } from '../../api';
 import { useToast } from '../../hooks/useToast';
-import useApiAction from '../../hooks/useApiAction';
+import { userKeys, updateProfileMutation } from '../../queries/userQueries';
 import CameraCapture from '../CameraCapture';
 import Avatar from '../Avatar';
 
 export default function ProfileCard() {
   const { user } = useAuth();
-  const { error } = useToast();
+  const { error, success } = useToast();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user.name);
   const [editBio, setEditBio] = useState(user.bio || '');
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(user.avatarUrl || null);
-  const { execute, loading } = useApiAction((formData) =>
-    privateApi.put('/api/users/profile', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
-  );
-
   const fileInputRef = useRef(null);
+  const { mutateAsync: updateProfile, isPending } = useMutation({
+    ...updateProfileMutation(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.me() });
+      success('已儲存');
+      setIsEditing(false);
+    },
+    onError: (err) => {
+      error(err.response?.data?.message || '儲存失敗');
+    },
+  });
 
   const handleFileChange = (file) => {
     if (file) {
@@ -38,11 +44,7 @@ export default function ProfileCard() {
     formData.append('name', editName);
     formData.append('bio', editBio);
     if (avatarFile) formData.append('avatar', avatarFile);
-
-    const { success } = await execute(formData);
-    if (success) {
-      setIsEditing(false);
-    }
+    await updateProfile(formData);
   };
 
   const handleCancel = () => {
@@ -138,10 +140,10 @@ export default function ProfileCard() {
               </button>
               <button
                 onClick={handleSaveProfile}
-                disabled={loading}
+                disabled={isPending}
                 className="flex-1 sm:flex-none bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
               >
-                {loading ? '儲存中...' : '儲存'}
+                {isPending ? '儲存中...' : '儲存'}
               </button>
             </div>
           ) : (

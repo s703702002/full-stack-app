@@ -1,9 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Avatar from '../components/Avatar';
-import useApiAction from '../hooks/useApiAction';
-import { privateApi } from '../api';
 import { formatDateTime } from '../utils/format';
+import { useToast } from '../hooks/useToast';
+import {
+  friendshipKeys,
+  getFriends,
+  getReceivedRequests,
+  getSentRequests,
+  respondFriendRequestMutation,
+  removeFriendMutation,
+} from '../queries/friendshipQueries';
 
 function FriendCard({ friend, onRemove, removing }) {
   const { user, friendshipId, since } = friend;
@@ -117,62 +125,40 @@ function SentCard({ request }) {
 
 export default function FriendRequestsPage() {
   const [tab, setTab] = useState('friends');
-  const { data: friendsData, execute: fetchFriends } = useApiAction(
-    () => privateApi.get('/api/friend-requests/friends'),
-    { successToast: false },
-  );
-  const { data: receivedData, execute: fetchReceived } = useApiAction(
-    () => privateApi.get('/api/friend-requests/received'),
-    { successToast: false },
-  );
-  const { data: sentData, execute: fetchSend } = useApiAction(
-    () => privateApi.get('/api/friend-requests/sent'),
-    { successToast: false },
-  );
-  const { execute: respond } = useApiAction((payload) =>
-    privateApi.patch(`/api/friend-requests/${payload.id}`, payload),
-  );
-  const { execute: removeFriend } = useApiAction((friendId) =>
-    privateApi.delete(`/api/friend-requests/friends/${friendId}`),
-  );
+  const queryClient = useQueryClient();
+  const { error } = useToast();
 
-  const friends = friendsData?.data?.friends ?? [];
-  const received = receivedData?.data?.requests ?? [];
-  const sent = sentData?.data?.requests ?? [];
+  const { data: friends = [] } = useQuery(getFriends());
+  const { data: received = [] } = useQuery(getReceivedRequests());
+  const { data: sent = [] } = useQuery(getSentRequests());
 
-  const handleAccept = async (id) => {
-    await respond({ id, action: 'accept' });
-    fetchReceived();
-    fetchFriends();
-  };
+  const invalidate = (...keys) =>
+    keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
 
-  const handleReject = async (id) => {
-    await respond({ id, action: 'reject' });
-    fetchReceived();
-  };
+  const { mutate: respond } = useMutation({
+    ...respondFriendRequestMutation(),
+    onSuccess: (_, { action }) => {
+      invalidate(friendshipKeys.received());
+      if (action === 'accept') invalidate(friendshipKeys.friends());
+    },
+    onError: () => error('操作失敗'),
+  });
 
-  const handleRemoveFriend = async (userId) => {
-    await removeFriend(userId);
-    fetchFriends();
-  };
+  const { mutate: removeFriend } = useMutation({
+    ...removeFriendMutation(),
+    onSuccess: () => invalidate(friendshipKeys.friends()),
+    onError: () => error('解除好友失敗'),
+  });
+
+  const handleAccept = (id) => respond({ id, action: 'accept' });
+  const handleReject = (id) => respond({ id, action: 'reject' });
+  const handleRemoveFriend = (userId) => removeFriend(userId);
 
   const tabs = [
     { key: 'friends', label: '好友列表', count: friends.length },
     { key: 'received', label: '收到的申請', count: received.length },
     { key: 'sent', label: '送出的申請', count: sent.length },
   ];
-
-  useEffect(() => {
-    fetchFriends();
-  }, [fetchFriends]);
-
-  useEffect(() => {
-    fetchReceived();
-  }, [fetchReceived]);
-
-  useEffect(() => {
-    fetchSend();
-  }, [fetchSend]);
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">

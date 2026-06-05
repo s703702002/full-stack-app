@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { publicApi } from '../api';
+import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
-import { publicApi } from '../api';
-import useApiAction from '../hooks/useApiAction';
 
 export default function Login2FAPage() {
   const [totpCode, setTotpCode] = useState('');
-  const { execute, loading, data } = useApiAction((payload) =>
-    publicApi.post('/api/auth/login-2fa', payload),
-  );
+  const { error } = useToast();
 
-  useEffect(() => {
-    if (!data) return;
-
-    if (data.success) {
+  const { mutate: verify2FA, isPending } = useMutation({
+    mutationFn: (payload) =>
+      publicApi.post('/api/auth/login-2fa', payload).then((r) => r.data),
+    onSuccess: () => {
       globalThis.location.href = '/profile';
-    }
-  }, [data]);
+    },
+    onError: (err) => error(err.response?.data?.message || '驗證失敗'),
+  });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    await execute({ totpCode });
+    verify2FA({ totpCode });
   };
 
   return (
@@ -43,7 +43,7 @@ export default function Login2FAPage() {
             placeholder="例如: 123456"
             autoComplete="one-time-code"
           />
-          <Button loading={loading}>驗證並登入</Button>
+          <Button loading={isPending}>驗證並登入</Button>
         </form>
       </div>
     </div>

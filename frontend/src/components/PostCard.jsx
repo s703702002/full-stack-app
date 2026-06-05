@@ -1,66 +1,85 @@
 import { useState } from 'react';
-import Avatar from './Avatar';
-import { formatDateTime } from '../utils/format';
-import useApiAction from '../hooks/useApiAction';
-import { privateApi } from '../api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { privateApi } from '../api';
+import {
+  postKeys,
+  updatePostMutation,
+  deletePostMutation,
+  toggleLikeMutation,
+} from '../queries/postQueries';
+import { formatDateTime } from '../utils/format';
+import { useToast } from '../hooks/useToast';
+import Avatar from './Avatar';
 import LikersModal from './LikersModal';
 
 export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
   const [showLikersModal, setShowLikersModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
-  const { execute: editPost } = useApiAction((payload) =>
-    privateApi.put(`/api/posts/${payload.id}`, payload),
-  );
-  const { execute: deletePost } = useApiAction((postId) =>
-    privateApi.delete(`/api/posts/${postId}`),
-  );
-  const { execute: toggleLikePost } = useApiAction((postId) =>
-    privateApi.post(`/api/posts/${postId}/like`),
-  );
+  const queryClient = useQueryClient();
+  const { error } = useToast();
+
+  const invalidateTimeline = () =>
+    queryClient.invalidateQueries({ queryKey: postKeys.timeline(post.userId) });
+
+  const { mutate: editPost } = useMutation({
+    ...updatePostMutation(),
+    onSuccess: () => {
+      setIsEditing(false);
+      invalidateTimeline();
+      onEdit?.();
+    },
+    onError: () => error('編輯失敗'),
+  });
+
+  const { mutate: deletePost } = useMutation({
+    ...deletePostMutation(),
+    onSuccess: () => {
+      invalidateTimeline();
+      onDelete?.();
+    },
+    onError: () => error('刪除失敗'),
+  });
+
+  const { mutate: toggleLike } = useMutation({
+    ...toggleLikeMutation(),
+    onSuccess: () => {
+      invalidateTimeline();
+      onToggleLike?.();
+    },
+    onError: () => error('操作失敗'),
+  });
+
   const {
-    execute: getPostLikers,
-    data,
-    loading,
-  } = useApiAction((postId) => privateApi.get(`/api/posts/${postId}/likes`), {
-    successToast: false,
+    data: likersData,
+    isLoading: likersLoading,
+    refetch: fetchLikers,
+  } = useQuery({
+    queryKey: ['post-likers', post.id],
+    queryFn: () =>
+      privateApi
+        .get(`/api/posts/${post.id}/likes`)
+        .then((r) => r.data.data.likers),
+    enabled: false,
   });
 
   const displayTime = formatDateTime(post.updatedAt || post.createdAt);
   const isEdited =
     post.updatedAt && post.createdAt && post.updatedAt !== post.createdAt;
 
-  const handleSaveEdit = async () => {
-    const { success } = await editPost({
-      id: post.id,
-      content: editContent,
-    });
-
-    if (success) {
-      setIsEditing(false);
-      onEdit?.();
-    }
+  const handleSaveEdit = () => {
+    editPost({ id: post.id, content: editContent });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!globalThis.confirm('確定要刪除這篇留言嗎？')) return;
-    const { success } = await deletePost(post.id);
-    if (success) {
-      onDelete?.();
-    }
+    deletePost(post.id);
   };
 
-  const handleToggleLike = async () => {
-    const { success } = await toggleLikePost(post.id);
-    if (success) {
-      onToggleLike?.();
-    }
-  };
-
-  const handlerShowLikers = async () => {
+  const handlerShowLikers = () => {
     setShowLikersModal(true);
-    await getPostLikers(post.id);
+    fetchLikers();
   };
 
   return (
@@ -110,7 +129,7 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
           <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
             <div className="flex items-center gap-2">
               <button
-                onClick={() => handleToggleLike(post.id)}
+                onClick={() => toggleLike(post.id)}
                 className={`transition-colors ${
                   post.isLikedByMe
                     ? 'text-pink-500 hover:text-pink-600'
@@ -160,8 +179,8 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
       <LikersModal
         isOpen={showLikersModal}
         onClose={() => setShowLikersModal(false)}
-        likers={data?.data?.likers ?? []}
-        isLoading={loading}
+        likers={likersData ?? []}
+        isLoading={likersLoading}
       />
     </>
   );

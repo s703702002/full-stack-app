@@ -1,8 +1,15 @@
-import { useEffect, useState } from 'react';
-import { privateApi } from '../api';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
 import { canEditUser } from '../utils/roleHelper';
-import useApiAction from '../hooks/useApiAction';
+import {
+  userKeys,
+  getAllUsers,
+  updateRoleMutation,
+  banUserMutation,
+  liftBanMutation,
+} from '../queries/userQueries';
+import { useToast } from '../hooks/useToast';
 import BanModal from '../components/BanModal';
 
 const getRoleLabelStyles = (roleName) =>
@@ -16,51 +23,41 @@ const getRoleLabelStyles = (roleName) =>
 export default function AdminUserPage() {
   const { user } = useAuth();
   const [banTarget, setBanTarget] = useState(null);
+  const queryClient = useQueryClient();
+  const { error } = useToast();
 
-  const {
-    execute: fetchUsers,
-    loading,
-    message,
-    data,
-  } = useApiAction(() => privateApi.get('/api/users'), { successToast: false });
-  const { execute: changeRole } = useApiAction((payload) =>
-    privateApi.put(`/api/users/${payload.targetUserId}/role`, payload),
-  );
-  const { execute: banUser } = useApiAction((payload) =>
-    privateApi.post(`/api/users/${payload.userId}/ban`, payload),
-  );
-  const { execute: liftBanUser } = useApiAction((userId) =>
-    privateApi.delete(`/api/users/${userId}/ban`),
-  );
+  const { data: users = [], isLoading, isError } = useQuery(getAllUsers());
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  const invalidateUsers = () =>
+    queryClient.invalidateQueries({ queryKey: userKeys.all });
 
-  const handleRoleChange = async (targetUserId, newRoleName) => {
-    await changeRole({ targetUserId, newRoleName });
-    await fetchUsers();
-  };
+  const { mutate: changeRole } = useMutation({
+    ...updateRoleMutation(),
+    onSuccess: invalidateUsers,
+    onError: () => error('角色變更失敗'),
+  });
 
-  const handleBanConfirm = async ({ reason, durationMinutes }) => {
-    await banUser({ userId: banTarget.id, reason, durationMinutes });
-    setBanTarget(null);
-    await fetchUsers();
-  };
+  const { mutate: banUser } = useMutation({
+    ...banUserMutation(),
+    onSuccess: () => {
+      setBanTarget(null);
+      invalidateUsers();
+    },
+    onError: () => error('停用失敗'),
+  });
 
-  const handleLiftBan = async (userId) => {
-    await liftBanUser(userId);
-    await fetchUsers();
-  };
+  const { mutate: liftBan } = useMutation({
+    ...liftBanMutation(),
+    onSuccess: invalidateUsers,
+    onError: () => error('解除停用失敗'),
+  });
 
-  if (loading)
+  if (isLoading)
     return <div className="text-center mt-20 text-slate-500">載入中...</div>;
-  if (message)
+  if (isError)
     return (
-      <div className="text-center mt-20 text-red-500 font-bold">{message}</div>
+      <div className="text-center mt-20 text-red-500 font-bold">載入失敗</div>
     );
-
-  const users = data?.data?.users ?? [];
 
   return (
     <div className="max-w-5xl mx-auto mt-10 p-4">
@@ -133,9 +130,7 @@ export default function AdminUserPage() {
                       {hasPermission ? (
                         <select
                           defaultValue={u.roleName}
-                          onChange={(e) =>
-                            handleRoleChange(u.id, e.target.value)
-                          }
+                          onChange={(e) => changeRole(u.id, e.target.value)}
                           className="border border-slate-300 rounded p-1"
                         >
                           <option value="admin">Admin</option>
@@ -152,7 +147,7 @@ export default function AdminUserPage() {
                     <td className="p-4">
                       {isBanned ? (
                         <button
-                          onClick={() => handleLiftBan(u.id)}
+                          onClick={() => liftBan(u.id)}
                           className="text-sm text-emerald-600 hover:text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-3 py-1 rounded transition-colors"
                         >
                           解除停用
@@ -177,7 +172,9 @@ export default function AdminUserPage() {
       {banTarget && (
         <BanModal
           target={banTarget}
-          onConfirm={handleBanConfirm}
+          onConfirm={({ reason, durationMinutes }) =>
+            banUser({ userId: banTarget.id, reason, durationMinutes })
+          }
           onClose={() => setBanTarget(null)}
         />
       )}

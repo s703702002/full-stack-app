@@ -1,71 +1,68 @@
-import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import {
+  useQuery,
+  useInfiniteQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import PostCard from '../components/PostCard';
-import useApiAction from '../hooks/useApiAction';
-import { privateApi } from '../api';
 import CreatePostBox from '../components/CreatePostBox';
 import Avatar from '../components/Avatar';
 import FriendshipButton from '../components/FriendshipButton';
+import {
+  getUserProfile,
+  getUserTimeline,
+  userKeys,
+} from '../queries/userQueries';
+import { getFriendshipStatus } from '../queries/friendshipQueries';
 
 export default function UserPage() {
   const { userId } = useParams();
-  const { data: profileData, execute: fetchProfile } = useApiAction(
-    (id) => privateApi.get(`/api/users/${id}`),
-    { successToast: false },
-  );
-  const { data: postsData, execute: fetchPosts } = useApiAction(
-    (id) => privateApi.get(`/api/users/${id}/posts`),
-    { successToast: false },
-  );
-  const { data: friendshipData, execute: fetchFriendship } = useApiAction(
-    (id) => privateApi.get(`/api/friend-requests/status/${id}`),
-    { successToast: false },
-  );
+  const queryClient = useQueryClient();
 
-  const posts = postsData?.data?.posts ?? [];
-  const friendshipStatus = friendshipData?.data?.status;
-  const profile = profileData?.data?.user;
+  const { data: profile } = useQuery(getUserProfile(userId));
 
-  useEffect(() => {
-    fetchProfile(userId);
-  }, [fetchProfile, userId]);
+  const { data: friendshipStatus } = useQuery({
+    ...getFriendshipStatus(userId),
+    enabled: !!userId && profile?.isOwnProfile === false,
+  });
 
-  useEffect(() => {
-    fetchPosts(userId);
-  }, [fetchPosts, userId]);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      ...getUserTimeline(userId),
+      getNextPageParam: (lastPage) =>
+        lastPage.pagination.hasNextPage
+          ? lastPage.pagination.page + 1
+          : undefined,
+      initialPageParam: 1,
+      enabled: !!userId,
+    });
 
-  useEffect(() => {
-    if (profile?.isOwnProfile === false) {
-      fetchFriendship(userId);
-    }
-  }, [fetchFriendship, profile?.isOwnProfile, userId]);
+  const posts = data?.pages.flatMap((page) => page.posts) ?? [];
 
   if (!profile) return <div>載入中...</div>;
 
   const isFriend = friendshipStatus?.state === 'ACCEPTED';
   const canCreatePost = profile.isOwnProfile || isFriend;
 
+  const invalidateTimeline = () =>
+    queryClient.invalidateQueries({ queryKey: userKeys.timeline(userId) });
+
   return (
     <div className="max-w-3xl mx-auto pb-10">
-      {/* 🖼️ 上半部：封面與個人資訊 (Profile Header) */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-        {/* 封面圖 */}
         <div
           className="h-48 bg-slate-200 bg-cover bg-center"
           style={{
             backgroundImage: `url(${profile.coverUrl || '/default-cover.jpg'})`,
           }}
         />
-
         <div className="px-6 relative pb-6">
           <Avatar
             avatarUrl={profile.avatarUrl}
             name={profile.name}
             className="w-24 h-24 object-cover absolute -top-12 border-4 border-white rounded-full"
           />
-
-          {/* 名字與自我介紹 */}
-          <div className={`mt-2 pt-16`}>
+          <div className="mt-2 pt-16">
             <h1 className="text-2xl font-bold text-slate-800">
               {profile.name}
             </h1>
@@ -74,7 +71,6 @@ export default function UserPage() {
               {profile.bio || '這個人很懶，什麼都沒寫。'}
             </p>
           </div>
-
           {!profile.isOwnProfile && friendshipStatus && (
             <div className="mt-2">
               <FriendshipButton
@@ -86,14 +82,13 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* 📝 下半部：歷史貼文 (Timeline) */}
       <div className="space-y-4">
         <h2 className="font-bold text-lg text-slate-700 px-1">貼文</h2>
 
         {canCreatePost && (
           <CreatePostBox
             currentUser={profile}
-            onPostCreated={() => fetchPosts(userId)}
+            onPostCreated={invalidateTimeline}
           />
         )}
 
@@ -104,11 +99,21 @@ export default function UserPage() {
             <PostCard
               key={post.id}
               post={post}
-              onDelete={() => fetchPosts(userId)}
-              onEdit={() => fetchPosts(userId)}
-              onToggleLike={() => fetchPosts(userId)}
+              onDelete={invalidateTimeline}
+              onEdit={invalidateTimeline}
+              onToggleLike={invalidateTimeline}
             />
           ))
+        )}
+
+        {hasNextPage && (
+          <button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="w-full py-3 text-slate-500 hover:text-slate-700"
+          >
+            {isFetchingNextPage ? '載入中...' : '載入更多'}
+          </button>
         )}
       </div>
     </div>

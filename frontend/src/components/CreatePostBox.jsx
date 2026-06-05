@@ -1,26 +1,29 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { postKeys, createPostMutation } from '../queries/postQueries';
+import { useToast } from '../hooks/useToast';
 import Avatar from './Avatar';
-import useApiAction from '../hooks/useApiAction';
-import { privateApi } from '../api';
 
 export default function CreatePostBox({ currentUser, onPostCreated }) {
   const [content, setContent] = useState('');
-  const { execute, loading } = useApiAction((payload) =>
-    privateApi.post('/api/posts', payload),
-  );
+  const queryClient = useQueryClient();
+  const { error } = useToast();
 
-  const handleSubmit = async () => {
+  const { mutate: createPost, isPending } = useMutation({
+    ...createPostMutation(),
+    onSuccess: () => {
+      setContent('');
+      queryClient.invalidateQueries({
+        queryKey: postKeys.timeline(currentUser.id),
+      });
+      onPostCreated?.();
+    },
+    onError: (err) => error(err.response?.data?.message || '發佈失敗'),
+  });
+
+  const handleSubmit = () => {
     if (!content.trim()) return;
-
-    const { success } = await execute({
-      content: content,
-      targetUserId: currentUser.id,
-    });
-
-    setContent('');
-    if (success && onPostCreated) {
-      onPostCreated();
-    }
+    createPost({ content, targetUserId: currentUser.id });
   };
 
   return (
@@ -41,23 +44,23 @@ export default function CreatePostBox({ currentUser, onPostCreated }) {
             placeholder="在想些什麼呢？"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            disabled={loading}
+            disabled={isPending}
           />
 
           {/* 按鈕區塊 */}
           <div className="flex justify-end mt-3">
             <button
               onClick={handleSubmit}
-              disabled={!content.trim() || loading}
+              disabled={!content.trim() || isPending}
               className={`px-5 py-1.5 rounded-full font-medium transition-all flex items-center justify-center min-w-[80px]
                 ${
-                  !content.trim() || loading
+                  !content.trim() || isPending
                     ? 'bg-blue-300 text-white/80 cursor-not-allowed'
                     : 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow'
                 }
               `}
             >
-              {loading ? (
+              {isPending ? (
                 <span className="flex items-center gap-2">
                   <svg
                     className="animate-spin h-4 w-4 text-white"

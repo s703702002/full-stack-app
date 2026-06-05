@@ -13,7 +13,6 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import LoginPage from './pages/LoginPage';
 import Login2FAPage from './pages/Login2FAPage';
 import Setup2FAPage from './pages/Setup2FAPage';
-import MessageBoard from './pages/MessageBoard';
 import AdminUserPage from './pages/AdminUserPage';
 import UserPage from './pages/UserPage';
 import FriendRequestsPage from './pages/FriendRequestsPage';
@@ -46,7 +45,6 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/profile/:userId" element={<UserPage />} />
               <Route path="/profile/2fa-setup" element={<Setup2FAPage />} />
-              <Route path="/message-board" element={<MessageBoard />} />
               <Route path="/admin/users" element={<AdminUserPage />} />
               <Route path="/friend-requests" element={<FriendRequestsPage />} />
             </Route>

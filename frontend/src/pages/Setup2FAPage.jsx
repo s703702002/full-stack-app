@@ -1,38 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { privateApi } from '../api';
+import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
-import useApiAction from '../hooks/useApiAction';
 
 export default function Setup2FAPage() {
   const navigate = useNavigate();
   const [totpCode, setTotpCode] = useState('');
-  const { data, execute: fetch2FA } = useApiAction(
-    () => privateApi.post('/api/auth/2fa/setup'),
-    { successToast: false },
-  );
-  const {
-    data: verifyData,
-    execute,
-    loading,
-  } = useApiAction((payload) =>
-    privateApi.post('/api/auth/2fa/verify', payload),
-  );
+  const { error } = useToast();
 
-  useEffect(() => {
-    if (verifyData?.success) {
-      navigate('/profile');
-    }
-  }, [navigate, verifyData?.success]);
+  const { data: setupData } = useQuery({
+    queryKey: ['2fa-setup'],
+    queryFn: () =>
+      privateApi.get('/api/auth/2fa/setup').then((r) => r.data.data),
+  });
 
-  useEffect(() => {
-    fetch2FA();
-  }, [fetch2FA]);
+  const { mutate: verify2FA, isPending } = useMutation({
+    mutationFn: (payload) =>
+      privateApi.post('/api/auth/2fa/verify', payload).then((r) => r.data),
+    onSuccess: () => navigate('/profile'),
+    onError: (err) => error(err.response?.data?.message || '驗證失敗'),
+  });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    await execute({ token: totpCode });
+    verify2FA({ token: totpCode });
   };
 
   return (
@@ -41,7 +35,7 @@ export default function Setup2FAPage() {
         設定雙重驗證 (2FA)
       </h2>
 
-      {data ? (
+      {setupData ? (
         <div className="flex flex-col md:flex-row gap-8 items-start">
           <div className="flex-1 text-center bg-slate-50 p-6 rounded-xl border border-slate-200">
             <h3 className="font-semibold text-slate-700 mb-4">
@@ -51,7 +45,7 @@ export default function Setup2FAPage() {
               請使用 Google Authenticator 掃描下方條碼
             </p>
             <img
-              src={data.data.qrCodeImage}
+              src={setupData?.qrCodeImage}
               alt="2FA QR Code"
               className="mx-auto w-48 h-48 border-4 border-white shadow-sm rounded-lg"
             />
@@ -59,7 +53,7 @@ export default function Setup2FAPage() {
               無法掃描？請手動輸入金鑰：
               <br />
               <span className="font-mono text-slate-600 font-bold">
-                {data.data.secret}
+                {setupData?.secret}
               </span>
             </p>
           </div>
@@ -81,7 +75,7 @@ export default function Setup2FAPage() {
                 required
                 placeholder="123456"
               />
-              <Button loading={loading}>確認啟用</Button>
+              <Button loading={isPending}>確認啟用</Button>
             </form>
           </div>
         </div>

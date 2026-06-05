@@ -1,33 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
 import { publicApi } from '../api';
-import useApiAction from '../hooks/useApiAction';
+import { useToast } from '../hooks/useToast';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { error } = useToast();
   const [formData, setFormData] = useState({ username: '', password: '' });
-  const { data, execute, loading } = useApiAction((payload) =>
-    publicApi.post('/api/auth/login', payload),
-  );
-
-  useEffect(() => {
-    if (!data) return;
-
-    if (data.data.require2FA) {
-      navigate('/login/2fa');
-      return;
-    }
-
-    if (data.success) {
+  const { mutate: login, isPending } = useMutation({
+    mutationFn: (payload) =>
+      publicApi.post('/api/auth/login', payload).then((r) => r.data),
+    onSuccess: (data) => {
+      if (data.data.require2FA) {
+        navigate('/login/2fa');
+        return;
+      }
       globalThis.location.href = '/profile';
-    }
-  }, [data, navigate]);
+    },
+    onError: (err) => {
+      error(err.response?.data?.message || '登入失敗');
+    },
+  });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    await execute(formData);
+    login(formData);
   };
 
   const handleGoogleLogin = () => {
@@ -74,7 +74,7 @@ export default function LoginPage() {
           </div>
 
           {/* 確保你的 Button 元件有加上 w-full 撐滿寬度 */}
-          <Button loading={loading} className="w-full py-2.5">
+          <Button loading={isPending} className="w-full py-2.5">
             立即登入
           </Button>
         </form>

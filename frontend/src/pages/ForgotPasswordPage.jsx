@@ -1,19 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import { publicApi } from '../api';
+import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
-import useApiAction from '../hooks/useApiAction';
 
 export default function ForgotPasswordPage() {
   const [username, setUsername] = useState('');
-  const { execute, loading } = useApiAction((payload) =>
-    publicApi.post('/api/auth/forgot-password', payload),
-  );
+  const { success, error } = useToast();
 
-  const handleSubmit = async (e) => {
+  const { mutate: forgotPassword, isPending } = useMutation({
+    mutationFn: (payload) =>
+      publicApi.post('/api/auth/forgot-password', payload).then((r) => r.data),
+    onSuccess: () => success('若帳號存在，重設連結已發送'),
+    onError: (err) => error(err.response?.data?.message || '發送失敗'),
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    await execute({ username });
+    forgotPassword({ username });
   };
 
   return (
@@ -34,7 +40,7 @@ export default function ForgotPasswordPage() {
             placeholder="請輸入註冊時的帳號"
           />
           <div className="mb-8"></div>
-          <Button loading={loading}>發送重設連結</Button>
+          <Button loading={isPending}>發送重設連結</Button>
         </form>
 
         <div className="text-center mt-8">
