@@ -5,9 +5,11 @@ import postRoutes from './posts.js';
 import userRoutes from './users.js';
 import notificationsRoutes from './notifications.js';
 import friendshipRoutes from './friendship.js';
+import { checkHealth } from '../controllers/healthController.js';
 
 const router = express.Router();
 
+router.get('/health', checkHealth);
 router.use('/api/auth', authRoutes);
 router.use('/api/posts', postRoutes);
 router.use('/api/users', userRoutes);

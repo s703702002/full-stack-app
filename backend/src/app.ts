@@ -10,7 +10,6 @@ import { RedisStore } from 'connect-redis';
 import setupPassport from './config/passport.js';
 import apiRoutes from './routes/index.js';
 import { globalErrorHandler } from './middlewares/errorMiddleware.js';
-import { checkHealth } from './controllers/healthController.js';
 import logger from './utils/logger.js';
 import redisClient from './config/redis.js';
 import { PREFIX } from './constants/redisKeys.js';
@@ -19,7 +18,7 @@ import { env } from './utils/validateEnv.js';
 const app = express();
 const SESSION_MAX_AGE = Number.parseInt(env.SESSION_EXPIRY) || 3600000;
 
-app.get('/health', checkHealth);
+app.disable('x-powered-by');
 
 app.use(
   cors({

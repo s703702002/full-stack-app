@@ -1,9 +1,9 @@
 import UserModel from '../models/userModel.js';
 import redisClient from '../config/redis.js';
 import {
-  getAccountRateLimitKey,
-  getRefreshTokenKey,
-  getResetPasswordKey,
+  accountRateLimitKey,
+  refreshTokenKey,
+  resetPasswordKey,
 } from '../constants/redisKeys.js';
 import AppError from '../utils/AppError.js';
 import { hashString } from '../utils/hashHelper.js';
@@ -48,7 +48,7 @@ export const verify2FALogin = async (tempUserId: string, totpCode: string) => {
 };
 
 export const logoutUser = async (userId: string): Promise<void> => {
-  const redisKey = getRefreshTokenKey(userId);
+  const redisKey = refreshTokenKey(userId);
   await redisClient.del(redisKey);
 };
 
@@ -59,7 +59,7 @@ export const processForgotPassword = async (
   if (!user) return;
 
   const resetToken = generateRandomToken();
-  await redisClient.set(getResetPasswordKey(resetToken), user.id, {
+  await redisClient.set(resetPasswordKey(resetToken), user.id, {
     expiration: {
       type: 'EX',
       value: 60 * 30, // 30 mins
@@ -76,7 +76,7 @@ export const processResetPassword = async (
   token: string,
   newPassword: string,
 ): Promise<void> => {
-  const userId = await redisClient.get(getResetPasswordKey(token));
+  const userId = await redisClient.get(resetPasswordKey(token));
   if (!userId) throw new AppError('連結無效或已過期', 400);
 
   const user = await UserModel.findById(userId);
@@ -85,8 +85,8 @@ export const processResetPassword = async (
   const hashedPassword = await hashString(newPassword, 10);
   await UserModel.resetPassword(userId, hashedPassword);
 
-  await redisClient.del(getResetPasswordKey(token));
-  await redisClient.del(getAccountRateLimitKey(user.username));
+  await redisClient.del(resetPasswordKey(token));
+  await redisClient.del(accountRateLimitKey(user.username));
 };
 
 export const setupUser2FA = async (userId: string, username: string) => {

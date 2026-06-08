@@ -6,16 +6,16 @@ export const PREFIX = {
   REFRESH_TOKEN: 'refresh-token:',
   USER_PERMISSION: 'user_perms:',
   RESET_PWD: 'reset:',
+  ONLINE: 'online:',
 };
 
-export const getAccountRateLimitKey = (username: string) =>
+export const accountRateLimitKey = (username: string) =>
   `${PREFIX.RATE_LIMIT_ACCOUNT}${username}`;
 
-export const getRefreshTokenKey = (userId: string) =>
+export const refreshTokenKey = (userId: string) =>
   `${PREFIX.REFRESH_TOKEN}${userId}`;
 
-export const getUserPermissionKey = (userId: string) =>
-  `${PREFIX.USER_PERMISSION}${userId}`;
-
-export const getResetPasswordKey = (token: string) =>
+export const resetPasswordKey = (token: string) =>
   `${PREFIX.RESET_PWD}${token}`;
+
+export const onlineKey = (userId: string) => `online:${userId}`;
