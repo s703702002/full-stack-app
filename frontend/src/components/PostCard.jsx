@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { privateApi } from '../api';
 import {
-  postKeys,
   updatePostMutation,
   deletePostMutation,
   toggleLikeMutation,
@@ -17,17 +16,12 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
   const [showLikersModal, setShowLikersModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
-  const queryClient = useQueryClient();
   const { error } = useToast();
-
-  const invalidateTimeline = () =>
-    queryClient.invalidateQueries({ queryKey: postKeys.timeline(post.userId) });
 
   const { mutate: editPost } = useMutation({
     ...updatePostMutation(),
     onSuccess: () => {
       setIsEditing(false);
-      invalidateTimeline();
       onEdit?.();
     },
     onError: () => error('編輯失敗'),
@@ -36,7 +30,6 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
   const { mutate: deletePost } = useMutation({
     ...deletePostMutation(),
     onSuccess: () => {
-      invalidateTimeline();
       onDelete?.();
     },
     onError: () => error('刪除失敗'),
@@ -45,7 +38,6 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
   const { mutate: toggleLike } = useMutation({
     ...toggleLikeMutation(),
     onSuccess: () => {
-      invalidateTimeline();
       onToggleLike?.();
     },
     onError: () => error('操作失敗'),
@@ -65,8 +57,7 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
   });
 
   const displayTime = formatDateTime(post.updatedAt || post.createdAt);
-  const isEdited =
-    post.updatedAt && post.createdAt && post.updatedAt !== post.createdAt;
+  const isEdited = post.updatedAt !== post.createdAt;
 
   const handleSaveEdit = () => {
     editPost({ id: post.id, content: editContent });
