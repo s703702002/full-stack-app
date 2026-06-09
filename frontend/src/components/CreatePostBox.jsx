@@ -57,7 +57,7 @@ export default function CreatePostBox({ currentUser, onPostCreated }) {
                 'px-5 py-1.5 rounded-full font-medium transition-all flex items-center justify-center min-w-[80px]',
                 !content.trim() || isPending
                   ? 'bg-blue-300 text-white/80 cursor-not-allowed'
-                  : 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow'
+                  : 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow',
               )}
             >
               {isPending ? (

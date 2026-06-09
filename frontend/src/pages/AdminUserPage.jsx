@@ -110,7 +110,10 @@ export default function AdminUserPage() {
                     <td className="p-4 text-slate-600">{u.name}</td>
                     <td className="p-4">
                       <span
-                        className={cn('px-3 py-1 rounded-full text-xs font-bold', getRoleLabelStyles(u.roleName))}
+                        className={cn(
+                          'px-3 py-1 rounded-full text-xs font-bold',
+                          getRoleLabelStyles(u.roleName),
+                        )}
                       >
                         {u.roleName || '無角色'}
                       </span>
