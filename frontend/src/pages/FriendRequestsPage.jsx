@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { cn } from '../utils/cn';
 import Avatar from '../components/Avatar';
 import { formatDateTime } from '../utils/format';
 import { useToast } from '../hooks/useToast';
@@ -26,11 +27,12 @@ function FriendCard({ friend, onRemove, removing }) {
 
   return (
     <div
-      className={`flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-4 transition-all duration-300 ${
+      className={cn(
+        'flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-4 transition-all duration-300',
         removing
           ? 'opacity-0 translate-x-4 overflow-hidden'
           : 'opacity-100 translate-x-0'
-      }`}
+      )}
     >
       <Link to={`/profile/${user.id}`}>
         <Avatar name={user.name} avatarUrl={user.avatarUrl} />
@@ -65,11 +67,12 @@ function ReceivedCard({ request, onAccept, onReject, removing }) {
   const { user } = request;
   return (
     <div
-      className={`flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-4 transition-all duration-300 ${
+      className={cn(
+        'flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-4 transition-all duration-300',
         removing
           ? 'opacity-0 translate-x-4 max-h-0 overflow-hidden py-0 mb-0'
           : 'opacity-100 translate-x-0'
-      }`}
+      )}
     >
       <Avatar name={user.name} avatarUrl={user.avatarUrl} />
 
@@ -178,11 +181,12 @@ export default function FriendRequestsPage() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`px-4 py-2.5 text-sm transition-all border-b-2 -mb-px ${
+            className={cn(
+              'px-4 py-2.5 text-sm transition-all border-b-2 -mb-px',
               tab === key
                 ? 'border-gray-900 text-gray-900 font-medium'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
-            }`}
+            )}
           >
             {label}
             {count > 0 && (

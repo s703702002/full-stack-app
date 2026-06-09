@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postKeys, createPostMutation } from '../queries/postQueries';
 import { useToast } from '../hooks/useToast';
+import { cn } from '../utils/cn';
 import Avatar from './Avatar';
 
 export default function CreatePostBox({ currentUser, onPostCreated }) {
@@ -52,13 +53,12 @@ export default function CreatePostBox({ currentUser, onPostCreated }) {
             <button
               onClick={handleSubmit}
               disabled={!content.trim() || isPending}
-              className={`px-5 py-1.5 rounded-full font-medium transition-all flex items-center justify-center min-w-[80px]
-                ${
-                  !content.trim() || isPending
-                    ? 'bg-blue-300 text-white/80 cursor-not-allowed'
-                    : 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow'
-                }
-              `}
+              className={cn(
+                'px-5 py-1.5 rounded-full font-medium transition-all flex items-center justify-center min-w-[80px]',
+                !content.trim() || isPending
+                  ? 'bg-blue-300 text-white/80 cursor-not-allowed'
+                  : 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow'
+              )}
             >
               {isPending ? (
                 <span className="flex items-center gap-2">

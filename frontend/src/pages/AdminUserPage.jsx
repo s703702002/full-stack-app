@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
 import { canEditUser } from '../utils/roleHelper';
+import { cn } from '../utils/cn';
 import {
   userKeys,
   getAllUsers,
@@ -109,7 +110,7 @@ export default function AdminUserPage() {
                     <td className="p-4 text-slate-600">{u.name}</td>
                     <td className="p-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${getRoleLabelStyles(u.roleName)}`}
+                        className={cn('px-3 py-1 rounded-full text-xs font-bold', getRoleLabelStyles(u.roleName))}
                       >
                         {u.roleName || '無角色'}
                       </span>

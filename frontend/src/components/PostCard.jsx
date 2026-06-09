@@ -11,6 +11,7 @@ import { formatDateTime } from '../utils/format';
 import { useToast } from '../hooks/useToast';
 import Avatar from './Avatar';
 import LikersModal from './LikersModal';
+import { cn } from '../utils/cn';
 
 export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
   const [showLikersModal, setShowLikersModal] = useState(false);
@@ -121,11 +122,12 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => toggleLike(post.id)}
-                className={`transition-colors ${
+                className={cn(
+                  'transition-colors',
                   post.isLikedByMe
                     ? 'text-pink-500 hover:text-pink-600'
-                    : 'text-slate-400 hover:text-pink-500'
-                }`}
+                    : 'text-slate-400 hover:text-pink-500',
+                )}
               >
                 <svg
                   className="w-5 h-5"
@@ -145,21 +147,19 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
               <button
                 onClick={handlerShowLikers}
                 disabled={!post.likeCount}
-                className={`text-sm font-medium ${
+                className={cn(
+                  'text-sm font-medium',
                   post.likeCount
                     ? 'text-slate-500 hover:text-slate-800 hover:underline cursor-pointer'
-                    : 'text-slate-400 cursor-default'
-                }`}
+                    : 'text-slate-400 cursor-default',
+                )}
               >
                 {post.likeCount || 0}
               </button>
             </div>
             <div className="flex gap-3">
               <button onClick={() => setIsEditing(true)}>編輯</button>
-              <button
-                className="text-red-500"
-                onClick={() => handleDelete(post.id)}
-              >
+              <button className="text-red-500" onClick={handleDelete}>
                 刪除
               </button>
             </div>
