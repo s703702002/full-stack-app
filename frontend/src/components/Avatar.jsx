@@ -1,3 +1,5 @@
+import { cn } from '../utils/cn';
+
 export default function Avatar({
   avatarUrl,
   name = '?',
@@ -9,7 +11,7 @@ export default function Avatar({
 
   if (avatarUrl) {
     return (
-      <div className={`${baseClasses} ${className}`}>
+      <div className={cn(baseClasses, className)}>
         <img
           src={avatarUrl}
           alt={`${name} 的大頭貼`}
@@ -20,7 +22,7 @@ export default function Avatar({
   }
 
   return (
-    <div className={`${baseClasses} ${className} text-slate-500 font-bold`}>
+    <div className={cn(baseClasses, className, 'text-slate-500 font-bold')}>
       {name.charAt(0).toUpperCase()}
     </div>
   );
