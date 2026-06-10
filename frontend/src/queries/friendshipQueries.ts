@@ -1,10 +1,11 @@
 import { privateApi } from '../api';
+import { UseMutationOptions } from '@tanstack/react-query';
 
 export const friendshipKeys = {
-  friends: () => ['friendships', 'friends'],
-  received: () => ['friendships', 'received'],
-  sent: () => ['friendships', 'sent'],
-  status: (userId) => ['friendships', 'status', userId],
+  friends: () => ['friendships', 'friends'] as const,
+  received: () => ['friendships', 'received'] as const,
+  sent: () => ['friendships', 'sent'] as const,
+  status: (userId: string) => ['friendships', 'status', userId] as const,
 };
 
 export const getFriends = () => ({
@@ -31,7 +32,7 @@ export const getSentRequests = () => ({
       .then((r) => r.data.data.requests),
 });
 
-export const getFriendshipStatus = (userId) => ({
+export const getFriendshipStatus = (userId: string) => ({
   queryKey: friendshipKeys.status(userId),
   queryFn: () =>
     privateApi
@@ -40,20 +41,25 @@ export const getFriendshipStatus = (userId) => ({
   enabled: !!userId,
 });
 
-export const sendFriendRequestMutation = () => ({
-  mutationFn: (targetUserId) =>
+export const sendFriendRequestMutation = (): UseMutationOptions<any, any, string> => ({
+  mutationFn: (targetUserId: string) =>
     privateApi.post(`/api/friend-requests/${targetUserId}`).then((r) => r.data),
 });
 
-export const respondFriendRequestMutation = () => ({
-  mutationFn: (payload) =>
+export interface RespondFriendRequestPayload {
+  id: string;
+  action: 'accept' | 'reject';
+}
+
+export const respondFriendRequestMutation = (): UseMutationOptions<any, any, RespondFriendRequestPayload> => ({
+  mutationFn: (payload: RespondFriendRequestPayload) =>
     privateApi
       .patch(`/api/friend-requests/${payload.id}`, payload)
       .then((r) => r.data),
 });
 
-export const removeFriendMutation = () => ({
-  mutationFn: (userId) =>
+export const removeFriendMutation = (): UseMutationOptions<any, any, string> => ({
+  mutationFn: (userId: string) =>
     privateApi
       .delete(`/api/friend-requests/friends/${userId}`)
       .then((r) => r.data),

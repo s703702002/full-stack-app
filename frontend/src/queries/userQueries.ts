@@ -1,10 +1,11 @@
 import { privateApi } from '../api';
+import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 
 export const userKeys = {
-  all: ['users'],
-  detail: (id) => ['users', id],
-  me: () => ['users', 'me'],
-  timeline: (id) => ['users', id, 'posts'],
+  all: ['users'] as const,
+  detail: (id: string) => ['users', id] as const,
+  me: () => ['users', 'me'] as const,
+  timeline: (id: string) => ['users', id, 'posts'] as const,
 };
 
 export const getMe = () => ({
@@ -12,16 +13,16 @@ export const getMe = () => ({
   queryFn: () => privateApi.get('/api/users/me').then((r) => r.data.data.user),
 });
 
-export const getUserProfile = (userId) => ({
+export const getUserProfile = (userId: string) => ({
   queryKey: userKeys.detail(userId),
   queryFn: () =>
     privateApi.get(`/api/users/${userId}`).then((r) => r.data.data.user),
   enabled: !!userId,
 });
 
-export const getUserTimeline = (userId) => ({
+export const getUserTimeline = (userId: string) => ({
   queryKey: userKeys.timeline(userId),
-  queryFn: ({ pageParam = 1 }) =>
+  queryFn: ({ pageParam = 1 }: { pageParam?: number }) =>
     privateApi
       .get(`/api/users/${userId}/posts`, {
         params: { page: pageParam, limit: 10 },
@@ -30,7 +31,7 @@ export const getUserTimeline = (userId) => ({
 });
 
 export const updateProfileMutation = () => ({
-  mutationFn: (formData) =>
+  mutationFn: (formData: FormData) =>
     privateApi.put('/api/users/profile', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
@@ -41,21 +42,32 @@ export const getAllUsers = () => ({
   queryFn: () => privateApi.get('/api/users').then((r) => r.data.data.users),
 });
 
-export const updateRoleMutation = () => ({
-  mutationFn: (payload) =>
+export interface UpdateRolePayload {
+  targetUserId: string;
+  newRoleName: string;
+}
+
+export const updateRoleMutation = (): UseMutationOptions<any, any, UpdateRolePayload> => ({
+  mutationFn: (payload: UpdateRolePayload) =>
     privateApi
       .put(`/api/users/${payload.targetUserId}/role`, payload)
       .then((r) => r.data),
 });
 
-export const banUserMutation = () => ({
-  mutationFn: (payload) =>
+export interface BanUserPayload {
+  userId: string;
+  reason: string;
+  durationMinutes: number;
+}
+
+export const banUserMutation = (): UseMutationOptions<any, any, BanUserPayload> => ({
+  mutationFn: (payload: BanUserPayload) =>
     privateApi
       .post(`/api/users/${payload.userId}/ban`, payload)
       .then((r) => r.data),
 });
 
-export const liftBanMutation = () => ({
-  mutationFn: (userId) =>
+export const liftBanMutation = (): UseMutationOptions<any, any, string> => ({
+  mutationFn: (userId: string) =>
     privateApi.delete(`/api/users/${userId}/ban`).then((r) => r.data),
 });
