@@ -31,8 +31,8 @@ router.post('/reset-password/:token', resetPassword);
 router.get('/google', googleAuth);
 router.get('/google/callback', googleCallback);
 
+router.get('/2fa/setup', checkAuthenticated, setup2FA);
 router.post('/logout', checkAuthenticated, logout);
-router.post('/2fa/setup', checkAuthenticated, setup2FA);
 router.post(
   '/2fa/verify',
   validate(verify2FASchema),
