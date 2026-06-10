@@ -1,22 +1,18 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { postKeys, createPostMutation } from '../queries/postQueries';
+import { useMutation } from '@tanstack/react-query';
+import { createPostMutation } from '../queries/postQueries';
 import { useToast } from '../hooks/useToast';
 import { cn } from '../utils/cn';
 import Avatar from './Avatar';
 
 export default function CreatePostBox({ currentUser, onPostCreated }) {
   const [content, setContent] = useState('');
-  const queryClient = useQueryClient();
   const { error } = useToast();
 
   const { mutate: createPost, isPending } = useMutation({
     ...createPostMutation(),
     onSuccess: () => {
       setContent('');
-      queryClient.invalidateQueries({
-        queryKey: postKeys.timeline(currentUser.id),
-      });
       onPostCreated?.();
     },
     onError: (err) => error(err.response?.data?.message || '發佈失敗'),
