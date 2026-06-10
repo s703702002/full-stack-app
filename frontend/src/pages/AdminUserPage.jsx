@@ -134,7 +134,12 @@ export default function AdminUserPage() {
                       {hasPermission ? (
                         <select
                           defaultValue={u.roleName}
-                          onChange={(e) => changeRole(u.id, e.target.value)}
+                          onChange={(e) =>
+                            changeRole({
+                              targetUserId: u.id,
+                              newRoleName: e.target.value,
+                            })
+                          }
                           className="border border-slate-300 rounded p-1"
                         >
                           <option value="admin">Admin</option>
