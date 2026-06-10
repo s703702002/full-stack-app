@@ -27,7 +27,7 @@ import {
   setupUser2FA,
   verifyAndEnable2FA,
 } from '../services/authService.js';
-import { getResetPasswordKey } from '../constants/redisKeys.js';
+import { resetPasswordKey } from '../constants/redisKeys.js';
 
 // ── 共用 fixtures ──────────────────────────────────────────────
 const mockUser = {
@@ -160,7 +160,7 @@ describe('processForgotPassword', () => {
     await processForgotPassword('testuser');
 
     expect(redisClient.set).toHaveBeenCalledWith(
-      getResetPasswordKey('random-token-abc'),
+      resetPasswordKey('random-token-abc'),
       mockUser.id,
       {
         expiration: {
