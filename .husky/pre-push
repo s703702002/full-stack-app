@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "=== 🚀 Husky 安全防禦啟動：準備 Push，開始進行全專案安全檢查 ==="
+
+# 1. 跑全域的排版與語法檢查
+pnpm lint:all || { echo "❌ ESLint 檢查失敗！請修正錯誤後再嘗試 Push。"; exit 1; }
+
+# 2. 跑全域的 TypeScript 型別檢查
+pnpm typecheck:all || { echo "❌ TypeScript 型別檢查失敗！請修正型別後再嘗試 Push。"; exit 1; }
+
+echo "===  全專案安檢通過！準許 Push 到雲端！ ==="

@@ -5,12 +5,16 @@
   "scripts": {
     "dev:all": "pnpm --parallel dev",
     "lint:all": "pnpm -F \"*\" lint",
-    "typecheck:all": "pnpm -F \"*\" typecheck"
+    "typecheck:all": "pnpm -F \"*\" typecheck",
+    "test:all": "pnpm -F \"*\" test",
+    "build": "pnpm -F backend build && pnpm -F frontend build",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.61.0",
     "@typescript-eslint/parser": "^8.61.0",
+    "autoprefixer": "^10.5.0",
     "eslint": "^10.4.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
@@ -18,7 +22,10 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "postcss": "^8.5.15",
     "prettier": "^3.8.2",
+    "tailwindcss": "^3.4.19",
     "typescript": "^6.0.3"
   }
 }
