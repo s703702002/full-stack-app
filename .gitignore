@@ -1,0 +1,63 @@
+# ==========================================
+# 1. 依賴與打包產物 (Dependencies & Outputs)
+# ==========================================
+# 阻擋根目錄與所有子專案的 node_modules
+node_modules
+**/node_modules
+
+# 阻擋所有專案的打包輸出資料夾（Vite/TypeScript 的產物）
+dist
+**/dist
+dist-ssr
+build
+**/build
+*.tsbuildinfo
+
+# ==========================================
+# 2. 專案特定工具 (Project Specifics)
+# ==========================================
+# 後端 Prisma 產物（如果有的話，通常本地生成的 schema 不需要推）
+# 注意：schema.prisma 要推，但以下本地快取不要推
+.prisma
+
+# 測試框架（如 Vitest）產生的覆蓋率報告
+coverage
+**/coverage
+
+# ==========================================
+# 3. 環境變數與私鑰 (Environments & Secrets)
+# ==========================================
+# 強烈阻擋所有隱私檔案！包含前端與後端的 .env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+
+# ==========================================
+# 4. 日誌與快取 (Logs & Caches)
+# ==========================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.eslintcache
+.turbo
+
+# ==========================================
+# 5. 編輯器與系統檔案 (Editor & OS)
+# ==========================================
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { env } from '../utils/validateEnv.js';
+import { env } from './validateEnv.js';
 
 const isDev = env.NODE_ENV !== 'production';
 

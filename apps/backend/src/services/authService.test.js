@@ -26,7 +26,7 @@ import {
   processResetPassword,
   setupUser2FA,
   verifyAndEnable2FA,
-} from '../services/authService.js';
+} from './authService.js';
 import { resetPasswordKey } from '../constants/redisKeys.js';
 
 // ── 共用 fixtures ──────────────────────────────────────────────

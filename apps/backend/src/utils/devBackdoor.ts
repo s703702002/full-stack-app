@@ -1,4 +1,4 @@
-import { env } from '../utils/validateEnv.js';
+import { env } from './validateEnv.js';
 
 export const parseDevUsername = (username: string) => {
   if (env.NODE_ENV !== 'development') {
