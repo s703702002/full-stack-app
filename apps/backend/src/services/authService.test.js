@@ -167,7 +167,7 @@ describe('processForgotPassword', () => {
           type: 'EX',
           value: 60 * 30,
         },
-      }
+      },
     );
   });
 
@@ -185,7 +185,7 @@ describe('processForgotPassword', () => {
 // ══════════════════════════════════════════════════════════════
 describe('processResetPassword', () => {
   test('合法 token 時成功重設密碼', async () => {
-    redisClient.get.mockResolvedValue('test-user-id')
+    redisClient.get.mockResolvedValue('test-user-id');
     hashString.mockResolvedValue('new-hashed-password');
 
     await processResetPassword('valid-token', 'newPassword123');

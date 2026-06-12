@@ -41,7 +41,11 @@ export const getFriendshipStatus = (userId: string) => ({
   enabled: !!userId,
 });
 
-export const sendFriendRequestMutation = (): UseMutationOptions<any, any, string> => ({
+export const sendFriendRequestMutation = (): UseMutationOptions<
+  any,
+  any,
+  string
+> => ({
   mutationFn: (targetUserId: string) =>
     privateApi.post(`/api/friend-requests/${targetUserId}`).then((r) => r.data),
 });
@@ -51,14 +55,22 @@ export interface RespondFriendRequestPayload {
   action: 'accept' | 'reject';
 }
 
-export const respondFriendRequestMutation = (): UseMutationOptions<any, any, RespondFriendRequestPayload> => ({
+export const respondFriendRequestMutation = (): UseMutationOptions<
+  any,
+  any,
+  RespondFriendRequestPayload
+> => ({
   mutationFn: (payload: RespondFriendRequestPayload) =>
     privateApi
       .patch(`/api/friend-requests/${payload.id}`, payload)
       .then((r) => r.data),
 });
 
-export const removeFriendMutation = (): UseMutationOptions<any, any, string> => ({
+export const removeFriendMutation = (): UseMutationOptions<
+  any,
+  any,
+  string
+> => ({
   mutationFn: (userId: string) =>
     privateApi
       .delete(`/api/friend-requests/friends/${userId}`)

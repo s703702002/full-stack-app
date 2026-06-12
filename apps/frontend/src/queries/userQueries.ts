@@ -1,5 +1,5 @@
 import { privateApi } from '../api';
-import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
+import { UseMutationOptions } from '@tanstack/react-query';
 
 export const userKeys = {
   all: ['users'] as const,
@@ -47,7 +47,11 @@ export interface UpdateRolePayload {
   newRoleName: string;
 }
 
-export const updateRoleMutation = (): UseMutationOptions<any, any, UpdateRolePayload> => ({
+export const updateRoleMutation = (): UseMutationOptions<
+  any,
+  any,
+  UpdateRolePayload
+> => ({
   mutationFn: (payload: UpdateRolePayload) =>
     privateApi
       .put(`/api/users/${payload.targetUserId}/role`, payload)
@@ -60,7 +64,11 @@ export interface BanUserPayload {
   durationMinutes: number;
 }
 
-export const banUserMutation = (): UseMutationOptions<any, any, BanUserPayload> => ({
+export const banUserMutation = (): UseMutationOptions<
+  any,
+  any,
+  BanUserPayload
+> => ({
   mutationFn: (payload: BanUserPayload) =>
     privateApi
       .post(`/api/users/${payload.userId}/ban`, payload)

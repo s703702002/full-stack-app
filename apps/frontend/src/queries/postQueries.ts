@@ -11,8 +11,13 @@ export interface CreatePostPayload {
   targetUserId?: string;
 }
 
-export const createPostMutation = (): UseMutationOptions<any, any, CreatePostPayload> => ({
-  mutationFn: (data: CreatePostPayload) => privateApi.post('/api/posts', data).then((r) => r.data),
+export const createPostMutation = (): UseMutationOptions<
+  any,
+  any,
+  CreatePostPayload
+> => ({
+  mutationFn: (data: CreatePostPayload) =>
+    privateApi.post('/api/posts', data).then((r) => r.data),
 });
 
 export interface UpdatePostPayload {
@@ -20,13 +25,18 @@ export interface UpdatePostPayload {
   content: string;
 }
 
-export const updatePostMutation = (): UseMutationOptions<any, any, UpdatePostPayload> => ({
+export const updatePostMutation = (): UseMutationOptions<
+  any,
+  any,
+  UpdatePostPayload
+> => ({
   mutationFn: ({ id, ...data }: UpdatePostPayload) =>
     privateApi.put(`/api/posts/${id}`, data).then((r) => r.data),
 });
 
 export const deletePostMutation = (): UseMutationOptions<any, any, string> => ({
-  mutationFn: (id: string) => privateApi.delete(`/api/posts/${id}`).then((r) => r.data),
+  mutationFn: (id: string) =>
+    privateApi.delete(`/api/posts/${id}`).then((r) => r.data),
 });
 
 export const toggleLikeMutation = (): UseMutationOptions<any, any, string> => ({
