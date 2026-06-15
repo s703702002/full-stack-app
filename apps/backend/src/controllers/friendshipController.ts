@@ -3,12 +3,18 @@ import * as FriendshipService from '../services/friendshipService.js';
 import { formatFriend, formatFriendRequest } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import { getAuthUser } from '../utils/requestHelper.js';
+import type {
+  FriendDTO,
+  FriendRequestDTO,
+  FriendshipStatus,
+} from '@full-stack-app/shared';
+import type { Friendship } from '../generated/client.js';
 
 export const getFriends = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
   const friends = await FriendshipService.getFriends(user.id);
 
-  sendSuccess(res, 200, {
+  sendSuccess<{ friends: FriendDTO[] }>(res, 200, {
     friends: friends.map((f) => formatFriend(f, user.id)),
   });
 };
@@ -16,7 +22,7 @@ export const getFriends = async (req: Request, res: Response) => {
 export const getReceivedRequests = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
   const requests = await FriendshipService.getReceivedRequests(user.id);
-  sendSuccess(res, 200, {
+  sendSuccess<{ requests: FriendRequestDTO[] }>(res, 200, {
     requests: requests.map((r) => formatFriendRequest(r, r.requester)),
   });
 };
@@ -24,7 +30,7 @@ export const getReceivedRequests = async (req: Request, res: Response) => {
 export const getSentRequests = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
   const requests = await FriendshipService.getSentRequests(user.id);
-  sendSuccess(res, 200, {
+  sendSuccess<{ requests: FriendRequestDTO[] }>(res, 200, {
     requests: requests.map((r) => formatFriendRequest(r, r.receiver)),
   });
 };
@@ -34,11 +40,13 @@ export const getFriendshipStatus = async (
   res: Response,
 ) => {
   const user = getAuthUser(req);
-  const status = await FriendshipService.getFriendshipStatus(
+  const result = await FriendshipService.getFriendshipStatus(
     user.id,
     req.params.targetUserId,
   );
-  sendSuccess(res, 200, { status });
+  sendSuccess<{ status: FriendshipStatus }>(res, 200, {
+    status: result.state as FriendshipStatus,
+  });
 };
 
 export const sendFriendRequest = async (
@@ -51,7 +59,12 @@ export const sendFriendRequest = async (
     req.params.receiverId,
     user.name,
   );
-  sendSuccess(res, 201, { friendship }, '好友申請已送出');
+  sendSuccess<{ friendship: Friendship }>(
+    res,
+    201,
+    { friendship },
+    '好友申請已送出',
+  );
 };
 
 export const respondToFriendRequest = async (
@@ -69,7 +82,7 @@ export const respondToFriendRequest = async (
     user.id,
     action,
   );
-  sendSuccess(
+  sendSuccess<{ friendship: Friendship }>(
     res,
     200,
     { friendship },

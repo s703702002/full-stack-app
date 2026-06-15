@@ -16,14 +16,10 @@ export const getFriends = async (userId: string) => {
   return await FriendshipModel.findFriends(userId);
 };
 
-type FriendshipState =
-  | { state: 'NONE' }
-  | { state: 'SENT' | 'RECEIVED' | FriendshipStatus; friendshipId: string };
-
 export const getFriendshipStatus = async (
   userId: string,
   targetUserId: string,
-): Promise<FriendshipState> => {
+) => {
   const friendship = await FriendshipModel.findByPair(userId, targetUserId);
 
   if (!friendship) return { state: 'NONE' };

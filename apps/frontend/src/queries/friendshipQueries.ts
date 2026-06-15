@@ -1,5 +1,12 @@
 import { privateApi } from '../api';
 import { UseMutationOptions } from '@tanstack/react-query';
+import type {
+  FriendDTO,
+  FriendRequestDTO,
+  FriendshipStatus,
+  ApiResponse,
+  FriendshipDTO,
+} from '@full-stack-app/shared';
 
 export const friendshipKeys = {
   friends: () => ['friendships', 'friends'] as const,
@@ -12,7 +19,9 @@ export const getFriends = () => ({
   queryKey: friendshipKeys.friends(),
   queryFn: () =>
     privateApi
-      .get('/api/friend-requests/friends')
+      .get<
+        ApiResponse<{ friends: FriendDTO[] }>
+      >('/api/friend-requests/friends')
       .then((r) => r.data.data.friends),
 });
 
@@ -20,7 +29,9 @@ export const getReceivedRequests = () => ({
   queryKey: friendshipKeys.received(),
   queryFn: () =>
     privateApi
-      .get('/api/friend-requests/received')
+      .get<
+        ApiResponse<{ requests: FriendRequestDTO[] }>
+      >('/api/friend-requests/received')
       .then((r) => r.data.data.requests),
 });
 
@@ -28,7 +39,9 @@ export const getSentRequests = () => ({
   queryKey: friendshipKeys.sent(),
   queryFn: () =>
     privateApi
-      .get('/api/friend-requests/sent')
+      .get<
+        ApiResponse<{ requests: FriendRequestDTO[] }>
+      >('/api/friend-requests/sent')
       .then((r) => r.data.data.requests),
 });
 
@@ -36,18 +49,24 @@ export const getFriendshipStatus = (userId: string) => ({
   queryKey: friendshipKeys.status(userId),
   queryFn: () =>
     privateApi
-      .get(`/api/friend-requests/status/${userId}`)
+      .get<
+        ApiResponse<{ status: FriendshipStatus }>
+      >(`/api/friend-requests/status/${userId}`)
       .then((r) => r.data.data.status),
   enabled: !!userId,
 });
 
 export const sendFriendRequestMutation = (): UseMutationOptions<
-  any,
-  any,
+  ApiResponse<{ friendship: FriendshipDTO }>,
+  Error,
   string
 > => ({
   mutationFn: (targetUserId: string) =>
-    privateApi.post(`/api/friend-requests/${targetUserId}`).then((r) => r.data),
+    privateApi
+      .post<
+        ApiResponse<{ friendship: FriendshipDTO }>
+      >(`/api/friend-requests/${targetUserId}`)
+      .then((r) => r.data),
 });
 
 export interface RespondFriendRequestPayload {
@@ -56,23 +75,27 @@ export interface RespondFriendRequestPayload {
 }
 
 export const respondFriendRequestMutation = (): UseMutationOptions<
-  any,
-  any,
+  ApiResponse<{ friendship: FriendshipDTO }>,
+  Error,
   RespondFriendRequestPayload
 > => ({
   mutationFn: (payload: RespondFriendRequestPayload) =>
     privateApi
-      .patch(`/api/friend-requests/${payload.id}`, payload)
+      .patch<
+        ApiResponse<{ friendship: FriendshipDTO }>
+      >(`/api/friend-requests/${payload.id}`, payload)
       .then((r) => r.data),
 });
 
 export const removeFriendMutation = (): UseMutationOptions<
-  any,
-  any,
+  ApiResponse<Record<string, never>>,
+  Error,
   string
 > => ({
   mutationFn: (userId: string) =>
     privateApi
-      .delete(`/api/friend-requests/friends/${userId}`)
+      .delete<
+        ApiResponse<Record<string, never>>
+      >(`/api/friend-requests/friends/${userId}`)
       .then((r) => r.data),
 });

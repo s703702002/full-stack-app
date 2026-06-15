@@ -12,6 +12,11 @@ import type {
   PassportGoogleCallback,
 } from '../types/passport.js';
 import logger from '../utils/logger.js';
+import type {
+  AuthResponseDTO,
+  UserDTO,
+  TwoFAInfoDTO,
+} from '@full-stack-app/shared';
 
 export const register = async (req: Request, res: Response) => {
   const { username, password, name } = req.body as {
@@ -20,7 +25,12 @@ export const register = async (req: Request, res: Response) => {
     name: string;
   };
   const newUser = await AuthService.registerUser(username, password, name);
-  sendSuccess(res, 201, { user: sanitizeUser(newUser) }, '註冊成功');
+  sendSuccess<{ user: UserDTO | null }>(
+    res,
+    201,
+    { user: sanitizeUser(newUser) },
+    '註冊成功',
+  );
 };
 
 export const login = (req: Request, res: Response, next: NextFunction) => {
@@ -33,13 +43,23 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
 
       return req.session.save((err) => {
         if (err) return next(err);
-        return sendSuccess(res, 200, { require2FA: true }, '請輸入 2FA 驗證碼');
+        return sendSuccess<AuthResponseDTO>(
+          res,
+          200,
+          { require2FA: true },
+          '請輸入 2FA 驗證碼',
+        );
       });
     }
 
     req.login(user, (err) => {
       if (err) return next(err);
-      return sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
+      return sendSuccess<AuthResponseDTO>(
+        res,
+        200,
+        { user: sanitizeUser(user) || undefined },
+        '登入成功',
+      );
     });
   };
 
@@ -61,7 +81,12 @@ export const login2FA = async (
   req.login(toPassportUser(user), (err) => {
     if (err) return next(err);
     delete req.session.tempUserId;
-    sendSuccess(res, 200, { user: sanitizeUser(user) }, '登入成功');
+    sendSuccess<AuthResponseDTO>(
+      res,
+      200,
+      { user: sanitizeUser(user) || undefined },
+      '登入成功',
+    );
   });
 };
 
@@ -101,7 +126,7 @@ export const setup2FA = async (req: Request, res: Response) => {
     user.id,
     user.username,
   );
-  sendSuccess(res, 200, { qrCodeImage, secret });
+  sendSuccess<TwoFAInfoDTO>(res, 200, { qrCodeImage, secret });
 };
 
 export const verify2FA = async (req: Request, res: Response) => {

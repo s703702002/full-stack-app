@@ -6,6 +6,13 @@ import type {
   FindFriendsResult,
   UserInFriendship,
 } from '../models/friendshipModel.js';
+import type {
+  UserDTO,
+  PostDTO,
+  FriendDTO,
+  FriendRequestDTO,
+  BanDTO,
+} from '@full-stack-app/shared';
 
 export const withBaseUrl = (path: string | null | undefined): string | null =>
   path ? `${env.IMAGE_BASE_URL}/${path}` : null;
@@ -14,7 +21,7 @@ type UserWithRole = User & {
   role?: { name: string } | null;
 };
 
-export const sanitizeUser = (user: UserWithRole | null) => {
+export const sanitizeUser = (user: UserWithRole | null): UserDTO | null => {
   if (!user) return null;
 
   return {
@@ -28,12 +35,12 @@ export const sanitizeUser = (user: UserWithRole | null) => {
   };
 };
 
-export const formatPost = (post: Post) => {
+export const formatPost = (post: Post): PostDTO => {
   return {
     id: post.id,
     content: post.content,
-    createdAt: post.createdAt,
-    updatedAt: post.updatedAt,
+    createdAt: post.createdAt?.toISOString() ?? null,
+    updatedAt: post.updatedAt?.toISOString() ?? null,
     userId: post.userId,
   };
 };
@@ -43,11 +50,11 @@ export const formatFriendRequest = (
     | FindReceivedRequestsResult[number]
     | FindSentRequestsResult[number],
   user: UserInFriendship,
-) => {
+): FriendRequestDTO => {
   return {
     id: friendship.id,
     status: friendship.status,
-    createdAt: friendship.createdAt,
+    createdAt: friendship.createdAt?.toISOString() ?? null,
     user: {
       id: user.id,
       name: user.name,
@@ -61,7 +68,7 @@ export const formatFriendRequest = (
 export const formatFriend = (
   friendship: FindFriendsResult[number],
   currentUserId: string,
-) => {
+): FriendDTO => {
   const friend =
     friendship.requesterId === currentUserId
       ? friendship.receiver
@@ -69,7 +76,7 @@ export const formatFriend = (
 
   return {
     friendshipId: friendship.id,
-    since: friendship.updatedAt,
+    since: friendship.updatedAt?.toISOString() ?? null,
     user: {
       id: friend.id,
       name: friend.name,
@@ -80,11 +87,11 @@ export const formatFriend = (
   };
 };
 
-export const formatBanInfo = (ban: UserBan) => {
+export const formatBanInfo = (ban: UserBan): BanDTO => {
   return {
     id: ban.id,
     reason: ban.reason,
     adminId: ban.adminId,
-    expiresAt: ban.expiresAt,
+    expiresAt: ban.expiresAt?.toISOString() ?? null,
   };
 };

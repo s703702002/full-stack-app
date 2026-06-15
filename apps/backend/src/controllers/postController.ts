@@ -4,6 +4,7 @@ import * as PostService from '../services/postService.js';
 import { formatPost, withBaseUrl } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import { getAuthUser } from '../utils/requestHelper.js';
+import type { PostDTO } from '@full-stack-app/shared';
 
 export const getPostLikers = async (
   req: Request<{ id: string }>,
@@ -31,7 +32,12 @@ export const createPost = async (req: Request, res: Response) => {
   };
   const user = getAuthUser(req);
   const newPost = await PostService.createPost(user.id, content, targetUserId);
-  sendSuccess(res, 201, { post: formatPost(newPost) }, '留言發布成功');
+  sendSuccess<{ post: PostDTO }>(
+    res,
+    201,
+    { post: formatPost(newPost) },
+    '留言發布成功',
+  );
 };
 
 export const updatePost = async (
@@ -44,7 +50,12 @@ export const updatePost = async (
     req.params.id,
     req.body.content,
   );
-  sendSuccess(res, 200, { post: formatPost(updatedPost) }, '留言更新成功');
+  sendSuccess<{ post: PostDTO }>(
+    res,
+    200,
+    { post: formatPost(updatedPost) },
+    '留言更新成功',
+  );
 };
 
 export const deletePost = async (

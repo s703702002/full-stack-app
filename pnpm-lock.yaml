@@ -62,6 +62,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.1037.0
         version: 3.1067.0
+      '@full-stack-app/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@prisma/adapter-pg':
         specifier: ^7.8.0
         version: 7.8.0
@@ -183,6 +186,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@full-stack-app/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@tanstack/react-query':
         specifier: ^5.101.0
         version: 5.101.0(react@19.2.7)
@@ -223,6 +229,12 @@ importers:
       vite:
         specifier: ^8.0.16
         version: 8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)
+
+  packages/shared:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
 
 packages:
 
@@ -3307,6 +3319,11 @@ packages:
 
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   typescript@6.0.3:
     resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
@@ -6924,6 +6941,8 @@ snapshots:
       reflect.getprototypeof: 1.0.10
 
   typedarray@0.0.6: {}
+
+  typescript@5.9.3: {}
 
   typescript@6.0.3: {}
 

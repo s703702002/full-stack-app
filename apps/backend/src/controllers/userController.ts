@@ -11,20 +11,28 @@ import AppError from '../utils/AppError.js';
 import * as UserService from '../services/userService.js';
 import PostModel from '../models/postModel.js';
 import { getAuthUser } from '../utils/requestHelper.js';
+import type {
+  UserDTO,
+  PostDTO,
+  PaginatedResponse,
+} from '@full-stack-app/shared';
 
 export const getMe = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
   const userWithRole = await UserModel.findById(user.id, { role: true });
   if (!userWithRole) throw new AppError('找不到使用者帳號', 404);
-  sendSuccess(res, 200, { user: sanitizeUser(userWithRole) });
+  sendSuccess<{ user: UserDTO | null }>(res, 200, {
+    user: sanitizeUser(userWithRole),
+  });
 };
 
 export const getAllUsers = async (_req: Request, res: Response) => {
   const users = await UserModel.findAllWithRole();
-  sendSuccess(res, 200, {
+  sendSuccess<{ users: UserDTO[] }>(res, 200, {
     users: users.map((user) => {
+      const sanitized = sanitizeUser(user);
       return {
-        ...sanitizeUser(user),
+        ...sanitized!,
         activeBan: user.bans[0] ? formatBanInfo(user.bans[0]) : null,
       };
     }),
@@ -54,7 +62,7 @@ export const updateProfile = async (req: Request, res: Response) => {
   const sanitized = sanitizeUser(updatedUser);
   if (!sanitized) throw new AppError('更新失敗', 500);
 
-  sendSuccess(res, 200, sanitized, '個人資料更新成功');
+  sendSuccess<UserDTO>(res, 200, sanitized, '個人資料更新成功');
 };
 
 export const getUserProfile = async (
@@ -65,9 +73,10 @@ export const getUserProfile = async (
   const targetUser = await UserModel.findById(req.params.id);
   if (!targetUser) throw new AppError('找不到該使用者', 404);
 
-  sendSuccess(res, 200, {
+  const sanitized = sanitizeUser(targetUser);
+  sendSuccess<{ user: UserDTO }>(res, 200, {
     user: {
-      ...sanitizeUser(targetUser),
+      ...sanitized!,
       isOwnProfile: user.id === targetUser.id,
     },
   });
@@ -90,8 +99,8 @@ export const getUserTimeline = async (
     limit,
   );
 
-  sendSuccess(res, 200, {
-    posts: posts.map((post) => ({
+  sendSuccess<PaginatedResponse<PostDTO>>(res, 200, {
+    items: posts.map((post) => ({
       ...formatPost(post),
       authorName: post.author?.name,
       authorAvatarUrl: withBaseUrl(post.author?.avatarUrl),

@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1037.0",
+    "@full-stack-app/shared": "workspace:*",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",
