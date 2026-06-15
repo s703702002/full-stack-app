@@ -1,4 +1,7 @@
-export const canEditUser = (currentUserRole, targetUserRole) => {
+export const canEditUser = (
+  currentUserRole: string,
+  targetUserRole: string,
+): boolean => {
   if (currentUserRole === 'superadmin') return true;
 
   if (currentUserRole === 'admin') {

@@ -1,4 +1,6 @@
-export const formatDateTime = (timeString) => {
+export const formatDateTime = (
+  timeString: string | Date | null | undefined,
+): string => {
   if (!timeString) return '';
   const date = new Date(timeString);
   return date.toLocaleString('zh-TW', {
