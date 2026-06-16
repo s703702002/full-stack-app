@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../context/useAuth';
+import { useAuthUser } from '../context/useAuth';
 import { canEditUser } from '../utils/roleHelper';
 import { cn } from '../utils/cn';
 import {
@@ -23,7 +23,7 @@ const getRoleLabelStyles = (roleName: string) =>
   })[roleName] ?? 'bg-slate-100 text-slate-600';
 
 export default function AdminUserPage() {
-  const { user } = useAuth();
+  const user = useAuthUser();
   const [banTarget, setBanTarget] = useState<UserDTO | null>(null);
   const queryClient = useQueryClient();
   const { error } = useToast();

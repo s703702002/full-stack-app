@@ -5,7 +5,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
-export default function Button({ children, loading, ...props }: ButtonProps) {
+export default function Button({
+  children,
+  loading,
+  ...props
+}: Readonly<ButtonProps>) {
   return (
     <button
       {...props}

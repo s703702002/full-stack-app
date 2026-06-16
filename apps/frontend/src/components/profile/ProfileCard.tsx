@@ -1,21 +1,21 @@
 import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../../context/useAuth';
+import { useAuthUser } from '../../context/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { userKeys, updateProfileMutation } from '../../queries/userQueries';
 import CameraCapture from '../CameraCapture';
 import Avatar from '../Avatar';
 
 export default function ProfileCard() {
-  const { user } = useAuth();
+  const user = useAuthUser();
   const { error, success } = useToast();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user.name);
   const [editBio, setEditBio] = useState(user.bio || '');
-  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState(user.avatarUrl || null);
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutateAsync: updateProfile, isPending } = useMutation({
     ...updateProfileMutation(),
     onSuccess: () => {
@@ -28,7 +28,7 @@ export default function ProfileCard() {
     },
   });
 
-  const handleFileChange = (file) => {
+  const handleFileChange = (file?: File) => {
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         error('圖片大小不能超過 5MB');
@@ -67,7 +67,7 @@ export default function ProfileCard() {
           />
           {isEditing && (
             <button
-              onClick={() => fileInputRef.current.click()}
+              onClick={() => fileInputRef.current?.click()}
               className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center cursor-pointer transition opacity-0 group-hover:opacity-100"
             >
               <span className="text-white text-xs font-medium">更換照片</span>
@@ -76,7 +76,7 @@ export default function ProfileCard() {
           <input
             type="file"
             ref={fileInputRef}
-            onChange={(e) => handleFileChange(e.target.files[0])}
+            onChange={(e) => handleFileChange(e.target.files?.[0])}
             accept="image/jpeg, image/png, image/webp"
             className="hidden"
           />

@@ -4,7 +4,10 @@ interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
 }
 
-export default function InputField({ label, ...props }: InputFieldProps) {
+export default function InputField({
+  label,
+  ...props
+}: Readonly<InputFieldProps>) {
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium text-slate-600 mb-1">

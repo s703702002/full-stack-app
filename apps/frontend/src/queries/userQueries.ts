@@ -57,9 +57,13 @@ export const getUserTimeline = (userId: string) =>
         : undefined,
   });
 
-export const updateProfileMutation = () => ({
-  mutationFn: (formData: FormData) =>
-    privateApi.put<ApiResponse<UserDTO>>('/api/users/profile', formData, {
+export const updateProfileMutation = (): UseMutationOptions<
+  ApiResponse<UserDTO>,
+  AxiosError<ApiErrorResponse>,
+  FormData
+> => ({
+  mutationFn: (formData) =>
+    privateApi.put('/api/users/profile', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 });

@@ -1,15 +1,13 @@
 import { useEffect } from 'react';
-import { useAuth } from '../context/useAuth';
+import { useAuthUser } from '../context/useAuth';
 import { useToast } from './useToast';
 import { getServerHost } from '../api';
 
 export default function useNotificationListener() {
-  const { user } = useAuth();
+  const user = useAuthUser();
   const { notify } = useToast();
 
   useEffect(() => {
-    if (!user) return;
-
     const eventSource = new EventSource(
       `${getServerHost()}/api/notifications/stream`,
       {
