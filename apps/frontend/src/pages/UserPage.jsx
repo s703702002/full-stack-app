@@ -37,7 +37,7 @@ export default function UserPage() {
       enabled: !!userId,
     });
 
-  const posts = data?.pages.flatMap((page) => page.posts) ?? [];
+  const posts = data?.pages.flatMap((page) => page.items) ?? [];
 
   if (!profile) return <div>載入中...</div>;
 
