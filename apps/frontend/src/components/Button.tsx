@@ -1,8 +1,15 @@
-export default function Button({ children, loading, ...props }) {
+import { ButtonHTMLAttributes, ReactNode } from 'react';
+
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;
+  loading?: boolean;
+}
+
+export default function Button({ children, loading, ...props }: ButtonProps) {
   return (
     <button
       {...props}
-      disabled={loading}
+      disabled={loading || props.disabled}
       className="w-full bg-primary hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 shadow-md hover:shadow-lg disabled:opacity-60 flex items-center justify-center"
     >
       {loading && (

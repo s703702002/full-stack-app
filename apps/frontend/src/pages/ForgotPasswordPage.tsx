@@ -1,23 +1,22 @@
-import { useState } from 'react';
+import { useState, SubmitEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { publicApi } from '../api';
 import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
+import { forgotPasswordMutation } from '../queries/authQueries';
 
 export default function ForgotPasswordPage() {
   const [username, setUsername] = useState('');
   const { success, error } = useToast();
 
   const { mutate: forgotPassword, isPending } = useMutation({
-    mutationFn: (payload) =>
-      publicApi.post('/api/auth/forgot-password', payload).then((r) => r.data),
+    ...forgotPasswordMutation(),
     onSuccess: () => success('若帳號存在，重設連結已發送'),
     onError: (err) => error(err.response?.data?.message || '發送失敗'),
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     forgotPassword({ username });
   };

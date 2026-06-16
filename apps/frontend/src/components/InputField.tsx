@@ -1,4 +1,10 @@
-export default function InputField({ label, ...props }) {
+import { InputHTMLAttributes } from 'react';
+
+interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+}
+
+export default function InputField({ label, ...props }: InputFieldProps) {
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium text-slate-600 mb-1">

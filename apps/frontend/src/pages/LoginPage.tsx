@@ -1,18 +1,17 @@
-import { useState } from 'react';
+import { useState, SubmitEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
-import { publicApi } from '../api';
 import { useToast } from '../hooks/useToast';
+import { loginMutation } from '../queries/authQueries';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { error } = useToast();
   const [formData, setFormData] = useState({ username: '', password: '' });
   const { mutate: login, isPending } = useMutation({
-    mutationFn: (payload) =>
-      publicApi.post('/api/auth/login', payload).then((r) => r.data),
+    ...loginMutation(),
     onSuccess: (data) => {
       if (data.data.require2FA) {
         navigate('/login/2fa');
@@ -25,7 +24,7 @@ export default function LoginPage() {
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     login(formData);
   };
