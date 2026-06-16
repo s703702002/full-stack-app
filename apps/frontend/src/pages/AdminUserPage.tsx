@@ -12,8 +12,9 @@ import {
 } from '../queries/userQueries';
 import { useToast } from '../hooks/useToast';
 import BanModal from '../components/BanModal';
+import { UserDTO } from '@full-stack-app/shared';
 
-const getRoleLabelStyles = (roleName) =>
+const getRoleLabelStyles = (roleName: string) =>
   ({
     superadmin: 'bg-purple-100 text-purple-800',
     admin: 'bg-blue-100 text-blue-800',
@@ -23,7 +24,7 @@ const getRoleLabelStyles = (roleName) =>
 
 export default function AdminUserPage() {
   const { user } = useAuth();
-  const [banTarget, setBanTarget] = useState(null);
+  const [banTarget, setBanTarget] = useState<UserDTO | null>(null);
   const queryClient = useQueryClient();
   const { error } = useToast();
 
@@ -53,12 +54,15 @@ export default function AdminUserPage() {
     onError: () => error('解除停用失敗'),
   });
 
-  if (isLoading)
+  if (isLoading || !user) {
     return <div className="text-center mt-20 text-slate-500">載入中...</div>;
-  if (isError)
+  }
+
+  if (isError) {
     return (
       <div className="text-center mt-20 text-red-500 font-bold">載入失敗</div>
     );
+  }
 
   return (
     <div className="max-w-5xl mx-auto mt-10 p-4">
@@ -87,8 +91,10 @@ export default function AdminUserPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {users.map((u) => {
-                const hasPermission = canEditUser(user.roleName, u.roleName);
-                const isBanned = !!u.activeBan;
+                const hasPermission = canEditUser(
+                  user.roleName ?? '',
+                  u.roleName ?? '',
+                );
 
                 return (
                   <tr
@@ -112,14 +118,14 @@ export default function AdminUserPage() {
                       <span
                         className={cn(
                           'px-3 py-1 rounded-full text-xs font-bold',
-                          getRoleLabelStyles(u.roleName),
+                          getRoleLabelStyles(u.roleName!),
                         )}
                       >
                         {u.roleName || '無角色'}
                       </span>
                     </td>
                     <td className="p-4">
-                      {isBanned ? (
+                      {u.activeBan ? (
                         <span
                           className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 cursor-help"
                           title={`原因：${u.activeBan.reason}\n到期：${u.activeBan.expiresAt ? new Date(u.activeBan.expiresAt).toLocaleString() : '永久'}`}
@@ -154,7 +160,7 @@ export default function AdminUserPage() {
                     </td>
 
                     <td className="p-4">
-                      {isBanned ? (
+                      {u.activeBan ? (
                         <button
                           onClick={() => liftBan(u.id)}
                           className="text-sm text-emerald-600 hover:text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-3 py-1 rounded transition-colors"

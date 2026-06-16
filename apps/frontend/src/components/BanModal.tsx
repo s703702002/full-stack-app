@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useState } from 'react';
+import { UserDTO } from '@full-stack-app/shared';
 
 const DURATION_OPTIONS = [
   { label: '30 分鐘', value: 30 },
@@ -9,7 +10,17 @@ const DURATION_OPTIONS = [
   { label: '永久', value: 0 },
 ];
 
-export default function BanModal({ target, onConfirm, onClose }) {
+interface BanModalProps {
+  target: UserDTO;
+  onConfirm: (payload: { reason: string; durationMinutes: number }) => void;
+  onClose: () => void;
+}
+
+export default function BanModal({
+  target,
+  onConfirm,
+  onClose,
+}: BanModalProps) {
   const [reason, setReason] = useState('');
   const [duration, setDuration] = useState(60);
 
