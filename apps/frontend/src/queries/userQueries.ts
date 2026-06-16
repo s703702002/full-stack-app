@@ -1,10 +1,16 @@
 import { privateApi } from '../api';
-import { UseMutationOptions } from '@tanstack/react-query';
+import {
+  UseMutationOptions,
+  queryOptions,
+  infiniteQueryOptions,
+} from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import type {
   UserDTO,
   PostDTO,
   PaginatedResponse,
   ApiResponse,
+  ApiErrorResponse,
 } from '@full-stack-app/shared';
 
 export const userKeys = {
@@ -14,35 +20,42 @@ export const userKeys = {
   timeline: (id: string) => ['users', id, 'posts'] as const,
 };
 
-export const getMe = () => ({
-  queryKey: userKeys.me(),
-  queryFn: () =>
-    privateApi
-      .get<ApiResponse<{ user: UserDTO }>>('/api/users/me')
-      .then((r) => r.data.data.user),
-});
+export const getMe = () =>
+  queryOptions<UserDTO, AxiosError<ApiErrorResponse>>({
+    queryKey: userKeys.me(),
+    queryFn: () =>
+      privateApi.get('/api/users/me').then((r) => r.data.data.user),
+  });
 
-export const getUserProfile = (userId: string) => ({
-  queryKey: userKeys.detail(userId),
-  queryFn: () =>
-    privateApi
-      .get<ApiResponse<{ user: UserDTO }>>(`/api/users/${userId}`)
-      .then((r) => r.data.data.user),
-  enabled: !!userId,
-});
+export const getUserProfile = (userId: string) =>
+  queryOptions<UserDTO, AxiosError<ApiErrorResponse>>({
+    queryKey: userKeys.detail(userId),
+    queryFn: () =>
+      privateApi.get(`/api/users/${userId}`).then((r) => r.data.data.user),
+    enabled: !!userId,
+  });
 
-export const getUserTimeline = (userId: string) => ({
-  queryKey: userKeys.timeline(userId),
-  queryFn: ({ pageParam = 1 }: { pageParam?: number }) =>
-    privateApi
-      .get<ApiResponse<PaginatedResponse<PostDTO>>>(
-        `/api/users/${userId}/posts`,
-        {
+export const getUserTimeline = (userId: string) =>
+  infiniteQueryOptions<
+    PaginatedResponse<PostDTO>,
+    AxiosError<ApiErrorResponse>,
+    PaginatedResponse<PostDTO>,
+    readonly [string, string, string],
+    number
+  >({
+    queryKey: userKeys.timeline(userId),
+    queryFn: ({ pageParam }) =>
+      privateApi
+        .get(`/api/users/${userId}/posts`, {
           params: { page: pageParam, limit: 10 },
-        },
-      )
-      .then((r) => r.data.data),
-});
+        })
+        .then((r) => r.data.data),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.hasNextPage
+        ? lastPage.pagination.page + 1
+        : undefined,
+  });
 
 export const updateProfileMutation = () => ({
   mutationFn: (formData: FormData) =>
@@ -51,13 +64,11 @@ export const updateProfileMutation = () => ({
     }),
 });
 
-export const getAllUsers = () => ({
-  queryKey: userKeys.all,
-  queryFn: () =>
-    privateApi
-      .get<ApiResponse<{ users: UserDTO[] }>>('/api/users')
-      .then((r) => r.data.data.users),
-});
+export const getAllUsers = () =>
+  queryOptions<UserDTO[], AxiosError<ApiErrorResponse>>({
+    queryKey: userKeys.all,
+    queryFn: () => privateApi.get('/api/users').then((r) => r.data.data.users),
+  });
 
 export interface UpdateRolePayload {
   targetUserId: string;
@@ -66,14 +77,12 @@ export interface UpdateRolePayload {
 
 export const updateRoleMutation = (): UseMutationOptions<
   ApiResponse<Record<string, never>>,
-  Error,
+  AxiosError<ApiErrorResponse>,
   UpdateRolePayload
 > => ({
   mutationFn: (payload: UpdateRolePayload) =>
     privateApi
-      .put<
-        ApiResponse<Record<string, never>>
-      >(`/api/users/${payload.targetUserId}/role`, payload)
+      .put(`/api/users/${payload.targetUserId}/role`, payload)
       .then((r) => r.data),
 });
 
@@ -85,24 +94,20 @@ export interface BanUserPayload {
 
 export const banUserMutation = (): UseMutationOptions<
   ApiResponse<Record<string, never>>,
-  Error,
+  AxiosError<ApiErrorResponse>,
   BanUserPayload
 > => ({
   mutationFn: (payload: BanUserPayload) =>
     privateApi
-      .post<
-        ApiResponse<Record<string, never>>
-      >(`/api/users/${payload.userId}/ban`, payload)
+      .post(`/api/users/${payload.userId}/ban`, payload)
       .then((r) => r.data),
 });
 
 export const liftBanMutation = (): UseMutationOptions<
   ApiResponse<Record<string, never>>,
-  Error,
+  AxiosError<ApiErrorResponse>,
   string
 > => ({
   mutationFn: (userId: string) =>
-    privateApi
-      .delete<ApiResponse<Record<string, never>>>(`/api/users/${userId}/ban`)
-      .then((r) => r.data),
+    privateApi.delete(`/api/users/${userId}/ban`).then((r) => r.data),
 });

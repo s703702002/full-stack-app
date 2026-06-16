@@ -29,11 +29,6 @@ export default function UserPage() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
       ...getUserTimeline(userId),
-      getNextPageParam: (lastPage) =>
-        lastPage.pagination.hasNextPage
-          ? lastPage.pagination.page + 1
-          : undefined,
-      initialPageParam: 1,
       enabled: !!userId,
     });
 

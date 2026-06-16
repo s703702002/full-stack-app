@@ -81,3 +81,16 @@ export interface TwoFAInfoDTO {
   qrCodeImage: string;
   secret: string;
 }
+
+export interface ApiErrorData {
+  errorCode?: number;
+  reason?: string;
+  expiresAt?: string | null;
+  [key: string]: unknown;
+}
+
+export interface ApiErrorResponse {
+  success: false;
+  message: string;
+  data?: ApiErrorData;
+}

@@ -1,6 +1,11 @@
 import { privateApi } from '../api';
 import { UseMutationOptions } from '@tanstack/react-query';
-import type { PostDTO, ApiResponse } from '@full-stack-app/shared';
+import type { AxiosError } from 'axios';
+import type {
+  PostDTO,
+  ApiResponse,
+  ApiErrorResponse,
+} from '@full-stack-app/shared';
 
 export const postKeys = {
   all: ['posts'] as const,
@@ -14,7 +19,7 @@ export interface CreatePostPayload {
 
 export const createPostMutation = (): UseMutationOptions<
   PostDTO,
-  Error,
+  AxiosError<ApiErrorResponse>,
   CreatePostPayload
 > => ({
   mutationFn: (data: CreatePostPayload) =>
@@ -30,7 +35,7 @@ export interface UpdatePostPayload {
 
 export const updatePostMutation = (): UseMutationOptions<
   PostDTO,
-  Error,
+  AxiosError<ApiErrorResponse>,
   UpdatePostPayload
 > => ({
   mutationFn: ({ id, ...data }: UpdatePostPayload) =>
@@ -41,7 +46,7 @@ export const updatePostMutation = (): UseMutationOptions<
 
 export const deletePostMutation = (): UseMutationOptions<
   ApiResponse<Record<string, never>>,
-  Error,
+  AxiosError<ApiErrorResponse>,
   string
 > => ({
   mutationFn: (id: string) =>
@@ -52,7 +57,7 @@ export const deletePostMutation = (): UseMutationOptions<
 
 export const toggleLikeMutation = (): UseMutationOptions<
   ApiResponse<{ isLiked: boolean }>,
-  Error,
+  AxiosError<ApiErrorResponse>,
   string
 > => ({
   mutationFn: (postId: string) =>

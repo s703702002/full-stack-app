@@ -1,10 +1,11 @@
 import { createContext, useContext } from 'react';
-import type { UserDTO } from '@full-stack-app/shared';
+import type { UserDTO, ApiErrorResponse } from '@full-stack-app/shared';
+import type { AxiosError } from 'axios';
 
 interface AuthContextType {
   user: UserDTO | null | undefined;
   isInitialized: boolean;
-  errorData: any;
+  errorData: AxiosError<ApiErrorResponse> | null;
 }
 
 export const AuthContext = createContext<AuthContextType>({

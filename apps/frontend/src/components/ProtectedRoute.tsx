@@ -15,14 +15,16 @@ export default function ProtectedRoute() {
     );
   }
 
-  if (isInitialized && errorData) {
-    if ((errorData as any).errorCode === 40301)
+  const apiError = errorData?.response?.data;
+
+  if (isInitialized && apiError) {
+    if (apiError.data?.errorCode === 40301)
       return (
         <Navigate
           to="/banned"
           state={{
-            reason: (errorData as any).reason,
-            expiresAt: (errorData as any).expiresAt,
+            reason: apiError.data?.reason,
+            expiresAt: apiError.data?.expiresAt,
           }}
           replace
         />

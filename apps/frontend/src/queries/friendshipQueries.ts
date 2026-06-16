@@ -1,11 +1,13 @@
 import { privateApi } from '../api';
-import { UseMutationOptions } from '@tanstack/react-query';
+import { UseMutationOptions, queryOptions } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import type {
   FriendDTO,
   FriendRequestDTO,
   FriendshipStatus,
   ApiResponse,
   FriendshipDTO,
+  ApiErrorResponse,
 } from '@full-stack-app/shared';
 
 export const friendshipKeys = {
@@ -15,50 +17,54 @@ export const friendshipKeys = {
   status: (userId: string) => ['friendships', 'status', userId] as const,
 };
 
-export const getFriends = () => ({
-  queryKey: friendshipKeys.friends(),
-  queryFn: () =>
-    privateApi
-      .get<
-        ApiResponse<{ friends: FriendDTO[] }>
-      >('/api/friend-requests/friends')
-      .then((r) => r.data.data.friends),
-});
+export const getFriends = () =>
+  queryOptions<FriendDTO[], AxiosError<ApiErrorResponse>>({
+    queryKey: friendshipKeys.friends(),
+    queryFn: () =>
+      privateApi
+        .get<
+          ApiResponse<{ friends: FriendDTO[] }>
+        >('/api/friend-requests/friends')
+        .then((r) => r.data.data.friends),
+  });
 
-export const getReceivedRequests = () => ({
-  queryKey: friendshipKeys.received(),
-  queryFn: () =>
-    privateApi
-      .get<
-        ApiResponse<{ requests: FriendRequestDTO[] }>
-      >('/api/friend-requests/received')
-      .then((r) => r.data.data.requests),
-});
+export const getReceivedRequests = () =>
+  queryOptions<FriendRequestDTO[], AxiosError<ApiErrorResponse>>({
+    queryKey: friendshipKeys.received(),
+    queryFn: () =>
+      privateApi
+        .get<
+          ApiResponse<{ requests: FriendRequestDTO[] }>
+        >('/api/friend-requests/received')
+        .then((r) => r.data.data.requests),
+  });
 
-export const getSentRequests = () => ({
-  queryKey: friendshipKeys.sent(),
-  queryFn: () =>
-    privateApi
-      .get<
-        ApiResponse<{ requests: FriendRequestDTO[] }>
-      >('/api/friend-requests/sent')
-      .then((r) => r.data.data.requests),
-});
+export const getSentRequests = () =>
+  queryOptions<FriendRequestDTO[], AxiosError<ApiErrorResponse>>({
+    queryKey: friendshipKeys.sent(),
+    queryFn: () =>
+      privateApi
+        .get<
+          ApiResponse<{ requests: FriendRequestDTO[] }>
+        >('/api/friend-requests/sent')
+        .then((r) => r.data.data.requests),
+  });
 
-export const getFriendshipStatus = (userId: string) => ({
-  queryKey: friendshipKeys.status(userId),
-  queryFn: () =>
-    privateApi
-      .get<
-        ApiResponse<{ status: FriendshipStatus }>
-      >(`/api/friend-requests/status/${userId}`)
-      .then((r) => r.data.data.status),
-  enabled: !!userId,
-});
+export const getFriendshipStatus = (userId: string) =>
+  queryOptions<FriendshipStatus, AxiosError<ApiErrorResponse>>({
+    queryKey: friendshipKeys.status(userId),
+    queryFn: () =>
+      privateApi
+        .get<
+          ApiResponse<{ status: FriendshipStatus }>
+        >(`/api/friend-requests/status/${userId}`)
+        .then((r) => r.data.data.status),
+    enabled: !!userId,
+  });
 
 export const sendFriendRequestMutation = (): UseMutationOptions<
   ApiResponse<{ friendship: FriendshipDTO }>,
-  Error,
+  AxiosError<ApiErrorResponse>,
   string
 > => ({
   mutationFn: (targetUserId: string) =>
@@ -76,7 +82,7 @@ export interface RespondFriendRequestPayload {
 
 export const respondFriendRequestMutation = (): UseMutationOptions<
   ApiResponse<{ friendship: FriendshipDTO }>,
-  Error,
+  AxiosError<ApiErrorResponse>,
   RespondFriendRequestPayload
 > => ({
   mutationFn: (payload: RespondFriendRequestPayload) =>
@@ -89,7 +95,7 @@ export const respondFriendRequestMutation = (): UseMutationOptions<
 
 export const removeFriendMutation = (): UseMutationOptions<
   ApiResponse<Record<string, never>>,
-  Error,
+  AxiosError<ApiErrorResponse>,
   string
 > => ({
   mutationFn: (userId: string) =>
