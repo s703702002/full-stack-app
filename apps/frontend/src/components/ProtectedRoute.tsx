@@ -16,11 +16,14 @@ export default function ProtectedRoute() {
   }
 
   if (isInitialized && errorData) {
-    if (errorData.errorCode === 40301)
+    if ((errorData as any).errorCode === 40301)
       return (
         <Navigate
           to="/banned"
-          state={{ reason: errorData.reason, expiresAt: errorData.expiresAt }}
+          state={{
+            reason: (errorData as any).reason,
+            expiresAt: (errorData as any).expiresAt,
+          }}
           replace
         />
       );
