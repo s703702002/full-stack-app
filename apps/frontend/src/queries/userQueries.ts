@@ -1,8 +1,8 @@
 import { privateApi } from '../api';
 import {
-  UseMutationOptions,
   queryOptions,
   infiniteQueryOptions,
+  mutationOptions,
 } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import type {
@@ -57,16 +57,15 @@ export const getUserTimeline = (userId: string) =>
         : undefined,
   });
 
-export const updateProfileMutation = (): UseMutationOptions<
-  ApiResponse<UserDTO>,
-  AxiosError<ApiErrorResponse>,
-  FormData
-> => ({
-  mutationFn: (formData) =>
-    privateApi.put('/api/users/profile', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
-});
+export const updateProfileMutation = () =>
+  mutationOptions<ApiResponse<UserDTO>, AxiosError<ApiErrorResponse>, FormData>(
+    {
+      mutationFn: (formData) =>
+        privateApi.put('/api/users/profile', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }),
+    },
+  );
 
 export const getAllUsers = () =>
   queryOptions<UserDTO[], AxiosError<ApiErrorResponse>>({
@@ -79,16 +78,17 @@ export interface UpdateRolePayload {
   newRoleName: string;
 }
 
-export const updateRoleMutation = (): UseMutationOptions<
-  ApiResponse<Record<string, never>>,
-  AxiosError<ApiErrorResponse>,
-  UpdateRolePayload
-> => ({
-  mutationFn: (payload: UpdateRolePayload) =>
-    privateApi
-      .put(`/api/users/${payload.targetUserId}/role`, payload)
-      .then((r) => r.data),
-});
+export const updateRoleMutation = () =>
+  mutationOptions<
+    ApiResponse<Record<string, never>>,
+    AxiosError<ApiErrorResponse>,
+    UpdateRolePayload
+  >({
+    mutationFn: (payload) =>
+      privateApi
+        .put(`/api/users/${payload.targetUserId}/role`, payload)
+        .then((r) => r.data),
+  });
 
 export interface BanUserPayload {
   userId: string;
@@ -96,22 +96,24 @@ export interface BanUserPayload {
   durationMinutes: number;
 }
 
-export const banUserMutation = (): UseMutationOptions<
-  ApiResponse<Record<string, never>>,
-  AxiosError<ApiErrorResponse>,
-  BanUserPayload
-> => ({
-  mutationFn: (payload: BanUserPayload) =>
-    privateApi
-      .post(`/api/users/${payload.userId}/ban`, payload)
-      .then((r) => r.data),
-});
+export const banUserMutation = () =>
+  mutationOptions<
+    ApiResponse<Record<string, never>>,
+    AxiosError<ApiErrorResponse>,
+    BanUserPayload
+  >({
+    mutationFn: (payload) =>
+      privateApi
+        .post(`/api/users/${payload.userId}/ban`, payload)
+        .then((r) => r.data),
+  });
 
-export const liftBanMutation = (): UseMutationOptions<
-  ApiResponse<Record<string, never>>,
-  AxiosError<ApiErrorResponse>,
-  string
-> => ({
-  mutationFn: (userId: string) =>
-    privateApi.delete(`/api/users/${userId}/ban`).then((r) => r.data),
-});
+export const liftBanMutation = () =>
+  mutationOptions<
+    ApiResponse<Record<string, never>>,
+    AxiosError<ApiErrorResponse>,
+    string
+  >({
+    mutationFn: (userId) =>
+      privateApi.delete(`/api/users/${userId}/ban`).then((r) => r.data),
+  });

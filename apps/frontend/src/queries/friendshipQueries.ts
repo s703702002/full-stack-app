@@ -1,5 +1,5 @@
 import { privateApi } from '../api';
-import { UseMutationOptions, queryOptions } from '@tanstack/react-query';
+import { queryOptions, mutationOptions } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import type {
   FriendDTO,
@@ -62,46 +62,43 @@ export const getFriendshipStatus = (userId: string) =>
     enabled: !!userId,
   });
 
-export const sendFriendRequestMutation = (): UseMutationOptions<
-  ApiResponse<{ friendship: FriendshipDTO }>,
-  AxiosError<ApiErrorResponse>,
-  string
-> => ({
-  mutationFn: (targetUserId: string) =>
-    privateApi
-      .post<
-        ApiResponse<{ friendship: FriendshipDTO }>
-      >(`/api/friend-requests/${targetUserId}`)
-      .then((r) => r.data),
-});
+export const sendFriendRequestMutation = () =>
+  mutationOptions<
+    ApiResponse<{ friendship: FriendshipDTO }>,
+    AxiosError<ApiErrorResponse>,
+    string
+  >({
+    mutationFn: (targetUserId) =>
+      privateApi
+        .post(`/api/friend-requests/${targetUserId}`)
+        .then((r) => r.data),
+  });
 
 export interface RespondFriendRequestPayload {
   id: string;
   action: 'accept' | 'reject';
 }
 
-export const respondFriendRequestMutation = (): UseMutationOptions<
-  ApiResponse<{ friendship: FriendshipDTO }>,
-  AxiosError<ApiErrorResponse>,
-  RespondFriendRequestPayload
-> => ({
-  mutationFn: (payload: RespondFriendRequestPayload) =>
-    privateApi
-      .patch<
-        ApiResponse<{ friendship: FriendshipDTO }>
-      >(`/api/friend-requests/${payload.id}`, payload)
-      .then((r) => r.data),
-});
+export const respondFriendRequestMutation = () =>
+  mutationOptions<
+    ApiResponse<{ friendship: FriendshipDTO }>,
+    AxiosError<ApiErrorResponse>,
+    RespondFriendRequestPayload
+  >({
+    mutationFn: (payload) =>
+      privateApi
+        .patch(`/api/friend-requests/${payload.id}`, payload)
+        .then((r) => r.data),
+  });
 
-export const removeFriendMutation = (): UseMutationOptions<
-  ApiResponse<Record<string, never>>,
-  AxiosError<ApiErrorResponse>,
-  string
-> => ({
-  mutationFn: (userId: string) =>
-    privateApi
-      .delete<
-        ApiResponse<Record<string, never>>
-      >(`/api/friend-requests/friends/${userId}`)
-      .then((r) => r.data),
-});
+export const removeFriendMutation = () =>
+  mutationOptions<
+    ApiResponse<Record<string, never>>,
+    AxiosError<ApiErrorResponse>,
+    string
+  >({
+    mutationFn: (userId) =>
+      privateApi
+        .delete(`/api/friend-requests/friends/${userId}`)
+        .then((r) => r.data),
+  });

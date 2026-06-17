@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, SubmitEvent, ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { publicApi } from '../api';
 import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
+import { registerMutation, RegisterPayload } from '../queries/authQueries';
+import { AxiosError } from 'axios';
+import { ApiErrorResponse } from '@full-stack-app/shared';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { success, error } = useToast();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegisterPayload>({
     name: '',
     username: '',
     password: '',
@@ -17,18 +19,26 @@ export default function RegisterPage() {
   });
 
   const { mutate: register, isPending } = useMutation({
-    mutationFn: (payload) =>
-      publicApi.post('/api/auth/register', payload).then((r) => r.data),
+    ...registerMutation(),
     onSuccess: () => {
       success('註冊成功，將為您跳轉至登入頁面');
       setTimeout(() => navigate('/login'), 2000);
     },
-    onError: (err) => error(err.response?.data?.message || '註冊失敗'),
+    onError: (err: AxiosError<ApiErrorResponse>) =>
+      error(err.response?.data?.message || '註冊失敗'),
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      error('密碼不一致');
+      return;
+    }
     register(formData);
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
@@ -41,35 +51,33 @@ export default function RegisterPage() {
           <InputField
             label="姓名 (Name)"
             type="text"
+            name="name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={handleInputChange}
             required
           />
           <InputField
             label="帳號 (Username)"
             type="text"
+            name="username"
             value={formData.username}
-            onChange={(e) =>
-              setFormData({ ...formData, username: e.target.value })
-            }
+            onChange={handleInputChange}
             required
           />
           <InputField
             label="密碼 (Password)"
             type="password"
+            name="password"
             value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
+            onChange={handleInputChange}
             required
           />
           <InputField
             label="確認密碼"
             type="password"
+            name="confirmPassword"
             value={formData.confirmPassword}
-            onChange={(e) =>
-              setFormData({ ...formData, confirmPassword: e.target.value })
-            }
+            onChange={handleInputChange}
             required
           />
           <div className="mb-8"></div>
