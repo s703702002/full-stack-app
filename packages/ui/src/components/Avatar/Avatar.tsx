@@ -1,12 +1,12 @@
-import { cn } from '../utils/cn';
+import { cn } from '../../utils/cn';
 
-interface AvatarProps {
+export interface AvatarProps {
   avatarUrl?: string | null;
   name?: string;
   className?: string;
 }
 
-export default function Avatar({
+export function Avatar({
   avatarUrl,
   name = '?',
   className = 'w-20 h-20 sm:w-24 sm:h-24 text-3xl sm:text-4xl',

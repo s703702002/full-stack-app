@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { createPostMutation } from '../queries/postQueries';
 import { useToast } from '../hooks/useToast';
-import { cn } from '../utils/cn';
-import Avatar from './Avatar';
+import { Avatar } from '@full-stack-app/ui';
 import { UserDTO, ApiErrorResponse } from '@full-stack-app/shared';
+import { cn } from '@full-stack-app/ui';
 import { AxiosError } from 'axios';
 
 interface CreatePostBoxProps {

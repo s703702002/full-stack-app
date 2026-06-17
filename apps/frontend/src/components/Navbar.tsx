@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
 import { useToast } from '../hooks/useToast';
 import { userKeys } from '../queries/userQueries';
-import Avatar from './Avatar';
+import { Avatar } from '@full-stack-app/ui';
 import { logoutMutation } from '../queries/authQueries';
 
 export default function Navbar() {

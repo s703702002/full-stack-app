@@ -6,8 +6,7 @@ import {
   useQueryClient,
   QueryKey,
 } from '@tanstack/react-query';
-import { cn } from '../utils/cn';
-import Avatar from '../components/Avatar';
+import { Avatar, cn } from '@full-stack-app/ui';
 import { formatDateTime } from '../utils/format';
 import { useToast } from '../hooks/useToast';
 import {

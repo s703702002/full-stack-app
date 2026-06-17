@@ -2,7 +2,8 @@
 export default {
   content: [
     './index.html',
-    './src/**/*.{js,ts,jsx,tsx}', // 掃描 src 底下所有 React 檔案
+    './src/**/*.{js,ts,jsx,tsx}',
+    '../../packages/ui/src/**/*.{ts,tsx,js,jsx}',
   ],
   theme: {
     extend: {

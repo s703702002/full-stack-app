@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import Avatar from './Avatar';
+import { Avatar } from '@full-stack-app/ui';
 import { UserDTO } from '@full-stack-app/shared';
 
 interface LikerListProps {

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthUser } from '../context/useAuth';
 import { canEditUser } from '../utils/roleHelper';
-import { cn } from '../utils/cn';
 import {
   userKeys,
   getAllUsers,
@@ -13,6 +12,7 @@ import {
 import { useToast } from '../hooks/useToast';
 import BanModal from '../components/BanModal';
 import { UserDTO } from '@full-stack-app/shared';
+import { cn } from '@full-stack-app/ui';
 
 const getRoleLabelStyles = (roleName: string) =>
   ({

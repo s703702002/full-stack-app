@@ -5,7 +5,7 @@ import {
 } from '@tanstack/react-query';
 import PostCard from '../components/PostCard';
 import CreatePostBox from '../components/CreatePostBox';
-import Avatar from '../components/Avatar';
+import { Avatar } from '@full-stack-app/ui';
 import FriendshipButton from '../components/FriendshipButton';
 import {
   getUserProfile,

@@ -9,9 +9,8 @@ import {
 } from '../queries/postQueries';
 import { formatDateTime } from '../utils/format';
 import { useToast } from '../hooks/useToast';
-import Avatar from './Avatar';
+import { Avatar, cn } from '@full-stack-app/ui';
 import LikersModal from './LikersModal';
-import { cn } from '../utils/cn';
 import { PostDTO, UserDTO, ApiResponse } from '@full-stack-app/shared';
 import { AxiosError } from 'axios';
 import { ApiErrorResponse } from '@full-stack-app/shared';

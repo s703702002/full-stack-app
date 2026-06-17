@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-interface CameraCaptureProps {
+export interface CameraCaptureProps {
   onCapture: (file: File) => void;
 }
 
-export default function CameraCapture({ onCapture }: CameraCaptureProps) {
+export function CameraCapture({ onCapture }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -99,7 +99,7 @@ export default function CameraCapture({ onCapture }: CameraCaptureProps) {
       ) : (
         <button
           onClick={startCamera}
-          className="bg-primary text-white px-4 py-2 rounded-lg"
+          className="bg-slate-900 text-white px-4 py-2 rounded-lg"
         >
           開啟相機拍照
         </button>
