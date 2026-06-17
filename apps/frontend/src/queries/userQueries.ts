@@ -36,15 +36,9 @@ export const getUserProfile = (userId: string) =>
   });
 
 export const getUserTimeline = (userId: string) =>
-  infiniteQueryOptions<
-    PaginatedResponse<PostDTO>,
-    AxiosError<ApiErrorResponse>,
-    PaginatedResponse<PostDTO>,
-    readonly [string, string, string],
-    number
-  >({
+  infiniteQueryOptions({
     queryKey: userKeys.timeline(userId),
-    queryFn: ({ pageParam }) =>
+    queryFn: ({ pageParam }): Promise<PaginatedResponse<PostDTO>> =>
       privateApi
         .get(`/api/users/${userId}/posts`, {
           params: { page: pageParam, limit: 10 },

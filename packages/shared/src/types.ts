@@ -13,7 +13,7 @@ export interface PaginationDTO {
 }
 
 export interface PaginatedResponse<T> {
-  items: T[]; // 將 posts 改名為更通用的 items
+  items: T[];
   pagination: PaginationDTO;
 }
 
@@ -22,7 +22,7 @@ export interface UserDTO {
   username: string;
   name: string;
   avatarUrl: string | null;
-  roleId: string | number; // 過渡期相容
+  roleId: string | number;
   roleName?: string;
   bio: string | null;
   isOwnProfile?: boolean;

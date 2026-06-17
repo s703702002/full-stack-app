@@ -16,19 +16,19 @@ import {
 import { getFriendshipStatus } from '../queries/friendshipQueries';
 
 export default function UserPage() {
-  const { userId } = useParams();
+  const { userId } = useParams<{ userId: string }>();
   const queryClient = useQueryClient();
 
-  const { data: profile } = useQuery(getUserProfile(userId));
+  const { data: profile } = useQuery(getUserProfile(userId!));
 
   const { data: friendshipStatus } = useQuery({
-    ...getFriendshipStatus(userId),
+    ...getFriendshipStatus(userId!),
     enabled: !!userId && profile?.isOwnProfile === false,
   });
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      ...getUserTimeline(userId),
+      ...getUserTimeline(userId!),
       enabled: !!userId,
     });
 
@@ -36,21 +36,16 @@ export default function UserPage() {
 
   if (!profile) return <div>載入中...</div>;
 
-  const isFriend = friendshipStatus?.state === 'ACCEPTED';
+  const isFriend = friendshipStatus === 'ACCEPTED';
   const canCreatePost = profile.isOwnProfile || isFriend;
 
   const invalidateTimeline = () =>
-    queryClient.invalidateQueries({ queryKey: userKeys.timeline(userId) });
+    queryClient.invalidateQueries({ queryKey: userKeys.timeline(userId!) });
 
   return (
     <div className="max-w-3xl mx-auto pb-10">
       <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-        <div
-          className="h-48 bg-slate-200 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${profile.coverUrl || '/default-cover.jpg'})`,
-          }}
-        />
+        <div className="h-48 bg-slate-200 bg-cover bg-center" />
         <div className="px-6 relative pb-6">
           <Avatar
             avatarUrl={profile.avatarUrl}

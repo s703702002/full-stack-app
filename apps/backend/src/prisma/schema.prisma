@@ -19,7 +19,6 @@ model User {
   email    String? @unique
   
   avatarUrl String? @map("avatar_url") @db.VarChar(500)
-  coverUrl  String? @map("cover_url")
   bio       String? @db.VarChar(160)
 
   roleId Int @map("role_id")
