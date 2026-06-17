@@ -1,4 +1,3 @@
-import { useParams } from 'react-router-dom';
 import {
   useQuery,
   useInfiniteQuery,
@@ -14,21 +13,22 @@ import {
   userKeys,
 } from '../queries/userQueries';
 import { getFriendshipStatus } from '../queries/friendshipQueries';
+import { useRequiredParams } from '../hooks/useRequiredParams';
 
 export default function UserPage() {
-  const { userId } = useParams<{ userId: string }>();
+  const userId = useRequiredParams('userId');
   const queryClient = useQueryClient();
 
-  const { data: profile } = useQuery(getUserProfile(userId!));
+  const { data: profile } = useQuery(getUserProfile(userId));
 
   const { data: friendshipStatus } = useQuery({
-    ...getFriendshipStatus(userId!),
+    ...getFriendshipStatus(userId),
     enabled: !!userId && profile?.isOwnProfile === false,
   });
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      ...getUserTimeline(userId!),
+      ...getUserTimeline(userId),
       enabled: !!userId,
     });
 
@@ -40,7 +40,7 @@ export default function UserPage() {
   const canCreatePost = profile.isOwnProfile || isFriend;
 
   const invalidateTimeline = () =>
-    queryClient.invalidateQueries({ queryKey: userKeys.timeline(userId!) });
+    queryClient.invalidateQueries({ queryKey: userKeys.timeline(userId) });
 
   return (
     <div className="max-w-3xl mx-auto pb-10">
@@ -64,7 +64,7 @@ export default function UserPage() {
           {!profile.isOwnProfile && friendshipStatus && (
             <div className="mt-2">
               <FriendshipButton
-                targetUserId={userId!}
+                targetUserId={userId}
                 initialStatus={friendshipStatus}
               />
             </div>

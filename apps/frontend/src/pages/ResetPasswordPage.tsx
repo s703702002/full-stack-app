@@ -1,5 +1,5 @@
 import { useState, SubmitEvent } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
@@ -7,9 +7,10 @@ import Button from '../components/Button';
 import { resetPasswordMutation } from '../queries/authQueries';
 import { AxiosError } from 'axios';
 import { ApiErrorResponse } from '@full-stack-app/shared';
+import { useRequiredParams } from '../hooks/useRequiredParams';
 
 export default function ResetPasswordPage() {
-  const { token } = useParams<{ token: string }>();
+  const token = useRequiredParams('token');
   const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
   const { success, error } = useToast();
@@ -19,7 +20,7 @@ export default function ResetPasswordPage() {
     isPending,
     isSuccess,
   } = useMutation({
-    ...resetPasswordMutation(token!),
+    ...resetPasswordMutation(token),
     onSuccess: () => {
       success('正在為您導向登入頁...');
       setTimeout(() => navigate('/login'), 3000);
