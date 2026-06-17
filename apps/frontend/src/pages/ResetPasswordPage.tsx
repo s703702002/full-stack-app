@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, SubmitEvent } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { publicApi } from '../api';
 import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
+import { resetPasswordMutation } from '../queries/authQueries';
+import { AxiosError } from 'axios';
+import { ApiErrorResponse } from '@full-stack-app/shared';
 
 export default function ResetPasswordPage() {
-  const { token } = useParams();
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
   const { success, error } = useToast();
@@ -17,20 +19,18 @@ export default function ResetPasswordPage() {
     isPending,
     isSuccess,
   } = useMutation({
-    mutationFn: (payload) =>
-      publicApi
-        .post(`/api/auth/reset-password/${token}`, payload)
-        .then((r) => r.data),
+    ...resetPasswordMutation(token!),
     onSuccess: () => {
       success('正在為您導向登入頁...');
       setTimeout(() => navigate('/login'), 3000);
     },
-    onError: (err) =>
+    onError: (err: AxiosError<ApiErrorResponse>) =>
       error(err.response?.data?.message || '重設失敗，連結可能已過期'),
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
+    if (!token) return;
     resetPassword({ newPassword });
   };
 

@@ -66,3 +66,19 @@ export const registerMutation = () =>
     mutationFn: (payload) =>
       publicApi.post('/api/auth/register', payload).then((r) => r.data),
   });
+
+export interface ResetPasswordPayload {
+  newPassword: string;
+}
+
+export const resetPasswordMutation = (token: string) =>
+  mutationOptions<
+    ApiResponse<Record<string, never>>,
+    AxiosError<ApiErrorResponse>,
+    ResetPasswordPayload
+  >({
+    mutationFn: (payload) =>
+      publicApi
+        .post(`/api/auth/reset-password/${token}`, payload)
+        .then((r) => r.data),
+  });
