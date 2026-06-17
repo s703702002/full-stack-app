@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-export default function CameraCapture({ onCapture }) {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [stream, setStream] = useState(null);
+interface CameraCaptureProps {
+  onCapture: (file: File) => void;
+}
+
+export default function CameraCapture({ onCapture }: CameraCaptureProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
   const startCamera = async () => {
     try {
@@ -42,32 +46,29 @@ export default function CameraCapture({ onCapture }) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      canvas.toBlob(
-        (blob) => {
-          const file = new File([blob], 'camera-capture.jpg', {
-            type: 'image/jpeg',
-          });
-          onCapture(file);
-          stopCamera();
-        },
-        'image/jpeg',
-        0.9,
-      );
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const file = new File([blob], 'camera-capture.jpg', {
+                type: 'image/jpeg',
+              });
+              onCapture(file);
+              stopCamera();
+            }
+          },
+          'image/jpeg',
+          0.9,
+        );
+      }
     }
   };
 
   return (
     <div className="flex flex-col items-center gap-4 p-4 border rounded-xl bg-slate-50">
-      {!stream ? (
-        <button
-          onClick={startCamera}
-          className="bg-primary text-white px-4 py-2 rounded-lg"
-        >
-          開啟相機拍照
-        </button>
-      ) : (
+      {stream ? (
         <>
           <div className="relative rounded-lg overflow-hidden bg-black max-w-sm">
             <video
@@ -95,6 +96,13 @@ export default function CameraCapture({ onCapture }) {
             </button>
           </div>
         </>
+      ) : (
+        <button
+          onClick={startCamera}
+          className="bg-primary text-white px-4 py-2 rounded-lg"
+        >
+          開啟相機拍照
+        </button>
       )}
     </div>
   );

@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/useAuth';
-import { privateApi } from '../api';
 import { useToast } from '../hooks/useToast';
 import { userKeys } from '../queries/userQueries';
 import Avatar from './Avatar';
+import { logoutMutation } from '../queries/authQueries';
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -15,12 +15,13 @@ export default function Navbar() {
     user?.roleName === 'superadmin' || user?.roleName === 'admin';
 
   const { mutate: logout } = useMutation({
-    mutationFn: () => privateApi.post('/api/auth/logout'),
+    ...logoutMutation(),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: userKeys.me() });
       globalThis.location.href = '/login';
     },
-    onError: () => error('登出失敗，請稍後再試'),
+    onError: (err) =>
+      error(err.response?.data?.message || '登出失敗，請稍後再試'),
   });
 
   return (
@@ -63,7 +64,7 @@ export default function Navbar() {
               </Link>
 
               <button
-                onClick={logout}
+                onClick={() => logout()}
                 className="text-slate-500 hover:text-red-600 transition"
               >
                 登出

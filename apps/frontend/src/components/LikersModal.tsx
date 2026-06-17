@@ -1,7 +1,12 @@
 import { createPortal } from 'react-dom';
 import Avatar from './Avatar';
+import { UserDTO } from '@full-stack-app/shared';
 
-function LikerList({ likers }) {
+interface LikerListProps {
+  likers: UserDTO[];
+}
+
+function LikerList({ likers }: LikerListProps) {
   if (!likers || likers.length === 0) {
     return (
       <p className="text-center text-slate-500 py-8 text-sm">還沒有人按讚</p>
@@ -27,7 +32,19 @@ function LikerList({ likers }) {
   );
 }
 
-export default function LikersModal({ isOpen, onClose, likers, isLoading }) {
+interface LikersModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  likers: UserDTO[];
+  isLoading: boolean;
+}
+
+export default function LikersModal({
+  isOpen,
+  onClose,
+  likers,
+  isLoading,
+}: LikersModalProps) {
   if (!isOpen) return null;
 
   return createPortal(

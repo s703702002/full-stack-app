@@ -104,3 +104,11 @@ export const resetPasswordMutation = (token: string) =>
         .post(`/api/auth/reset-password/${token}`, payload)
         .then((r) => r.data),
   });
+
+export const logoutMutation = () =>
+  mutationOptions<
+    ApiResponse<Record<string, never>>,
+    AxiosError<ApiErrorResponse>
+  >({
+    mutationFn: () => privateApi.post('/api/auth/logout'),
+  });

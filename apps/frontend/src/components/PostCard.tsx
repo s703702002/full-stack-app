@@ -12,8 +12,23 @@ import { useToast } from '../hooks/useToast';
 import Avatar from './Avatar';
 import LikersModal from './LikersModal';
 import { cn } from '../utils/cn';
+import { PostDTO, UserDTO, ApiResponse } from '@full-stack-app/shared';
+import { AxiosError } from 'axios';
+import { ApiErrorResponse } from '@full-stack-app/shared';
 
-export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
+interface PostCardProps {
+  post: PostDTO;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onToggleLike?: () => void;
+}
+
+export default function PostCard({
+  post,
+  onEdit,
+  onDelete,
+  onToggleLike,
+}: PostCardProps) {
   const [showLikersModal, setShowLikersModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
@@ -25,7 +40,8 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
       setIsEditing(false);
       onEdit?.();
     },
-    onError: () => error('編輯失敗'),
+    onError: (err: AxiosError<ApiErrorResponse>) =>
+      error(err.response?.data?.message || '編輯失敗'),
   });
 
   const { mutate: deletePost } = useMutation({
@@ -33,7 +49,8 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
     onSuccess: () => {
       onDelete?.();
     },
-    onError: () => error('刪除失敗'),
+    onError: (err: AxiosError<ApiErrorResponse>) =>
+      error(err.response?.data?.message || '刪除失敗'),
   });
 
   const { mutate: toggleLike } = useMutation({
@@ -41,7 +58,8 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
     onSuccess: () => {
       onToggleLike?.();
     },
-    onError: () => error('操作失敗'),
+    onError: (err: AxiosError<ApiErrorResponse>) =>
+      error(err.response?.data?.message || '操作失敗'),
   });
 
   const {
@@ -52,7 +70,7 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
     queryKey: ['post-likers', post.id],
     queryFn: () =>
       privateApi
-        .get(`/api/posts/${post.id}/likes`)
+        .get<ApiResponse<{ likers: UserDTO[] }>>(`/api/posts/${post.id}/likes`)
         .then((r) => r.data.data.likers),
     enabled: false,
   });
@@ -80,7 +98,7 @@ export default function PostCard({ post, onEdit, onDelete, onToggleLike }) {
         <div className="flex items-center mb-3 space-x-3">
           <Link to={`/profile/${post.userId}`}>
             <Avatar
-              name={post.authorName}
+              name={post.authorName || 'User'}
               avatarUrl={post.authorAvatarUrl}
               className="w-10 h-10"
             />

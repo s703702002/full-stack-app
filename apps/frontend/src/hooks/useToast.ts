@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import toast from 'react-hot-toast';
+import toast, { ToastOptions } from 'react-hot-toast';
 
 export const useToast = () => {
   const notify = useCallback(
-    (message) =>
+    (message: string) =>
       toast(message, {
         icon: '🔔',
         style: {
@@ -16,12 +16,12 @@ export const useToast = () => {
   );
 
   const error = useCallback(
-    (message, options) =>
+    (message: string, options?: ToastOptions) =>
       toast.error(message, { position: 'bottom-center', ...options }),
     [],
   );
   const success = useCallback(
-    (message, options) =>
+    (message: string, options?: ToastOptions) =>
       toast.success(message, { position: 'bottom-center', ...options }),
     [],
   );

@@ -1,24 +1,32 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { privateApi } from '../api';
 import { useToast } from '../hooks/useToast';
+import { sendFriendRequestMutation } from '../queries/friendshipQueries';
+import { FriendshipStatus } from '@full-stack-app/shared';
 
-export default function FriendshipButton({ targetUserId, initialStatus }) {
-  const [state, setState] = useState(initialStatus?.state);
+interface FriendshipButtonProps {
+  targetUserId: string;
+  initialStatus?: FriendshipStatus;
+}
+
+export default function FriendshipButton({
+  targetUserId,
+  initialStatus,
+}: Readonly<FriendshipButtonProps>) {
+  const [state, setState] = useState<FriendshipStatus | undefined>(
+    initialStatus,
+  );
   const { error } = useToast();
 
   const { mutate: sendRequest, isPending } = useMutation({
-    mutationFn: () =>
-      privateApi
-        .post(`/api/friend-requests/${targetUserId}`)
-        .then((r) => r.data),
+    ...sendFriendRequestMutation(),
     onSuccess: () => setState('PENDING'),
-    onError: () => error('送出好友申請失敗'),
+    onError: (err) => error(err.response?.data?.message || '送出好友申請失敗'),
   });
 
   if (state === 'ACCEPTED') return null;
 
-  if (state === 'PENDING' || state === 'SENT') {
+  if (state === 'PENDING') {
     return (
       <button
         disabled
@@ -31,7 +39,7 @@ export default function FriendshipButton({ targetUserId, initialStatus }) {
 
   return (
     <button
-      onClick={() => sendRequest()}
+      onClick={() => sendRequest(targetUserId)}
       disabled={isPending}
       className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-50"
     >

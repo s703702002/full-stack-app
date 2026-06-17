@@ -64,7 +64,7 @@ export default function UserPage() {
           {!profile.isOwnProfile && friendshipStatus && (
             <div className="mt-2">
               <FriendshipButton
-                targetUserId={userId}
+                targetUserId={userId!}
                 initialStatus={friendshipStatus}
               />
             </div>

@@ -4,8 +4,18 @@ import { createPostMutation } from '../queries/postQueries';
 import { useToast } from '../hooks/useToast';
 import { cn } from '../utils/cn';
 import Avatar from './Avatar';
+import { UserDTO, ApiErrorResponse } from '@full-stack-app/shared';
+import { AxiosError } from 'axios';
 
-export default function CreatePostBox({ currentUser, onPostCreated }) {
+interface CreatePostBoxProps {
+  currentUser: UserDTO;
+  onPostCreated?: () => void;
+}
+
+export default function CreatePostBox({
+  currentUser,
+  onPostCreated,
+}: CreatePostBoxProps) {
   const [content, setContent] = useState('');
   const { error } = useToast();
 
@@ -15,7 +25,8 @@ export default function CreatePostBox({ currentUser, onPostCreated }) {
       setContent('');
       onPostCreated?.();
     },
-    onError: (err) => error(err.response?.data?.message || '發佈失敗'),
+    onError: (err: AxiosError<ApiErrorResponse>) =>
+      error(err.response?.data?.message || '發佈失敗'),
   });
 
   const handleSubmit = () => {
