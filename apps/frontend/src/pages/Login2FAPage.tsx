@@ -1,24 +1,23 @@
-import { useState } from 'react';
+import { useState, SubmitEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { publicApi } from '../api';
 import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
+import { login2FAMutation } from '../queries/authQueries';
 
 export default function Login2FAPage() {
   const [totpCode, setTotpCode] = useState('');
   const { error } = useToast();
 
   const { mutate: verify2FA, isPending } = useMutation({
-    mutationFn: (payload) =>
-      publicApi.post('/api/auth/login-2fa', payload).then((r) => r.data),
+    ...login2FAMutation(),
     onSuccess: () => {
       globalThis.location.href = '/profile';
     },
     onError: (err) => error(err.response?.data?.message || '驗證失敗'),
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     verify2FA({ totpCode });
   };

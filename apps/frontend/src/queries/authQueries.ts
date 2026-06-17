@@ -30,6 +30,19 @@ export const loginMutation = (): UseMutationOptions<
   AxiosError<ApiErrorResponse>,
   LoginPayload
 > => ({
-  mutationFn: (payload) =>
+  mutationFn: (payload: LoginPayload) =>
     publicApi.post('/api/auth/login', payload).then((r) => r.data),
+});
+
+export interface Login2FAPayload {
+  totpCode: string;
+}
+
+export const login2FAMutation = (): UseMutationOptions<
+  ApiResponse<Record<string, never>>,
+  AxiosError<ApiErrorResponse>,
+  Login2FAPayload
+> => ({
+  mutationFn: (payload: Login2FAPayload) =>
+    publicApi.post('/api/auth/login-2fa', payload).then((r) => r.data),
 });
