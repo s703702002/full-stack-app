@@ -1,7 +1,13 @@
 import { useLocation } from 'react-router-dom';
 
+interface BannedPageState {
+  reason?: string;
+  expiresAt?: string | null;
+}
+
 export default function BannedPage() {
-  const { state } = useLocation();
+  const location = useLocation();
+  const state = location.state as BannedPageState | undefined;
   const reason = state?.reason ?? '違反使用條款';
   const expiresAt = state?.expiresAt;
 

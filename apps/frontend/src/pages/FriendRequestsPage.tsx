@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryKey,
+} from '@tanstack/react-query';
 import { cn } from '../utils/cn';
 import Avatar from '../components/Avatar';
 import { formatDateTime } from '../utils/format';
@@ -13,15 +18,22 @@ import {
   respondFriendRequestMutation,
   removeFriendMutation,
 } from '../queries/friendshipQueries';
+import { FriendDTO, FriendRequestDTO } from '@full-stack-app/shared';
 
-function FriendCard({ friend, onRemove, removing }) {
-  const { user, friendshipId, since } = friend;
+interface FriendCardProps {
+  friend: FriendDTO;
+  onRemove: (userId: string) => void;
+  removing?: boolean;
+}
+
+function FriendCard({ friend, onRemove, removing }: FriendCardProps) {
+  const { user, since } = friend;
 
   const sinceDate = since ? formatDateTime(since) : null;
 
   const handleRemoveClick = () => {
     if (confirm('確定解除？')) {
-      onRemove(user.id, friendshipId);
+      onRemove(user.id);
     }
   };
 
@@ -63,8 +75,20 @@ function FriendCard({ friend, onRemove, removing }) {
   );
 }
 
-function ReceivedCard({ request, onAccept, onReject, removing }) {
-  const { user } = request;
+interface ReceivedCardProps {
+  request: FriendRequestDTO;
+  onAccept: (id: string) => void;
+  onReject: (id: string) => void;
+  removing?: boolean;
+}
+
+function ReceivedCard({
+  request,
+  onAccept,
+  onReject,
+  removing,
+}: ReceivedCardProps) {
+  const { user, createdAt } = request;
   return (
     <div
       className={cn(
@@ -82,18 +106,22 @@ function ReceivedCard({ request, onAccept, onReject, removing }) {
           <span className="text-xs text-gray-400">@{user.username}</span>
         </div>
         <p className="text-xs text-gray-500 mt-0.5 truncate">{user.bio}</p>
-        <p className="text-xs text-gray-400 mt-0.5">{user.sentAt}</p>
+        {createdAt && (
+          <p className="text-xs text-gray-400 mt-0.5">
+            {formatDateTime(createdAt)}
+          </p>
+        )}
       </div>
 
       <div className="flex gap-2 shrink-0">
         <button
-          onClick={() => onReject(user.id)}
+          onClick={() => onReject(request.id)}
           className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
         >
           拒絕
         </button>
         <button
-          onClick={() => onAccept(user.id)}
+          onClick={() => onAccept(request.id)}
           className="px-3 py-1.5 text-xs rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all"
         >
           接受
@@ -103,8 +131,12 @@ function ReceivedCard({ request, onAccept, onReject, removing }) {
   );
 }
 
-function SentCard({ request }) {
-  const { user } = request;
+interface SentCardProps {
+  request: FriendRequestDTO;
+}
+
+function SentCard({ request }: SentCardProps) {
+  const { user, createdAt } = request;
 
   return (
     <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-4">
@@ -116,7 +148,11 @@ function SentCard({ request }) {
           <span className="text-xs text-gray-400">@{user.username}</span>
         </div>
         <p className="text-xs text-gray-500 mt-0.5">{user.bio}</p>
-        <p className="text-xs text-gray-400 mt-0.5">{user.sentAt}</p>
+        {createdAt && (
+          <p className="text-xs text-gray-400 mt-0.5">
+            {formatDateTime(createdAt)}
+          </p>
+        )}
       </div>
 
       <span className="text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 shrink-0">
@@ -126,38 +162,48 @@ function SentCard({ request }) {
   );
 }
 
+type TabKey = 'friends' | 'received' | 'sent';
+
 export default function FriendRequestsPage() {
-  const [tab, setTab] = useState('friends');
+  const [tab, setTab] = useState<TabKey>('friends');
   const queryClient = useQueryClient();
-  const { error } = useToast();
+  const { success, error } = useToast();
 
   const { data: friends = [] } = useQuery(getFriends());
   const { data: received = [] } = useQuery(getReceivedRequests());
   const { data: sent = [] } = useQuery(getSentRequests());
 
-  const invalidate = (...keys) =>
+  const invalidate = (...keys: readonly QueryKey[]) =>
     keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
 
   const { mutate: respond } = useMutation({
     ...respondFriendRequestMutation(),
     onSuccess: (_, { action }) => {
       invalidate(friendshipKeys.received());
-      if (action === 'accept') invalidate(friendshipKeys.friends());
+      if (action === 'accept') {
+        invalidate(friendshipKeys.friends());
+        success('已接受好友申請');
+      } else {
+        success('已拒絕好友申請');
+      }
     },
-    onError: () => error('操作失敗'),
+    onError: (err) => error(err.response?.data?.message || '操作失敗'),
   });
 
   const { mutate: removeFriend } = useMutation({
     ...removeFriendMutation(),
-    onSuccess: () => invalidate(friendshipKeys.friends()),
-    onError: () => error('解除好友失敗'),
+    onSuccess: () => {
+      invalidate(friendshipKeys.friends());
+      success('已解除好友關係');
+    },
+    onError: (err) => error(err.response?.data?.message || '解除好友失敗'),
   });
 
-  const handleAccept = (id) => respond({ id, action: 'accept' });
-  const handleReject = (id) => respond({ id, action: 'reject' });
-  const handleRemoveFriend = (userId) => removeFriend(userId);
+  const handleAccept = (id: string) => respond({ id, action: 'accept' });
+  const handleReject = (id: string) => respond({ id, action: 'reject' });
+  const handleRemoveFriend = (userId: string) => removeFriend(userId);
 
-  const tabs = [
+  const tabs: { key: TabKey; label: string; count: number }[] = [
     { key: 'friends', label: '好友列表', count: friends.length },
     { key: 'received', label: '收到的申請', count: received.length },
     { key: 'sent', label: '送出的申請', count: sent.length },
