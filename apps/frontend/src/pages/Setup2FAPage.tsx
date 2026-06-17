@@ -1,32 +1,34 @@
-import { useState } from 'react';
+import { useState, SubmitEvent, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { privateApi } from '../api';
 import { useToast } from '../hooks/useToast';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
+import { setup2FAQuery, verify2FAMutation } from '../queries/authQueries';
+import { AxiosError } from 'axios';
+import { ApiErrorResponse } from '@full-stack-app/shared';
 
 export default function Setup2FAPage() {
   const navigate = useNavigate();
   const [totpCode, setTotpCode] = useState('');
   const { error } = useToast();
 
-  const { data: setupData } = useQuery({
-    queryKey: ['2fa-setup'],
-    queryFn: () =>
-      privateApi.get('/api/auth/2fa/setup').then((r) => r.data.data),
-  });
+  const { data: setupData } = useQuery(setup2FAQuery());
 
   const { mutate: verify2FA, isPending } = useMutation({
-    mutationFn: (payload) =>
-      privateApi.post('/api/auth/2fa/verify', payload).then((r) => r.data),
+    ...verify2FAMutation(),
     onSuccess: () => navigate('/profile'),
-    onError: (err) => error(err.response?.data?.message || '驗證失敗'),
+    onError: (err: AxiosError<ApiErrorResponse>) =>
+      error(err.response?.data?.message || '驗證失敗'),
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     verify2FA({ token: totpCode });
+  };
+
+  const handleTotpChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6));
   };
 
   return (
@@ -45,7 +47,7 @@ export default function Setup2FAPage() {
               請使用 Google Authenticator 掃描下方條碼
             </p>
             <img
-              src={setupData?.qrCodeImage}
+              src={setupData.qrCodeImage}
               alt="2FA QR Code"
               className="mx-auto w-48 h-48 border-4 border-white shadow-sm rounded-lg"
             />
@@ -53,7 +55,7 @@ export default function Setup2FAPage() {
               無法掃描？請手動輸入金鑰：
               <br />
               <span className="font-mono text-slate-600 font-bold">
-                {setupData?.secret}
+                {setupData.secret}
               </span>
             </p>
           </div>
@@ -69,9 +71,7 @@ export default function Setup2FAPage() {
                 label="驗證碼"
                 type="text"
                 value={totpCode}
-                onChange={(e) =>
-                  setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))
-                }
+                onChange={handleTotpChange}
                 required
                 placeholder="123456"
               />

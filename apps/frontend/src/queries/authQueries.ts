@@ -1,10 +1,11 @@
-import { publicApi } from '../api';
-import { mutationOptions } from '@tanstack/react-query';
+import { publicApi, privateApi } from '../api';
+import { mutationOptions, queryOptions } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import type {
   ApiResponse,
   ApiErrorResponse,
   AuthResponseDTO,
+  TwoFAInfoDTO,
 } from '@full-stack-app/shared';
 
 export interface ForgotPasswordPayload {
@@ -48,6 +49,27 @@ export const login2FAMutation = () =>
   >({
     mutationFn: (payload) =>
       publicApi.post('/api/auth/login-2fa', payload).then((r) => r.data),
+  });
+
+export const setup2FAQuery = () =>
+  queryOptions<TwoFAInfoDTO, AxiosError<ApiErrorResponse>>({
+    queryKey: ['2fa-setup'],
+    queryFn: () =>
+      privateApi.get('/api/auth/2fa/setup').then((r) => r.data.data),
+  });
+
+export interface Verify2FAPayload {
+  token: string;
+}
+
+export const verify2FAMutation = () =>
+  mutationOptions<
+    ApiResponse<Record<string, never>>,
+    AxiosError<ApiErrorResponse>,
+    Verify2FAPayload
+  >({
+    mutationFn: (payload) =>
+      publicApi.post('/api/auth/2fa/verify', payload).then((r) => r.data),
   });
 
 export interface RegisterPayload {
