@@ -20,7 +20,8 @@
     "build": "tsc",
     "dev": "tsc -w",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest"
   },
   "peerDependencies": {
     "@tanstack/react-query": "catalog:",
@@ -33,7 +34,14 @@
     "@full-stack-app/ui": "workspace:*"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "catalog:",
-    "@types/react-dom": "catalog:"
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "^26.0.0",
+    "vitest": "catalog:",
+    "vitest-axe": "^0.1.0"
   }
 }

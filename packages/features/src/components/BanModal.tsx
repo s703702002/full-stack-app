@@ -36,10 +36,14 @@ export default function BanModal({
         <p className="text-sm text-slate-500 mb-5">停用 @{target.username}</p>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label
+            htmlFor="ban-duration"
+            className="block text-sm font-medium text-slate-700 mb-1"
+          >
             停用時長
           </label>
           <select
+            id="ban-duration"
             value={duration}
             onChange={(e) => setDuration(Number(e.target.value))}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm"
@@ -53,10 +57,14 @@ export default function BanModal({
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label
+            htmlFor="ban-reason"
+            className="block text-sm font-medium text-slate-700 mb-1"
+          >
             原因
           </label>
           <textarea
+            id="ban-reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="請填寫停用原因..."
