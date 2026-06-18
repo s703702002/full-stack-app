@@ -1,0 +1,7 @@
+# @full-stack-app/features
+
+## 0.2.0
+
+### Minor Changes
+
+- 64c404d: add test and align vitest version
