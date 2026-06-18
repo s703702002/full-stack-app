@@ -1,5 +1,5 @@
 {
-  "name": "@full-stack-app/ui",
+  "name": "@full-stack-app/features",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -23,13 +23,14 @@
     "lint": "eslint ."
   },
   "peerDependencies": {
+    "@tanstack/react-query": "catalog:",
+    "axios": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
   "dependencies": {
     "@full-stack-app/shared": "workspace:*",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^3.6.0"
+    "@full-stack-app/ui": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "catalog:",

@@ -6,7 +6,7 @@ import type { UserDTO } from '@full-stack-app/shared';
 export interface ProfileCardProps {
   user: UserDTO;
   isUpdating?: boolean;
-  onSave: (formData: FormData) => Promise<any>;
+  onSave: (formData: FormData) => Promise<unknown>;
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -17,7 +17,7 @@ export function ProfileCard({
   onSave,
   onSuccess,
   onError,
-}: ProfileCardProps) {
+}: Readonly<ProfileCardProps>) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user.name);
   const [editBio, setEditBio] = useState(user.bio || '');
@@ -47,7 +47,7 @@ export function ProfileCard({
       onSuccess?.('已儲存');
       setIsEditing(false);
     } catch (err: any) {
-      onError?.(err.response?.data?.message || '儲存失敗');
+      onError?.(err?.response?.data?.message || '儲存失敗');
     }
   };
 

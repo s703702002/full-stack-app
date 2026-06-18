@@ -4,6 +4,27 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@tanstack/react-query':
+      specifier: ^5.101.0
+      version: 5.101.0
+    '@types/react':
+      specifier: ^19.0.0
+      version: 19.2.17
+    '@types/react-dom':
+      specifier: ^19.0.0
+      version: 19.2.3
+    axios:
+      specifier: ^1.13.6
+      version: 1.17.0
+    react:
+      specifier: ^19.2.4
+      version: 19.2.7
+    react-dom:
+      specifier: ^19.2.4
+      version: 19.2.7
+
 importers:
 
   .:
@@ -186,6 +207,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@full-stack-app/features':
+        specifier: workspace:*
+        version: link:../../packages/features
       '@full-stack-app/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -193,19 +217,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@tanstack/react-query':
-        specifier: ^5.101.0
+        specifier: 'catalog:'
         version: 5.101.0(react@19.2.7)
       '@tanstack/react-query-devtools':
         specifier: ^5.101.0
         version: 5.101.0(@tanstack/react-query@5.101.0(react@19.2.7))(react@19.2.7)
       axios:
-        specifier: ^1.13.6
+        specifier: 'catalog:'
         version: 1.17.0
       react:
-        specifier: ^19.2.4
+        specifier: 'catalog:'
         version: 19.2.7
       react-dom:
-        specifier: ^19.2.4
+        specifier: 'catalog:'
         version: 19.2.7(react@19.2.7)
       react-hot-toast:
         specifier: ^2.6.0
@@ -227,6 +251,34 @@ importers:
         specifier: ^8.0.16
         version: 8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)
 
+  packages/features:
+    dependencies:
+      '@full-stack-app/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@full-stack-app/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.101.0(react@19.2.7)
+      axios:
+        specifier: 'catalog:'
+        version: 1.17.0
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.17)
+
   packages/shared: {}
 
   packages/ui:
@@ -237,25 +289,22 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.7(react@19.2.7)
       tailwind-merge:
         specifier: ^3.6.0
         version: 3.6.0
     devDependencies:
       '@types/react':
-        specifier: ^19.2.14
+        specifier: 'catalog:'
         version: 19.2.17
       '@types/react-dom':
-        specifier: ^19.2.3
+        specifier: 'catalog:'
         version: 19.2.3(@types/react@19.2.17)
-      react:
-        specifier: ^19.2.4
-        version: 19.2.7
-      react-dom:
-        specifier: ^19.2.4
-        version: 19.2.7(react@19.2.7)
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
 
 packages:
 
@@ -3340,11 +3389,6 @@ packages:
 
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
-
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
 
   typescript@6.0.3:
     resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
@@ -6962,8 +7006,6 @@ snapshots:
       reflect.getprototypeof: 1.0.10
 
   typedarray@0.0.6: {}
-
-  typescript@5.9.3: {}
 
   typescript@6.0.3: {}
 
