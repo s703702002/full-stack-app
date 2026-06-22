@@ -26,14 +26,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22 # 鎖定與你 local 一致的 Node 版本
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter backend exec prisma generate
+        env:
+          HUSKY: '0'
 
       - name: Create Release Pull Request or Publish
         id: changesets
@@ -42,3 +41,5 @@ jobs:
           version: pnpm changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.CHANGESET_TOKEN }}
+          # 讓 Changesets 機器人在 push / commit 時，強制跳過 git hooks
+          HUSKY: '0'
