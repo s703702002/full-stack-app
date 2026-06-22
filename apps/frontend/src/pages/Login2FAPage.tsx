@@ -1,8 +1,8 @@
 import { useState, SubmitEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '../hooks/useToast';
-import InputField from '../components/InputField';
-import Button from '../components/Button';
+import { InputField } from '../components/InputField';
+import { Button } from '../components/Button';
 import { login2FAMutation } from '../queries/authQueries';
 
 export default function Login2FAPage() {

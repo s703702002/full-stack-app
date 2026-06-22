@@ -2,8 +2,8 @@ import { useState, SubmitEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '../hooks/useToast';
-import InputField from '../components/InputField';
-import Button from '../components/Button';
+import { InputField } from '../components/InputField';
+import { Button } from '../components/Button';
 import { forgotPasswordMutation } from '../queries/authQueries';
 
 export default function ForgotPasswordPage() {

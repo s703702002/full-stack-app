@@ -1,8 +1,8 @@
 import { useState, SubmitEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import InputField from '../components/InputField';
-import Button from '../components/Button';
+import { InputField } from '../components/InputField';
+import { Button } from '../components/Button';
 import { useToast } from '../hooks/useToast';
 import { loginMutation } from '../queries/authQueries';
 
