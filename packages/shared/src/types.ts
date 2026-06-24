@@ -72,10 +72,14 @@ export interface FriendRequestDTO {
   user: Omit<UserDTO, 'roleId' | 'activeBan' | 'isOwnProfile'>;
 }
 
-export interface AuthResponseDTO {
-  user?: UserDTO;
-  require2FA?: boolean;
-}
+export type AuthResponseDTO =
+  | {
+      require2FA: true;
+      user?: never;
+    }
+  | {
+      user: UserDTO;
+    };
 
 export interface TwoFAInfoDTO {
   qrCodeImage: string;

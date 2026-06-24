@@ -12,8 +12,10 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const { mutate: login, isPending } = useMutation({
     ...loginMutation(),
-    onSuccess: (data) => {
-      if (data.data.require2FA) {
+    onSuccess: (res) => {
+      const authData = res.data;
+
+      if ('require2FA' in authData && authData.require2FA) {
         navigate('/login/2fa');
         return;
       }
