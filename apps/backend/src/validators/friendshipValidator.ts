@@ -5,3 +5,7 @@ export const respondFriendRequestSchema = z.object({
     error: () => 'action 必須是 accept 或 reject',
   }),
 });
+
+export type RespondFriendRequestBody = z.infer<
+  typeof respondFriendRequestSchema
+>;

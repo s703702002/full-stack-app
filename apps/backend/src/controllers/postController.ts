@@ -5,6 +5,7 @@ import { formatPost, withBaseUrl } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import { getAuthUser } from '../utils/requestHelper.js';
 import type { PostDTO } from '@full-stack-app/shared';
+import { CreatePostBody, UpdatePostBody } from '../validators/postValidator.js';
 
 export const getPostLikers = async (
   req: Request<{ id: string }>,
@@ -26,10 +27,7 @@ export const getPostLikers = async (
 };
 
 export const createPost = async (req: Request, res: Response) => {
-  const { content, targetUserId } = req.body as {
-    content: string;
-    targetUserId: string;
-  };
+  const { content, targetUserId } = req.body as CreatePostBody;
   const user = getAuthUser(req);
   const newPost = await PostService.createPost(user.id, content, targetUserId);
   sendSuccess<{ post: PostDTO }>(
@@ -41,7 +39,7 @@ export const createPost = async (req: Request, res: Response) => {
 };
 
 export const updatePost = async (
-  req: Request<{ id: string }, unknown, { content: string }>,
+  req: Request<{ id: string }, unknown, UpdatePostBody>,
   res: Response,
 ) => {
   const user = getAuthUser(req);

@@ -17,14 +17,16 @@ import type {
   UserDTO,
   TwoFAInfoDTO,
 } from '@full-stack-app/shared';
+import {
+  Login2FABody,
+  RegisterBody,
+  Verify2FABody,
+} from '../validators/authValidator.js';
 
 export const register = async (req: Request, res: Response) => {
-  const { username, password, name } = req.body as {
-    username: string;
-    password: string;
-    name: string;
-  };
+  const { username, password, name } = req.body as RegisterBody;
   const newUser = await AuthService.registerUser(username, password, name);
+
   sendSuccess<{ user: UserDTO | null }>(
     res,
     201,
@@ -71,7 +73,7 @@ export const login2FA = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { totpCode } = req.body as { totpCode: string };
+  const { totpCode } = req.body as Login2FABody;
 
   const tempUserId = req.session.tempUserId;
   if (!tempUserId) throw new AppError('缺少驗證資訊或驗證時效已過', 400);
@@ -131,7 +133,7 @@ export const setup2FA = async (req: Request, res: Response) => {
 
 export const verify2FA = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
-  const { token } = req.body as { token: string };
+  const { token } = req.body as Verify2FABody;
   await AuthService.verifyAndEnable2FA(user.id, token);
   sendSuccess(res, 200, {}, '2FA 雙重驗證已成功啟用！');
 };

@@ -9,6 +9,7 @@ import type {
   FriendshipStatus,
 } from '@full-stack-app/shared';
 import type { Friendship } from '../generated/client.js';
+import { RespondFriendRequestBody } from '../validators/friendshipValidator.js';
 
 export const getFriends = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
@@ -68,11 +69,7 @@ export const sendFriendRequest = async (
 };
 
 export const respondToFriendRequest = async (
-  req: Request<
-    { requesterId: string },
-    unknown,
-    { action: 'accept' | 'reject' }
-  >,
+  req: Request<{ requesterId: string }, unknown, RespondFriendRequestBody>,
   res: Response,
 ) => {
   const user = getAuthUser(req);

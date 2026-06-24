@@ -16,6 +16,10 @@ import type {
   PostDTO,
   PaginatedResponse,
 } from '@full-stack-app/shared';
+import {
+  CreateUserBanBody,
+  UpdateProfileBody,
+} from '../validators/userValidator.js';
 
 export const getMe = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
@@ -51,7 +55,7 @@ export const updateUserRole = async (
 
 export const updateProfile = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
-  const { name, bio } = req.body as { name: string; bio?: string };
+  const { name, bio } = req.body as UpdateProfileBody;
   const newAvatarKey = req.file?.key ?? undefined;
 
   const updatedUser = await UserService.updateProfile(
@@ -117,7 +121,10 @@ export const getUserTimeline = async (
   });
 };
 
-export const banUser = async (req: Request<{ id: string }>, res: Response) => {
+export const banUser = async (
+  req: Request<{ id: string }, unknown, CreateUserBanBody>,
+  res: Response,
+) => {
   const user = getAuthUser(req);
   const { reason, durationMinutes } = req.body;
   await UserService.banUser(user.id, req.params.id, reason, durationMinutes);
