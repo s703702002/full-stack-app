@@ -27,7 +27,7 @@ export const register = async (req: Request, res: Response) => {
   const { username, password, name } = req.body as RegisterBody;
   const newUser = await AuthService.registerUser(username, password, name);
 
-  sendSuccess<{ user: UserDTO | null }>(
+  sendSuccess<{ user: UserDTO }>(
     res,
     201,
     { user: sanitizeUser(newUser) },
@@ -59,7 +59,7 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
       return sendSuccess<AuthResponseDTO>(
         res,
         200,
-        { user: sanitizeUser(user) || undefined },
+        { user: sanitizeUser(user) },
         '登入成功',
       );
     });
@@ -86,7 +86,7 @@ export const login2FA = async (
     sendSuccess<AuthResponseDTO>(
       res,
       200,
-      { user: sanitizeUser(user) || undefined },
+      { user: sanitizeUser(user) },
       '登入成功',
     );
   });

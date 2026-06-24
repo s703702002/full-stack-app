@@ -36,7 +36,7 @@ export const getAllUsers = async (_req: Request, res: Response) => {
     users: users.map((user) => {
       const sanitized = sanitizeUser(user);
       return {
-        ...sanitized!,
+        ...sanitized,
         activeBan: user.bans[0] ? formatBanInfo(user.bans[0]) : null,
       };
     }),
@@ -80,7 +80,7 @@ export const getUserProfile = async (
   const sanitized = sanitizeUser(targetUser);
   sendSuccess<{ user: UserDTO }>(res, 200, {
     user: {
-      ...sanitized!,
+      ...sanitized,
       isOwnProfile: user.id === targetUser.id,
     },
   });

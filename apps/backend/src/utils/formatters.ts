@@ -21,9 +21,7 @@ type UserWithRole = User & {
   role?: { name: string } | null;
 };
 
-export const sanitizeUser = (user: UserWithRole | null): UserDTO | null => {
-  if (!user) return null;
-
+export const sanitizeUser = (user: UserWithRole): UserDTO => {
   return {
     id: user.id,
     username: user.username,
