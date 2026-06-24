@@ -5,7 +5,7 @@ const isDev = env.NODE_ENV !== 'production';
 
 const logger = pino({
   level: env.LOG_LEVEL,
-
+  base: undefined,
   redact: {
     paths: [
       'req.body.password',
@@ -15,14 +15,13 @@ const logger = pino({
       'req.headers.authorization',
     ],
   },
-
+  timestamp: () => `,"time":"${new Date().toISOString()}"`,
   ...(isDev && {
     transport: {
       target: 'pino-pretty',
       options: {
         colorize: true,
         translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
-        ignore: 'pid,hostname', // 隱藏比較不需要的機器資訊
       },
     },
   }),

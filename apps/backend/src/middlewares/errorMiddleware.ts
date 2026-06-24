@@ -25,9 +25,7 @@ export const globalErrorHandler = (
       .catch((e) => logger.error(e, `[錯誤攔截] 移除 S3 檔案失敗: ${key}`));
   }
 
-  if (isOperational && statusCode !== 500) {
-    logger.warn({ errMessage: message, path: req.originalUrl });
-  } else {
+  if (!isOperational || statusCode === 500) {
     logger.error({ err, path: req.originalUrl }, '🚨 [未預期系統崩潰]');
   }
 
