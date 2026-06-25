@@ -1,5 +1,11 @@
 # @full-stack-app/features
 
+## 0.3.0
+
+### Minor Changes
+
+- b742424: feat: add LoginPage to features and reuse in frontend
+
 ## 0.2.3
 
 ### Patch Changes
