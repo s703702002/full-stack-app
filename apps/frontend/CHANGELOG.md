@@ -1,5 +1,13 @@
 # frontend
 
+## 0.1.4
+
+### Patch Changes
+
+- b742424: feat: add LoginPage to features and reuse in frontend
+- Updated dependencies [b742424]
+  - @full-stack-app/features@0.3.0
+
 ## 0.1.3
 
 ### Patch Changes
