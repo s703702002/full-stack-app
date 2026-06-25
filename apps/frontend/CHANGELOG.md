@@ -1,5 +1,14 @@
 # frontend
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [89dc3a9]
+  - @full-stack-app/shared@0.3.0
+  - @full-stack-app/features@0.2.3
+  - @full-stack-app/ui@0.2.2
+
 ## 0.1.2
 
 ### Patch Changes
