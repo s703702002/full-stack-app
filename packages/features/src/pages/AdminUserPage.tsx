@@ -13,7 +13,7 @@ const getRoleLabelStyles = (roleName: string) =>
     viewer: 'bg-slate-100 text-slate-600',
   })[roleName] ?? 'bg-slate-100 text-slate-600';
 
-interface AdminUserPageProps {
+export interface AdminUserPageProps {
   currentUser: UserDTO | null;
   onErrorToast: (message: string) => void;
 }

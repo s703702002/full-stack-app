@@ -1,9 +1,6 @@
-import { AdminUserPage, initApi } from '@full-stack-app/features';
-import { privateApi } from '../api';
+import { AdminUserPage } from '@full-stack-app/features';
 import { useAuthUser } from '../context/useAuth';
 import { useToast } from '../hooks/useToast';
-
-initApi(privateApi);
 
 export default function ManageUserPage() {
   const user = useAuthUser();

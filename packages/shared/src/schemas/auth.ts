@@ -8,6 +8,8 @@ export const loginSchema = z.object({
   password: z.string().min(6, '密碼至少需 6 個字元'),
 });
 
+export type LoginBody = z.infer<typeof loginSchema>;
+
 export const registerSchema = z
   .object({
     username: z
