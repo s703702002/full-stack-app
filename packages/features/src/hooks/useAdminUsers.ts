@@ -5,21 +5,20 @@ import type {
   UserDTO,
   ApiResponse,
   ApiErrorResponse,
+  CreateUserBanBody,
+  UpdateRoleBody,
 } from '@full-stack-app/shared';
 
 export const adminUserKeys = {
   all: ['admin-feature', 'users'] as const,
 };
 
-export interface UpdateRolePayload {
+export interface UpdateRolePayload extends UpdateRoleBody {
   targetUserId: string;
-  newRoleName: string;
 }
 
-export interface BanUserPayload {
+export interface BanUserPayload extends CreateUserBanBody {
   userId: string;
-  reason: string;
-  durationMinutes: number;
 }
 
 export function useAdminUsers() {
@@ -34,25 +33,19 @@ export function useAdminUsers() {
     queryFn: () => api.get('/api/users').then((res) => res.data.data.users),
   });
 
-  const changeRoleMutation = useMutation<
-    ApiResponse<Record<string, never>>,
-    AxiosError<ApiErrorResponse>,
-    UpdateRolePayload
-  >({
-    mutationFn: (payload) =>
+  const changeRoleMutation = useMutation({
+    mutationFn: (payload: UpdateRolePayload) =>
       api
-        .put(`/api/users/${payload.targetUserId}/role`, payload)
+        .put<ApiResponse>(`/api/users/${payload.targetUserId}/role`, payload)
         .then((r) => r.data),
     onSuccess: invalidateUsers,
   });
 
-  const banUserMutation = useMutation<
-    ApiResponse<Record<string, never>>,
-    AxiosError<ApiErrorResponse>,
-    BanUserPayload
-  >({
-    mutationFn: (payload) =>
-      api.post(`/api/users/${payload.userId}/ban`, payload).then((r) => r.data),
+  const banUserMutation = useMutation({
+    mutationFn: (payload: BanUserPayload) =>
+      api
+        .post<ApiResponse>(`/api/users/${payload.userId}/ban`, payload)
+        .then((r) => r.data),
     onSuccess: invalidateUsers,
   });
 

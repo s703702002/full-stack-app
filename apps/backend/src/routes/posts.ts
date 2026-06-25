@@ -9,10 +9,7 @@ import {
 import { checkAuthenticated } from '../middlewares/auth.js';
 import { checkPermission } from '../middlewares/rbac.js';
 import validate from '../middlewares/validateMiddleware.js';
-import {
-  createPostSchema,
-  updatePostSchema,
-} from '../validators/postValidator.js';
+import { createPostSchema, updatePostSchema } from '@full-stack-app/shared';
 
 const router = express.Router();
 

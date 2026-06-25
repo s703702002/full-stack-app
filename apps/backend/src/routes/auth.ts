@@ -19,7 +19,7 @@ import {
   login2FASchema,
   loginSchema,
   verify2FASchema,
-} from '../validators/authValidator.js';
+} from '@full-stack-app/shared';
 
 const router = express.Router();
 

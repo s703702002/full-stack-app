@@ -15,9 +15,10 @@ import { apiLimiter } from '../middlewares/rateLimiter.js';
 import { upload } from '../middlewares/uploadMiddleware.js';
 import validate from '../middlewares/validateMiddleware.js';
 import {
-  updateProfileSchema,
   createUserBanSchema,
-} from '../validators/userValidator.js';
+  updateProfileSchema,
+  updateRoleSchema,
+} from '@full-stack-app/shared';
 
 const router = express.Router();
 
@@ -27,7 +28,12 @@ router.get('/me', apiLimiter, getMe);
 router.get('/', apiLimiter, getAllUsers);
 router.get('/:id', apiLimiter, getUserProfile);
 router.get('/:id/posts', apiLimiter, getUserTimeline);
-router.put('/:id/role', checkPermission('user:manage'), updateUserRole);
+router.put(
+  '/:id/role',
+  checkPermission('user:manage'),
+  validate(updateRoleSchema),
+  updateUserRole,
+);
 router.put(
   '/profile',
   upload.single('avatar'),

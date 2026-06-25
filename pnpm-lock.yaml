@@ -36,6 +36,9 @@ catalogs:
     vitest:
       specifier: ^4.1.5
       version: 4.1.8
+    zod:
+      specifier: ^4.3.6
+      version: 4.4.3
 
 importers:
 
@@ -168,7 +171,7 @@ importers:
         specifier: ^5.11.0
         version: 5.12.1
       zod:
-        specifier: ^4.3.6
+        specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
       '@types/bcrypt':
@@ -315,7 +318,11 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0(vitest@4.1.8(@types/node@25.9.3)(jsdom@26.1.0)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)))
 
-  packages/shared: {}
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
 
   packages/ui:
     dependencies:

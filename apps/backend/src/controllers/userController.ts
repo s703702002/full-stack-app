@@ -15,11 +15,10 @@ import type {
   UserDTO,
   PostDTO,
   PaginatedResponse,
-} from '@full-stack-app/shared';
-import {
   CreateUserBanBody,
   UpdateProfileBody,
-} from '../validators/userValidator.js';
+  UpdateRoleBody,
+} from '@full-stack-app/shared';
 
 export const getMe = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
@@ -44,7 +43,7 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 };
 
 export const updateUserRole = async (
-  req: Request<{ id: string }, unknown, { newRoleName: string }>,
+  req: Request<{ id: string }, unknown, UpdateRoleBody>,
   res: Response,
 ) => {
   const user = getAuthUser(req);

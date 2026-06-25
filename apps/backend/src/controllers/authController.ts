@@ -16,12 +16,10 @@ import type {
   AuthResponseDTO,
   UserDTO,
   TwoFAInfoDTO,
-} from '@full-stack-app/shared';
-import {
   Login2FABody,
   RegisterBody,
   Verify2FABody,
-} from '../validators/authValidator.js';
+} from '@full-stack-app/shared';
 
 export const register = async (req: Request, res: Response) => {
   const { username, password, name } = req.body as RegisterBody;

@@ -4,8 +4,11 @@ import * as PostService from '../services/postService.js';
 import { formatPost, withBaseUrl } from '../utils/formatters.js';
 import { sendSuccess } from '../utils/response.js';
 import { getAuthUser } from '../utils/requestHelper.js';
-import type { PostDTO } from '@full-stack-app/shared';
-import { CreatePostBody, UpdatePostBody } from '../validators/postValidator.js';
+import type {
+  PostDTO,
+  CreatePostBody,
+  UpdatePostBody,
+} from '@full-stack-app/shared';
 
 export const getPostLikers = async (
   req: Request<{ id: string }>,

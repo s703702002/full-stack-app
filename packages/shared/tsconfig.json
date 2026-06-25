@@ -1,12 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "module": "NodeNext",           
+    "moduleResolution": "NodeNext",
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
-    "composite": true
+    "composite": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo" 
   },
   "include": ["src/**/*"]
 }

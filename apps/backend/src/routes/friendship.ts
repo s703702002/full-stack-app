@@ -10,7 +10,7 @@ import {
   sendFriendRequest,
 } from '../controllers/friendshipController.js';
 import validate from '../middlewares/validateMiddleware.js';
-import { respondFriendRequestSchema } from '../validators/friendshipValidator.js';
+import { respondFriendRequestSchema } from '@full-stack-app/shared';
 
 const router = express.Router();
 

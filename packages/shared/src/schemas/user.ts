@@ -13,3 +13,9 @@ export const createUserBanSchema = z.object({
 });
 
 export type CreateUserBanBody = z.infer<typeof createUserBanSchema>;
+
+export const updateRoleSchema = z.object({
+  newRoleName: z.string().min(1, '角色名稱必填'),
+});
+
+export type UpdateRoleBody = z.infer<typeof updateRoleSchema>;

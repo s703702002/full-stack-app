@@ -7,9 +7,9 @@ import type {
   FriendDTO,
   FriendRequestDTO,
   FriendshipStatus,
+  RespondFriendRequestBody,
 } from '@full-stack-app/shared';
 import type { Friendship } from '../generated/client.js';
-import { RespondFriendRequestBody } from '../validators/friendshipValidator.js';
 
 export const getFriends = async (req: Request, res: Response) => {
   const user = getAuthUser(req);
