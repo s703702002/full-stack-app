@@ -1,5 +1,17 @@
 # frontend
 
+## 0.1.5
+
+### Patch Changes
+
+- 5e520d3: Add code splitting
+- 5aa3930: Add i18n
+- 602b812: Add admin page i18n
+- 4a3776f: Add i18n feature
+- Updated dependencies [5aa3930]
+- Updated dependencies [602b812]
+  - @full-stack-app/features@0.4.0
+
 ## 0.1.4
 
 ### Patch Changes
