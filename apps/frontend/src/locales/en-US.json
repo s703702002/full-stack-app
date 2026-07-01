@@ -1,0 +1,33 @@
+{
+  "index": {
+    "title": "Advanced Authentication System",
+    "subtitle": "Built with Vite + React + Tailwind and backed by backend Redis Session verification. Secure, fast, and seamlessly intuitive.",
+    "sign-in": "Sign In Now",
+    "register": "Create an Account"
+  },
+  "common": {
+    "error": "An error occurred"
+  },
+  "button": {
+    "sign-in": "Sign In",
+    "sign-out": "Sign Out",
+    "register": "Register"
+  },
+  "link": {
+    "friend-request": "Friends",
+    "profile": "Profile Settings",
+    "user-management": "User Management",
+    "send-reset-link": "Send Reset Link"
+  },
+  "forgot-password": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your username and we'll send you a link to reset your password.",
+    "back-to-login": "Back to Sign In"
+  },
+  "input-label": {
+    "username": "Username"
+  },
+  "input-placeholder": {
+    "username": "Enter your username"
+  }
+}

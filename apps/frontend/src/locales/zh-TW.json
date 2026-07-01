@@ -1,0 +1,33 @@
+{
+  "index": {
+    "title": "終極認證系統",
+    "subtitle": "Vite + React + Tailwind 實作，搭配後端 Redis Session 驗證。安全、快速、體驗流暢。",
+    "sign-in": "立即登入",
+    "register": "註冊新帳號"
+  },
+  "common": {
+    "error": "發生錯誤"
+  },
+  "button": {
+    "sign-in": "登入",
+    "sign-out": "登出",
+    "register": "註冊"
+  },
+  "link": {
+    "friend-request": "好友管理",
+    "profile": "個人設定",
+    "user-management": "權限管理",
+    "send-reset-link": "發送重設連結"
+  },
+  "forgot-password": {
+    "title": "忘記密碼",
+    "subtitle": "請輸入您的帳號，我們將發送重設密碼的連結給您。",
+    "back-to-login": "返回登入頁面"
+  },
+  "input-label": {
+    "username": "您的帳號 (Username)"
+  },
+  "input-placeholder": {
+    "username": "請輸入註冊時的帳號"
+  }
+}

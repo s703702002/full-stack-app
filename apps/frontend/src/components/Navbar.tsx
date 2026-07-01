@@ -5,14 +5,21 @@ import { useToast } from '../hooks/useToast';
 import { userKeys } from '../queries/userQueries';
 import { Avatar } from '@full-stack-app/ui';
 import { logoutMutation } from '../queries/authQueries';
+import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { error } = useToast();
+  const { t, i18n } = useTranslation();
 
   const canManageUsers =
     user?.roleName === 'superadmin' || user?.roleName === 'admin';
+
+  const toggleLanguage = () => {
+    const nextLng = i18n.language === 'zh-TW' ? 'en-US' : 'zh-TW';
+    i18n.changeLanguage(nextLng);
+  };
 
   const { mutate: logout } = useMutation({
     ...logoutMutation(),
@@ -43,11 +50,34 @@ export default function Navbar() {
               to="/admin/users"
               className="text-slate-600 hover:text-purple-600 transition"
             >
-              權限管理
+              {t('link.user-management')}
             </Link>
           )}
 
-          {/* 狀態分隔線 (選用：讓選單跟使用者區塊稍微隔開) */}
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-slate-200"
+            title={
+              i18n.language === 'zh-TW' ? 'Switch to English' : '切換至繁體中文'
+            }
+          >
+            <svg
+              className="w-4 h-4 text-slate-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h2m4.6-4.6a9 9 0 11-13.313-1.464"
+              />
+            </svg>
+            <span>{i18n.language === 'zh-TW' ? 'EN' : '繁中'}</span>
+          </button>
+
+          {/* 狀態分隔線 */}
           {user && <div className="h-4 w-px bg-slate-200 mx-2"></div>}
 
           {/* 使用者專屬區塊 */}
@@ -57,17 +87,17 @@ export default function Navbar() {
                 to="/friend-requests"
                 className="hover:text-primary transition"
               >
-                好友管理
+                {t('link.friend-request')}
               </Link>
               <Link to="/profile" className="hover:text-primary transition">
-                個人設定
+                {t('link.profile')}
               </Link>
 
               <button
                 onClick={() => logout()}
                 className="text-slate-500 hover:text-red-600 transition"
               >
-                登出
+                {t('button.sign-out')}
               </button>
 
               <Link
@@ -85,13 +115,13 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-4">
               <Link to="/login" className="hover:text-primary transition">
-                登入
+                {t('button.sign-in')}
               </Link>
               <Link
                 to="/register"
                 className="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition shadow-sm"
               >
-                註冊
+                {t('button.register')}
               </Link>
             </div>
           )}
