@@ -28,6 +28,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "catalog:",
+    "rollup-plugin-visualizer": "^7.0.1",
     "vite": "catalog:"
   }
 }
