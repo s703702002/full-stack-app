@@ -1,11 +1,14 @@
 import { Button, InputField } from '@full-stack-app/ui';
 import { useAuthFlow } from '../hooks/useAuthFlow';
+import { useTrans } from '../hooks/useTrans';
 
 export interface LoginPageProps {
   onErrorToast: (message: string) => void;
 }
 
 export default function LoginPage({ onErrorToast }: Readonly<LoginPageProps>) {
+  const { t } = useTrans();
+
   const {
     step,
     setStep,
@@ -30,23 +33,25 @@ export default function LoginPage({ onErrorToast }: Readonly<LoginPageProps>) {
           }}
         >
           <div className="w-1/2 p-8 flex flex-col justify-center">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">歡迎回來</h2>
-            <p className="text-slate-500 mb-8">請輸入您的帳號密碼以登入</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+              {t('login.welcome')}
+            </h2>
+            <p className="text-slate-500 mb-8">{t('login.subtitle')}</p>
 
             <form onSubmit={handleLoginSubmit}>
               <div className="space-y-4">
                 <InputField
-                  label="帳號 (Username)"
+                  label={t('input-label.username')}
                   type="text"
                   value={formData.username}
                   onChange={(e) =>
                     setFormData({ ...formData, username: e.target.value })
                   }
                   required
-                  placeholder="例如: testuser"
+                  placeholder={t('input-placeholder.username')}
                 />
                 <InputField
-                  label="密碼 (Password)"
+                  label={t('input-label.password')}
                   type="password"
                   value={formData.password}
                   onChange={(e) =>
@@ -61,12 +66,12 @@ export default function LoginPage({ onErrorToast }: Readonly<LoginPageProps>) {
                   href="/forgot-password"
                   className="text-sm text-primary hover:underline font-medium"
                 >
-                  忘記密碼？
+                  {t('login.forgot-password')}
                 </a>
               </div>
 
               <Button loading={isLoginPending} className="w-full py-2.5">
-                立即登入
+                {t('login.submit-btn')}
               </Button>
             </form>
 
@@ -76,7 +81,7 @@ export default function LoginPage({ onErrorToast }: Readonly<LoginPageProps>) {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white text-slate-400 font-medium">
-                  或使用其他方式
+                  {t('login.or-divider')}
                 </span>
               </div>
             </div>
@@ -104,16 +109,16 @@ export default function LoginPage({ onErrorToast }: Readonly<LoginPageProps>) {
                   fill="#EA4335"
                 />
               </svg>
-              使用 Google 登入
+              {t('login.google-btn')}
             </button>
 
             <p className="text-center text-slate-600 mt-8 text-sm">
-              還沒有帳號？{' '}
+              {t('login.no-account')}{' '}
               <a
                 href="/register"
                 className="text-primary font-bold hover:underline"
               >
-                立即註冊
+                {t('login.register-now')}
               </a>
             </p>
           </div>
@@ -137,38 +142,38 @@ export default function LoginPage({ onErrorToast }: Readonly<LoginPageProps>) {
                   d="M15 19l-7-7 7-7"
                 />
               </svg>
-              返回修改
+              {t('two-fa.back-btn')}
             </button>
 
             <h2 className="text-3xl font-bold text-slate-900 mb-2">
-              兩階段驗證
+              {t('two-fa.title')}
             </h2>
             <p className="text-slate-500 mb-8 text-center">
-              請打開 Google Authenticator 輸入您的 6 位數驗證碼
+              {t('two-fa.subtitle')}
             </p>
 
             <form onSubmit={handle2FASubmit}>
               <div className="mb-6">
                 <InputField
-                  label="6 位數驗證碼"
+                  label={t('input-label.totp-code')}
                   type="text"
                   value={totpCode}
                   onChange={(e) =>
                     setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))
                   }
                   required
-                  placeholder="例如: 123456"
+                  placeholder={t('input-placeholder.totp-code')}
                   autoComplete="one-time-code"
                 />
               </div>
 
               <Button loading={is2FAPending} className="w-full py-2.5">
-                驗證並登入
+                {t('two-fa.submit-btn')}
               </Button>
             </form>
 
             <p className="text-center text-slate-400 mt-8 text-xs">
-              驗證碼每 30 秒自動更新一次
+              {t('two-fa.hint')}
             </p>
           </div>
         </div>

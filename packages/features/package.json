@@ -31,7 +31,8 @@
   },
   "dependencies": {
     "@full-stack-app/shared": "workspace:*",
-    "@full-stack-app/ui": "workspace:*"
+    "@full-stack-app/ui": "workspace:*",
+    "react-i18next": "catalog:"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
