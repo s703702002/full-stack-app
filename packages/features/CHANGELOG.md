@@ -1,5 +1,12 @@
 # @full-stack-app/features
 
+## 0.4.0
+
+### Minor Changes
+
+- 5aa3930: Add i18n
+- 602b812: Add admin page i18n
+
 ## 0.3.0
 
 ### Minor Changes
