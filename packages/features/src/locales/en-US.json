@@ -1,4 +1,33 @@
 {
+  "admin": {
+    "title": "Admin Dashboard: User Permissions",
+    "subtitle": "Please assign Administrator (Admin) privileges with caution.",
+    "loading": "Loading...",
+    "load-error": "Failed to load data",
+    "no-role": "No Role",
+    "status-banned": "Suspended",
+    "status-normal": "Normal",
+    "ban-reason-prefix": "Reason: ",
+    "ban-expires-prefix": "Expires: ",
+    "ban-permanent": "Permanent",
+    "lock-tooltip": "🔒 Restricted",
+    "toast-role-error": "Failed to change user role",
+    "toast-lift-error": "Failed to lift suspension",
+    "toast-ban-error": "Failed to suspend user",
+    "table": {
+      "id": "ID",
+      "username": "Username",
+      "name": "Name",
+      "role": "Role",
+      "status": "Status",
+      "role-setting": "Role Settings",
+      "ban-action": "Actions"
+    },
+    "action": {
+      "lift-ban": "Lift Suspension",
+      "ban": "Suspend"
+    }
+  },
   "login": {
     "welcome": "Welcome Back",
     "subtitle": "Please enter your username and password",

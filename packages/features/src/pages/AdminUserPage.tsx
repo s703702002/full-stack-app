@@ -4,6 +4,7 @@ import { canEditUser } from '../utils/roleHelper';
 import BanModal from '../components/BanModal';
 import { UserDTO } from '@full-stack-app/shared';
 import { cn } from '@full-stack-app/ui';
+import { useTrans } from '../hooks/useTrans';
 
 const getRoleLabelStyles = (roleName: string) =>
   ({
@@ -22,6 +23,7 @@ export default function AdminUserPage({
   currentUser,
   onErrorToast,
 }: Readonly<AdminUserPageProps>) {
+  const { t } = useTrans();
   const [banTarget, setBanTarget] = useState<UserDTO | null>(null);
 
   const { users, isLoading, isError, changeRole, banUser, liftBan } =
@@ -41,9 +43,9 @@ export default function AdminUserPage({
     <div className="max-w-5xl mx-auto mt-10 p-4">
       <div>
         <h2 className="text-3xl font-bold text-slate-800">
-          後台管理：使用者權限
+          {t('admin.title')}
         </h2>
-        <p className="text-slate-500 mt-2">請謹慎指派管理員 (Admin) 權限。</p>
+        <p className="text-slate-500 mt-2">{t('admin.subtitle')}</p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mt-6">
@@ -51,13 +53,17 @@ export default function AdminUserPage({
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600">
-                <th className="p-4 font-medium">ID</th>
-                <th className="p-4 font-medium">帳號</th>
-                <th className="p-4 font-medium">姓名</th>
-                <th className="p-4 font-medium">角色</th>
-                <th className="p-4 font-medium">狀態</th>
-                <th className="p-4 font-medium">角色設定</th>
-                <th className="p-4 font-medium">Ban 操作</th>
+                <th className="p-4 font-medium">{t('admin.table.id')}</th>
+                <th className="p-4 font-medium">{t('admin.table.username')}</th>
+                <th className="p-4 font-medium">{t('admin.table.name')}</th>
+                <th className="p-4 font-medium">{t('admin.table.role')}</th>
+                <th className="p-4 font-medium">{t('admin.table.status')}</th>
+                <th className="p-4 font-medium">
+                  {t('admin.table.role-setting')}
+                </th>
+                <th className="p-4 font-medium">
+                  {t('admin.table.ban-action')}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -92,7 +98,7 @@ export default function AdminUserPage({
                           getRoleLabelStyles(u.roleName!),
                         )}
                       >
-                        {u.roleName || '無角色'}
+                        {u.roleName || t('admin.no-role')}
                       </span>
                     </td>
                     <td className="p-4">
@@ -101,10 +107,12 @@ export default function AdminUserPage({
                           className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 cursor-help"
                           title={`原因：${u.activeBan.reason}\n到期：${u.activeBan.expiresAt ? new Date(u.activeBan.expiresAt).toLocaleString() : '永久'}`}
                         >
-                          已停用
+                          {t('admin.status-banned')}
                         </span>
                       ) : (
-                        <span className="text-sm text-slate-400">正常</span>
+                        <span className="text-sm text-slate-400">
+                          {t('admin.status-normal')}
+                        </span>
                       )}
                     </td>
                     <td className="p-4">
@@ -117,7 +125,10 @@ export default function AdminUserPage({
                                 targetUserId: u.id,
                                 newRoleName: e.target.value,
                               },
-                              { onError: () => onErrorToast('角色變更失敗') },
+                              {
+                                onError: () =>
+                                  onErrorToast(t('admin.toast-role-error')),
+                              },
                             )
                           }
                           className="border border-slate-300 rounded p-1"
@@ -128,7 +139,7 @@ export default function AdminUserPage({
                         </select>
                       ) : (
                         <span className="text-slate-500 bg-slate-100 px-2 py-1 rounded cursor-not-allowed">
-                          🔒 {u.roleName}
+                          {t('admin.lock-tooltip')}: {u.roleName}
                         </span>
                       )}
                     </td>
@@ -138,19 +149,20 @@ export default function AdminUserPage({
                         <button
                           onClick={() =>
                             liftBan(u.id, {
-                              onError: () => onErrorToast('解除停用失敗'),
+                              onError: () =>
+                                onErrorToast(t('admin.toast-lift-error')),
                             })
                           }
                           className="text-sm text-emerald-600 hover:text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-3 py-1 rounded transition-colors"
                         >
-                          解除停用
+                          {t('admin.action.lift-ban')}
                         </button>
                       ) : (
                         <button
                           onClick={() => setBanTarget(u)}
                           className="text-sm text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1 rounded transition-colors"
                         >
-                          停用
+                          {t('admin.action.ban')}
                         </button>
                       )}
                     </td>
@@ -170,7 +182,7 @@ export default function AdminUserPage({
               { userId: banTarget.id, reason, durationMinutes },
               {
                 onSuccess: () => setBanTarget(null),
-                onError: () => onErrorToast('停用失敗'),
+                onError: () => onErrorToast(t('admin.toast-ban-error')),
               },
             )
           }

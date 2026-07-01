@@ -1,4 +1,33 @@
 {
+  "admin": {
+    "title": "後台管理：使用者權限",
+    "subtitle": "請謹慎指派管理員 (Admin) 權限。",
+    "loading": "載入中...",
+    "load-error": "載入失敗",
+    "no-role": "無角色",
+    "status-banned": "已停用",
+    "status-normal": "正常",
+    "ban-reason-prefix": "原因：",
+    "ban-expires-prefix": "到期：",
+    "ban-permanent": "永久",
+    "lock-tooltip": "🔒 無權限變更",
+    "toast-role-error": "角色變更失敗",
+    "toast-lift-error": "解除停用失敗",
+    "toast-ban-error": "停用失敗",
+    "table": {
+      "id": "ID",
+      "username": "帳號",
+      "name": "姓名",
+      "role": "角色",
+      "status": "狀態",
+      "role-setting": "角色設定",
+      "ban-action": "Ban 操作"
+    },
+    "action": {
+      "lift-ban": "解除停用",
+      "ban": "停用"
+    }
+  },
   "login": {
     "welcome": "歡迎回來",
     "subtitle": "請輸入您的帳號密碼以登入",
