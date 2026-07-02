@@ -2,12 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, expect, test, describe } from 'vitest';
 import { axe } from 'vitest-axe';
-import * as axeMatchers from 'vitest-axe/matchers.js';
-import 'vitest-axe/extend-expect';
 import BanModal from './BanModal';
 import { UserDTO } from '@full-stack-app/shared';
-
-expect.extend(axeMatchers);
 
 const mockUser: UserDTO = {
   id: 'user-1',

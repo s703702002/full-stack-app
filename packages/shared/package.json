@@ -17,8 +17,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc -w",
+    "build": "tsc --build --clean && tsc --build --force",
+    "dev": "tsc -w --preserveWatchOutput",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

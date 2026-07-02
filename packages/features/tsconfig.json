@@ -14,7 +14,8 @@
   },
   "include": [
     "src/**/*",   
-    "src/**/*.json"
+    "src/**/*.json",
+    "./vitest.d.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

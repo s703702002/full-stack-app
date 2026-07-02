@@ -1,9 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-import 'vitest';
+import { expect } from 'vitest';
 import { AxeMatchers } from 'vitest-axe';
+import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
 
 declare module 'vitest' {
-  interface Assertion<T = any> extends AxeMatchers {}
-  interface AsymmetricMatchersContaining extends AxeMatchers {}
+  interface Assertion<T = any>
+    extends
+      TestingLibraryMatchers<typeof expect.stringContaining, T>,
+      AxeMatchers {}
+
+  interface AsymmetricMatchersContaining
+    extends
+      TestingLibraryMatchers<typeof expect.stringContaining, any>,
+      AxeMatchers {}
 }
