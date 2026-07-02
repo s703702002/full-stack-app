@@ -1,4 +1,4 @@
-import { LoginPage } from '@full-stack-app/features';
+import { LoginPage } from '@full-stack-app/features/LoginPage';
 import { useToast } from '../hooks/useToast';
 
 export default function Login() {

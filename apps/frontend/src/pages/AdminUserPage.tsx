@@ -1,4 +1,4 @@
-import { AdminUserPage } from '@full-stack-app/features';
+import { AdminUserPage } from '@full-stack-app/features/AdminUserPage';
 import { useAuthUser } from '../context/useAuth';
 import { useToast } from '../hooks/useToast';
 
