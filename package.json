@@ -3,11 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:all": "pnpm --parallel dev",
+    "dev:all": "turbo dev",
     "lint:all": "pnpm -F \"*\" lint",
     "typecheck:all": "pnpm -F \"*\" typecheck",
     "test:all": "pnpm -F \"*\" test",
-    "build": "pnpm -r build",
+    "build": "turbo build",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -27,6 +27,8 @@
     "postcss": "^8.5.15",
     "prettier": "^3.8.2",
     "tailwindcss": "^3.4.19",
+    "turbo": "^2.10.2",
     "typescript": "catalog:"
-  }
+  },
+  "packageManager": "pnpm@10.33.0"
 }
