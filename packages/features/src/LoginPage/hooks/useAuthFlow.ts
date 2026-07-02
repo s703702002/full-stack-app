@@ -1,6 +1,6 @@
 import { useState, SubmitEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { getApi } from '../api';
+import { getApi } from '../../api';
 import {
   ApiErrorResponse,
   ApiResponse,

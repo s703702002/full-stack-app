@@ -1,6 +1,6 @@
 import { Button, InputField } from '@full-stack-app/ui';
-import { useAuthFlow } from '../hooks/useAuthFlow';
-import { useTrans } from '../hooks/useTrans';
+import { useAuthFlow } from './hooks/useAuthFlow';
+import { useTrans } from './hooks/useTrans';
 
 export interface LoginPageProps {
   onErrorToast: (message: string) => void;

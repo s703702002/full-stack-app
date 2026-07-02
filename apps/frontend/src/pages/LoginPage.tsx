@@ -1,8 +1,5 @@
-import { LoginPage, initApi } from '@full-stack-app/features';
-import { privateApi } from '../api';
+import { LoginPage } from '@full-stack-app/features';
 import { useToast } from '../hooks/useToast';
-
-initApi(privateApi);
 
 export default function Login() {
   const { error } = useToast();

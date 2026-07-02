@@ -27,31 +27,5 @@
       "lift-ban": "Lift Suspension",
       "ban": "Suspend"
     }
-  },
-  "login": {
-    "welcome": "Welcome Back",
-    "subtitle": "Please enter your username and password",
-    "submit-btn": "Sign In",
-    "or-divider": "or",
-    "google-btn": "Sign in with Google",
-    "no-account": "Don't have an account?",
-    "register-now": "Create an Account",
-    "forgot-password": "Forgot Password?"
-  },
-  "two-fa": {
-    "title": "Two-Factor Authentication",
-    "subtitle": "Please open Google Authenticator and enter your 6-digit verification code",
-    "submit-btn": "Verify & Sign In",
-    "hint": "The verification code updates every 30 seconds",
-    "back-btn": "Back"
-  },
-  "input-label": {
-    "username": "Username",
-    "password": "Password",
-    "totp-code": "6-Digit Verification Code"
-  },
-  "input-placeholder": {
-    "username": "e.g., testuser",
-    "totp-code": "e.g., 123456"
   }
 }

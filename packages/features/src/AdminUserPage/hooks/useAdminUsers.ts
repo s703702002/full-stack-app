@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getApi } from '../api';
+import { getApi } from '../../api';
 import type { AxiosError } from 'axios';
 import type {
   UserDTO,

@@ -12,6 +12,7 @@ dist-ssr
 build
 **/build
 *.tsbuildinfo
+stats.html
 
 # ==========================================
 # 2. 專案特定工具 (Project Specifics)

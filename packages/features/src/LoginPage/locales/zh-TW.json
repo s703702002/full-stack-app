@@ -1,0 +1,28 @@
+{
+  "login": {
+    "welcome": "歡迎回來",
+    "subtitle": "請輸入您的帳號密碼以登入",
+    "submit-btn": "立即登入",
+    "or-divider": "或使用其他方式",
+    "google-btn": "使用 Google 登入",
+    "no-account": "還沒有帳號？",
+    "register-now": "立即註冊",
+    "forgot-password": "忘記密碼？"
+  },
+  "two-fa": {
+    "title": "兩階段驗證",
+    "subtitle": "請打開 Google Authenticator 輸入您的 6 位數驗證碼",
+    "submit-btn": "驗證並登入",
+    "hint": "驗證碼每 30 秒自動更新一次",
+    "back-btn": "返回修改"
+  },
+  "input-label": {
+    "username": "帳號 (Username)",
+    "password": "密碼 (Password)",
+    "totp-code": "6 位數驗證碼"
+  },
+  "input-placeholder": {
+    "username": "例如: testuser",
+    "totp-code": "例如: 123456"
+  }
+}

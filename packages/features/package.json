@@ -9,16 +9,19 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc -w",
+    "build": "rm -rf dist && tsc",
+    "dev": "tsc -w --preserveWatchOutput",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest"
@@ -32,6 +35,7 @@
   "dependencies": {
     "@full-stack-app/shared": "workspace:*",
     "@full-stack-app/ui": "workspace:*",
+    "i18next": "catalog:",
     "react-i18next": "catalog:"
   },
   "devDependencies": {

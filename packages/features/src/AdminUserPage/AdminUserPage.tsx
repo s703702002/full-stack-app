@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useAdminUsers } from '../hooks/useAdminUsers';
-import { canEditUser } from '../utils/roleHelper';
-import BanModal from '../components/BanModal';
-import { UserDTO } from '@full-stack-app/shared';
 import { cn } from '@full-stack-app/ui';
-import { useTrans } from '../hooks/useTrans';
+import { UserDTO } from '@full-stack-app/shared';
+import { useAdminUsers } from './hooks/useAdminUsers';
+import { canEditUser } from './utils';
+import BanModal from './components/BanModal';
+import { useTrans } from './hooks/useTrans';
 
 const getRoleLabelStyles = (roleName: string) =>
   ({

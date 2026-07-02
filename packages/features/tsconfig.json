@@ -7,9 +7,14 @@
     "rootDir": "./src",
     "declaration": true,
     "composite": true,
+    "noEmit": false,
     "jsx": "react-jsx",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"]
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "resolveJsonModule": true,
   },
-  "include": ["src/**/*", "src/**/*.json"],
+  "include": [
+    "src/**/*",   
+    "src/**/*.json"
+  ],
   "exclude": ["node_modules", "dist"]
 }
