@@ -8,6 +8,5 @@
 
     /* 現代專案標準效能優化 */
     "incremental": true,
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
   }
 }
