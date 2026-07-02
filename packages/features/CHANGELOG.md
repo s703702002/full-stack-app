@@ -1,5 +1,14 @@
 # @full-stack-app/features
 
+## 0.4.1
+
+### Patch Changes
+
+- 60d92ea: Refine ui exports
+- 6589c7c: refine @full-stack-app/features exports
+- Updated dependencies [60d92ea]
+  - @full-stack-app/ui@0.2.3
+
 ## 0.4.0
 
 ### Minor Changes

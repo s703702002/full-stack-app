@@ -1,5 +1,15 @@
 # frontend
 
+## 0.1.6
+
+### Patch Changes
+
+- 6589c7c: refine @full-stack-app/features exports
+- Updated dependencies [60d92ea]
+- Updated dependencies [6589c7c]
+  - @full-stack-app/features@0.4.1
+  - @full-stack-app/ui@0.2.3
+
 ## 0.1.5
 
 ### Patch Changes
