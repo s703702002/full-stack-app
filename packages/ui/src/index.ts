@@ -1,6 +1,7 @@
-export * from './components/Avatar';
-export * from './components/CameraCapture';
-export * from './components/ProfileCard';
-export * from './utils/cn';
-export * from './components/Button';
-export * from './components/InputField';
+export * from './Avatar';
+export * from './CameraCapture';
+export * from './ProfileCard';
+export * from './Button';
+export * from './InputField';
+
+export * from './utils';

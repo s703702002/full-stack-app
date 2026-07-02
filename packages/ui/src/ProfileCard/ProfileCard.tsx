@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
+import type { UserDTO } from '@full-stack-app/shared';
 import { Avatar } from '../Avatar';
 import { CameraCapture } from '../CameraCapture';
-import type { UserDTO } from '@full-stack-app/shared';
 
 export interface ProfileCardProps {
   user: UserDTO;

@@ -4,7 +4,7 @@ export interface CameraCaptureProps {
   onCapture: (file: File) => void;
 }
 
-export function CameraCapture({ onCapture }: CameraCaptureProps) {
+export function CameraCapture({ onCapture }: Readonly<CameraCaptureProps>) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
