@@ -22,9 +22,9 @@ export const getFriends = () =>
     queryKey: friendshipKeys.friends(),
     queryFn: () =>
       privateApi
-        .get<
-          ApiResponse<{ friends: FriendDTO[] }>
-        >('/api/friend-requests/friends')
+        .get<ApiResponse<{ friends: FriendDTO[] }>>(
+          '/api/friend-requests/friends',
+        )
         .then((r) => r.data.data.friends),
   });
 
@@ -33,9 +33,9 @@ export const getReceivedRequests = () =>
     queryKey: friendshipKeys.received(),
     queryFn: () =>
       privateApi
-        .get<
-          ApiResponse<{ requests: FriendRequestDTO[] }>
-        >('/api/friend-requests/received')
+        .get<ApiResponse<{ requests: FriendRequestDTO[] }>>(
+          '/api/friend-requests/received',
+        )
         .then((r) => r.data.data.requests),
   });
 
@@ -44,9 +44,9 @@ export const getSentRequests = () =>
     queryKey: friendshipKeys.sent(),
     queryFn: () =>
       privateApi
-        .get<
-          ApiResponse<{ requests: FriendRequestDTO[] }>
-        >('/api/friend-requests/sent')
+        .get<ApiResponse<{ requests: FriendRequestDTO[] }>>(
+          '/api/friend-requests/sent',
+        )
         .then((r) => r.data.data.requests),
   });
 
@@ -55,9 +55,9 @@ export const getFriendshipStatus = (userId: string) =>
     queryKey: friendshipKeys.status(userId),
     queryFn: () =>
       privateApi
-        .get<
-          ApiResponse<{ status: FriendshipStatus }>
-        >(`/api/friend-requests/status/${userId}`)
+        .get<ApiResponse<{ status: FriendshipStatus }>>(
+          `/api/friend-requests/status/${userId}`,
+        )
         .then((r) => r.data.data.status),
     enabled: !!userId,
   });

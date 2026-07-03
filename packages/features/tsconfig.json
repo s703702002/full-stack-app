@@ -12,10 +12,6 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "resolveJsonModule": true
   },
-  "include": [
-    "src/**/*",   
-    "src/**/*.json",
-    "./vitest.d.ts"
-  ],
+  "include": ["src/**/*", "src/**/*.json", "./vitest.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

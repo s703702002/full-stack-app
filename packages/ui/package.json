@@ -19,8 +19,7 @@
   "scripts": {
     "build": "tsc --build --clean && tsc --build --force",
     "dev": "tsc -w --preserveWatchOutput",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "react": "catalog:",

@@ -6,7 +6,7 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    
+
     /* Vite / Bundler 專屬模式 */
     "module": "ESNext",
     "moduleResolution": "bundler",

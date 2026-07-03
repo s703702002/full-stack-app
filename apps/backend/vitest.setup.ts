@@ -22,4 +22,4 @@ vi.mock('redis', () => ({
     set: vi.fn(),
     del: vi.fn(),
   }),
-}))
+}));

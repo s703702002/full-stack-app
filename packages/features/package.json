@@ -20,7 +20,6 @@
     "build": "tsc --build --clean && tsc --build --force",
     "dev": "tsc -w --preserveWatchOutput",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
     "test": "vitest"
   },
   "peerDependencies": {

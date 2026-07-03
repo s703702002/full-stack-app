@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "semi": true,
+  "printWidth": 80,
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/build/**",
+    "**/.next/**",
+    "**/.turbo/**",
+    "**/node_modules/**",
+    "**/coverage/**",
+    "**/prisma/migrations/**",
+    "**/generated/**",
+    ".package",
+    ".DS_Store",
+    "*.local",
+    ".env",
+    ".env.*"
+  ]
+}
