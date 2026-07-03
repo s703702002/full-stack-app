@@ -8,18 +8,10 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./api": {
-      "types": "./dist/api.d.ts",
-      "default": "./dist/api.js"
-    },
-    "./*": {
-      "types": "./dist/*/index.d.ts",
-      "default": "./dist/*/index.js"
-    }
+    ".": "./src/index.ts",
+    "./api": "./src/api.ts",
+    "./tailwind.css": "./src/tailwind.css",
+    "./*": "./src/*/index.ts"
   },
   "files": [
     "dist"
