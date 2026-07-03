@@ -1,9 +1,13 @@
-/* src/index.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* 加一點全域樣式，讓背景舒服一點 */
+/* 我們必須用 @source 明確把鄰居套件（ui, features）的實體路徑加入掃描範圍！ */
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+@source "../../../packages/features/src/**/*.{ts,tsx}";
+
+@theme {
+  --color-primary: #3b82f6;
+}
+
 body {
   @apply bg-slate-50 text-slate-900;
 }
