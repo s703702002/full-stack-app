@@ -46,6 +46,7 @@ export function ProfileCard({
       await onSave(formData);
       onSuccess?.('已儲存');
       setIsEditing(false);
+      // oxlint-disable-next-line typescript/no-explicit-any
     } catch (err: any) {
       onError?.(err?.response?.data?.message || '儲存失敗');
     }
