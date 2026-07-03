@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 echo "=== 🚀 Husky 安全防禦啟動：準備 Push，開始進行全專案安全檢查 ==="
 
 # 1. 跑全域的排版與語法檢查
