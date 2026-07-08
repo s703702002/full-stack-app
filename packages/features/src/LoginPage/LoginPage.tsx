@@ -42,6 +42,7 @@ export default function LoginPage({ onErrorToast }: Readonly<LoginPageProps>) {
               <div className="space-y-4">
                 <InputField
                   label={t('input-label.username')}
+                  id="username"
                   type="text"
                   value={formData.username}
                   onChange={(e) =>
@@ -53,6 +54,7 @@ export default function LoginPage({ onErrorToast }: Readonly<LoginPageProps>) {
                 <InputField
                   label={t('input-label.password')}
                   type="password"
+                  id="pwd"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
