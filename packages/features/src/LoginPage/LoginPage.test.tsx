@@ -3,14 +3,14 @@ import type { SubmitEvent } from 'react';
 import { useState } from 'react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
-import 'vitest-axe/extend-expect';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import LoginPage from './LoginPage';
 import { useAuthFlow } from './hooks/useAuthFlow';
 
-const mockSubmit = vi.fn((e: SubmitEvent) => e.preventDefault());
-const mockLogin = vi.fn();
+const mockLoginSubmit = vi.fn((e: SubmitEvent) => e.preventDefault());
+const mock2FASubmit = vi.fn((e: SubmitEvent) => e.preventDefault());
+const mockGoogleLogin = vi.fn();
 
 vi.mock('./hooks/useAuthFlow', () => ({
   useAuthFlow: vi.fn(() => useAuthFlowStub()),
@@ -19,6 +19,8 @@ vi.mock('./hooks/useAuthFlow', () => ({
 vi.mock('./hooks/useTrans', () => ({
   useTrans: vi.fn(() => ({ t: (key: string) => key })),
 }));
+
+let isLoginPending = false;
 
 function useAuthFlowStub() {
   const [step, setStep] = useState('credentials');
@@ -32,17 +34,18 @@ function useAuthFlowStub() {
     setFormData,
     totpCode,
     setTotpCode,
-    isLoginPending: false,
+    isLoginPending,
     is2FAPending: false,
-    handleLoginSubmit: mockSubmit,
-    handle2FASubmit: mockSubmit,
-    handleGoogleLogin: mockLogin,
+    handleLoginSubmit: mockLoginSubmit,
+    handle2FASubmit: mock2FASubmit,
+    handleGoogleLogin: mockGoogleLogin,
   };
 }
 
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isLoginPending = false;
   });
 
   it('把 onErrorToast 正確傳給 useAuthFlow', () => {
@@ -76,7 +79,7 @@ describe('LoginPage', () => {
     await user.type(passwordInput, 's3cret');
     await user.click(screen.getByRole('button', { name: 'login.submit-btn' }));
 
-    expect(mockSubmit).toHaveBeenCalledTimes(1);
+    expect(mockLoginSubmit).toHaveBeenCalledTimes(1);
   });
 
   it('點擊 Google 登入按鈕時呼叫 handleGoogleLogin', async () => {
@@ -85,7 +88,20 @@ describe('LoginPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'login.google-btn' }));
 
-    expect(mockLogin).toHaveBeenCalledTimes(1);
+    expect(mockGoogleLogin).toHaveBeenCalledTimes(1);
+  });
+
+  it('登入送出中(isLoginPending)時,登入按鈕會拿到 loading 狀態', () => {
+    isLoginPending = true;
+    render(<LoginPage onErrorToast={vi.fn()} />);
+
+    const submitButton = screen
+      .getAllByRole('button')
+      .find((btn) => btn.getAttribute('data-loading') === 'true');
+
+    expect(submitButton).toBeDefined();
+    expect(submitButton).toBeDisabled();
+    expect(submitButton).toHaveTextContent('處理中...');
   });
 
   it('不應該有明顯的可及性(accessibility)違規', async () => {

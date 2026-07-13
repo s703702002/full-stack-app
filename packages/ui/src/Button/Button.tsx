@@ -9,6 +9,7 @@ export function Button({ children, loading, ...props }: Readonly<ButtonProps>) {
   return (
     <button
       {...props}
+      data-loading={loading}
       disabled={loading || props.disabled}
       className="w-full bg-primary hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 shadow-md hover:shadow-lg disabled:opacity-60 flex items-center justify-center"
     >
