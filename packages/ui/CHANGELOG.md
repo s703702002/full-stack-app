@@ -1,5 +1,11 @@
 # @full-stack-app/ui
 
+## 0.2.4
+
+### Patch Changes
+
+- 14f19a9: Add login page test
+
 ## 0.2.3
 
 ### Patch Changes
