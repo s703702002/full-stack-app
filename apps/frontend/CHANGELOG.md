@@ -1,5 +1,13 @@
 # frontend
 
+## 0.1.7
+
+### Patch Changes
+
+- Updated dependencies [14f19a9]
+  - @full-stack-app/features@0.4.2
+  - @full-stack-app/ui@0.2.4
+
 ## 0.1.6
 
 ### Patch Changes

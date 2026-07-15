@@ -1,5 +1,13 @@
 # @full-stack-app/features
 
+## 0.4.2
+
+### Patch Changes
+
+- 14f19a9: Add login page test
+- Updated dependencies [14f19a9]
+  - @full-stack-app/ui@0.2.4
+
 ## 0.4.1
 
 ### Patch Changes
