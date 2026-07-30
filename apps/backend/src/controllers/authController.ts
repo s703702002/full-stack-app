@@ -28,7 +28,7 @@ export const register = async (req: Request, res: Response) => {
   sendSuccess<{ user: UserDTO }>(
     res,
     201,
-    { user: sanitizeUser(newUser) },
+    { user: await sanitizeUser(newUser) },
     '註冊成功',
   );
 };
@@ -52,12 +52,12 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    req.login(user, (err) => {
+    req.login(user, async (err) => {
       if (err) return next(err);
       return sendSuccess<AuthResponseDTO>(
         res,
         200,
-        { user: sanitizeUser(user) },
+        { user: await sanitizeUser(user) },
         '登入成功',
       );
     });
@@ -78,13 +78,13 @@ export const login2FA = async (
 
   const user = await AuthService.verify2FALogin(tempUserId, totpCode);
 
-  req.login(toPassportUser(user), (err) => {
+  req.login(toPassportUser(user), async (err) => {
     if (err) return next(err);
     delete req.session.tempUserId;
     sendSuccess<AuthResponseDTO>(
       res,
       200,
-      { user: sanitizeUser(user) },
+      { user: await sanitizeUser(user) },
       '登入成功',
     );
   });

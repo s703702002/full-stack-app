@@ -13,6 +13,7 @@ import type {
   FriendRequestDTO,
   BanDTO,
 } from '@full-stack-app/shared';
+import { generatePresignedGetUrl } from './s3Utils.js';
 
 export const withBaseUrl = (path: string | null | undefined): string | null =>
   path ? `${env.IMAGE_BASE_URL}/${path}` : null;
@@ -21,14 +22,18 @@ type UserWithRole = User & {
   role?: { name: string } | null;
 };
 
-export const sanitizeUser = (user: UserWithRole): UserDTO => {
+export const sanitizeUser = async (user: UserWithRole): Promise<UserDTO> => {
+  const avatarUrl = user.avatarUrl
+    ? await generatePresignedGetUrl(user.avatarUrl)
+    : null;
+
   return {
     id: user.id,
     username: user.username,
     name: user.name,
     roleId: user.roleId,
     roleName: user.role?.name,
-    avatarUrl: withBaseUrl(user.avatarUrl),
+    avatarUrl: avatarUrl,
     bio: user.bio,
   };
 };

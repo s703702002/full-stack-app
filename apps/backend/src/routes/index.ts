@@ -5,6 +5,7 @@ import postRoutes from './posts.js';
 import userRoutes from './users.js';
 import notificationsRoutes from './notifications.js';
 import friendshipRoutes from './friendship.js';
+import uploadRoutes from './upload.js';
 import { checkHealth } from '../controllers/healthController.js';
 
 const router = express.Router();
@@ -15,5 +16,6 @@ router.use('/api/posts', postRoutes);
 router.use('/api/users', userRoutes);
 router.use('/api/notifications', notificationsRoutes);
 router.use('/api/friend-requests', friendshipRoutes);
+router.use('/api/upload', uploadRoutes);
 
 export default router;
