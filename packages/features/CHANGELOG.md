@@ -1,5 +1,13 @@
 # @full-stack-app/features
 
+## 0.4.3
+
+### Patch Changes
+
+- Updated dependencies [3238261]
+  - @full-stack-app/shared@0.3.1
+  - @full-stack-app/ui@0.2.5
+
 ## 0.4.2
 
 ### Patch Changes
