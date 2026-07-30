@@ -1,5 +1,11 @@
 # @full-stack-app/shared
 
+## 0.3.1
+
+### Patch Changes
+
+- 3238261: Add presignedUrlSchema
+
 ## 0.3.0
 
 ### Minor Changes
