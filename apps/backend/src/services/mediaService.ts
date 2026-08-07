@@ -36,12 +36,11 @@ export const mediaService = {
 
   createMediaFromFile: async (
     userId: string,
-    file: Express.Multer.File | (Express.MulterS3.File & { key?: string }),
+    file: Express.Multer.File,
     title?: string,
     description?: string,
   ) => {
-    // multer-s3 會將 S3 key 存在 file.key
-    const fileKey = (file as { key?: string }).key;
+    const fileKey = file.key;
     if (!fileKey) {
       throw new AppError('上傳失敗：無法取得 S3 檔案 key', 500);
     }

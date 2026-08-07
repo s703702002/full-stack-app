@@ -1,8 +1,5 @@
 import { privateApi } from '../api';
-import {
-  infiniteQueryOptions,
-  mutationOptions,
-} from '@tanstack/react-query';
+import { infiniteQueryOptions, mutationOptions } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import type {
   MediaDTO,
@@ -36,19 +33,23 @@ export const getUserMedias = (userId: string, type?: MediaType) =>
   });
 
 export const uploadMediaMutation = () =>
-  mutationOptions<ApiResponse<MediaDTO>, AxiosError<ApiErrorResponse>, FormData>(
-    {
-      mutationFn: (formData) =>
-        privateApi.post('/api/medias', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }),
-    },
-  );
+  mutationOptions<
+    ApiResponse<MediaDTO>,
+    AxiosError<ApiErrorResponse>,
+    FormData
+  >({
+    mutationFn: (formData) =>
+      privateApi.post('/api/medias', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+  });
 
 export const deleteMediaMutation = () =>
-  mutationOptions<ApiResponse<{ success: boolean }>, AxiosError<ApiErrorResponse>, string>(
-    {
-      mutationFn: (mediaId) =>
-        privateApi.delete(`/api/medias/${mediaId}`).then((r) => r.data),
-    },
-  );
+  mutationOptions<
+    ApiResponse<{ success: boolean }>,
+    AxiosError<ApiErrorResponse>,
+    string
+  >({
+    mutationFn: (mediaId) =>
+      privateApi.delete(`/api/medias/${mediaId}`).then((r) => r.data),
+  });
