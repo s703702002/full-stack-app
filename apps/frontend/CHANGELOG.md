@@ -1,5 +1,18 @@
 # frontend
 
+## 0.2.0
+
+### Minor Changes
+
+- 892da88: Add media upload feature
+
+### Patch Changes
+
+- Updated dependencies [892da88]
+  - @full-stack-app/features@0.4.4
+  - @full-stack-app/shared@0.3.2
+  - @full-stack-app/ui@0.2.6
+
 ## 0.1.8
 
 ### Patch Changes
