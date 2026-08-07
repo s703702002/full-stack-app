@@ -44,6 +44,8 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/profile/:userId" element={<UserPage />} />
+              <Route path="/profile/:userId/album" element={<UserPage />} />
+              <Route path="/profile/:userId/:tab" element={<UserPage />} />
               <Route path="/profile/2fa-setup" element={<Setup2FAPage />} />
               <Route path="/admin/users" element={<AdminUserPage />} />
               <Route path="/friend-requests" element={<FriendRequestsPage />} />

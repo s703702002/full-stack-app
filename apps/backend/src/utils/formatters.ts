@@ -1,4 +1,4 @@
-import type { User, UserBan, Post } from '../generated/client.js';
+import type { User, UserBan, Post, Media } from '../generated/client.js';
 import { env } from './validateEnv.js';
 import type {
   FindReceivedRequestsResult,
@@ -12,6 +12,7 @@ import type {
   FriendDTO,
   FriendRequestDTO,
   BanDTO,
+  MediaDTO,
 } from '@full-stack-app/shared';
 import { generatePresignedGetUrl } from './s3Utils.js';
 
@@ -45,6 +46,23 @@ export const formatPost = (post: Post): PostDTO => {
     createdAt: post.createdAt?.toISOString() ?? null,
     updatedAt: post.updatedAt?.toISOString() ?? null,
     userId: post.userId,
+  };
+};
+
+export const formatMedia = async (media: Media): Promise<MediaDTO> => {
+  const url = await generatePresignedGetUrl(media.fileKey);
+
+  return {
+    id: media.id,
+    userId: media.userId,
+    title: media.title,
+    description: media.description,
+    url,
+    fileKey: media.fileKey,
+    mediaType: media.mediaType,
+    mimeType: media.mimeType,
+    size: media.size,
+    createdAt: media.createdAt.toISOString(),
   };
 };
 

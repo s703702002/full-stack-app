@@ -34,6 +34,7 @@ model User {
   twoFactorAuth  TwoFactorAuth?
   bans       UserBan[] @relation("BannedUser")  // 我被 ban 的紀錄
   bannedBy   UserBan[] @relation("BanAdmin")    // 我執行的 ban 紀錄
+  medias     Media[]
   
   @@map("users")
 }
@@ -164,4 +165,29 @@ enum FriendshipStatus {
   ACCEPTED  // 已接受，正式好友
   REJECTED  // 已拒絕
   BLOCKED   // 封鎖
+}
+
+// ============================================
+// Media (Album)
+// ============================================
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model Media {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  title       String?   @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  fileKey     String    @map("file_key") @db.VarChar(500)
+  mediaType   MediaType @default(IMAGE) @map("media_type")
+  mimeType    String?   @map("mime_type") @db.VarChar(100)
+  size        Int?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("medias")
 }

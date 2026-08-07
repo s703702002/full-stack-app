@@ -86,6 +86,21 @@ export interface TwoFAInfoDTO {
   secret: string;
 }
 
+export type MediaType = 'IMAGE' | 'VIDEO';
+
+export interface MediaDTO {
+  id: string;
+  userId: string;
+  title: string | null;
+  description: string | null;
+  url: string;
+  fileKey: string;
+  mediaType: MediaType;
+  mimeType: string | null;
+  size: number | null;
+  createdAt: string;
+}
+
 export interface ApiErrorData {
   errorCode?: number;
   reason?: string;
@@ -98,3 +113,4 @@ export interface ApiErrorResponse {
   message: string;
   data?: ApiErrorData;
 }
+

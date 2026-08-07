@@ -9,6 +9,7 @@ import {
   banUser,
   liftBanUser,
 } from '../controllers/userController.js';
+import { getUserMedias } from '../controllers/mediaController.js';
 import { checkAuthenticated } from '../middlewares/auth.js';
 import { checkPermission } from '../middlewares/rbac.js';
 import { apiLimiter } from '../middlewares/rateLimiter.js';
@@ -28,6 +29,7 @@ router.get('/me', apiLimiter, getMe);
 router.get('/', apiLimiter, getAllUsers);
 router.get('/:id', apiLimiter, getUserProfile);
 router.get('/:id/posts', apiLimiter, getUserTimeline);
+router.get('/:id/medias', apiLimiter, getUserMedias);
 router.put(
   '/:id/role',
   checkPermission('user:manage'),

@@ -147,6 +147,7 @@ export default function AdminUserPage({
                     <td className="p-4">
                       {u.activeBan ? (
                         <button
+                          type="button"
                           onClick={() =>
                             liftBan(u.id, {
                               onError: () =>
@@ -159,6 +160,7 @@ export default function AdminUserPage({
                         </button>
                       ) : (
                         <button
+                          type="button"
                           onClick={() => setBanTarget(u)}
                           className="text-sm text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1 rounded transition-colors"
                         >

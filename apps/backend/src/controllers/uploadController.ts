@@ -22,7 +22,7 @@ export async function getPresignedPutUrl(req: Request, res: Response) {
 
   sendSuccess(res, 200, {
     url,
-    key, // 回傳 key，前端上傳成功後可以把這個 key 存進自己的 DB
+    key,
     bucket: env.S3_BUCKET,
   });
 }
