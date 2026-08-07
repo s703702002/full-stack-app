@@ -1,5 +1,14 @@
 # @full-stack-app/features
 
+## 0.4.4
+
+### Patch Changes
+
+- 892da88: Add media upload feature
+- Updated dependencies [892da88]
+  - @full-stack-app/shared@0.3.2
+  - @full-stack-app/ui@0.2.6
+
 ## 0.4.3
 
 ### Patch Changes

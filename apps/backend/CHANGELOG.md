@@ -1,5 +1,16 @@
 # backend
 
+## 1.2.0
+
+### Minor Changes
+
+- 892da88: Add media upload feature
+
+### Patch Changes
+
+- Updated dependencies [892da88]
+  - @full-stack-app/shared@0.3.2
+
 ## 1.1.3
 
 ### Patch Changes

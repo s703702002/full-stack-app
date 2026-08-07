@@ -1,5 +1,11 @@
 # @full-stack-app/shared
 
+## 0.3.2
+
+### Patch Changes
+
+- 892da88: Add media upload feature
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @full-stack-app/ui
 
+## 0.2.6
+
+### Patch Changes
+
+- Updated dependencies [892da88]
+  - @full-stack-app/shared@0.3.2
+
 ## 0.2.5
 
 ### Patch Changes
