@@ -1,37 +1,9 @@
-import type { Request } from 'express';
-import type { FileFilterCallback } from 'multer';
-import multer from 'multer';
-import multerS3 from 'multer-s3';
-import { extname } from '../utils/pathHelper.js';
-import { s3Client } from '../utils/s3Utils.js';
-import AppError from '../utils/AppError.js';
-import { env } from '../utils/validateEnv.js';
+import { createUploader } from '../utils/uploadFactory.js';
 
-const storage = multerS3({
-  s3: s3Client,
-  bucket: env.S3_BUCKET,
-  contentType: multerS3.AUTO_CONTENT_TYPE,
-  key: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = extname(file.originalname);
-    cb(null, `medias/media-${uniqueSuffix}${ext}`);
-  },
-});
-
-export const mediaFileFilter = (
-  _req: Request,
-  file: Express.Multer.File,
-  cb: FileFilterCallback,
-) => {
-  if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
-    cb(null, true);
-  } else {
-    cb(new AppError('只允許上傳圖片 (image) 或影片 (video) 檔案', 400));
-  }
-};
-
-export const mediaUpload = multer({
-  storage,
-  fileFilter: mediaFileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+export const mediaUpload = createUploader({
+  folder: 'medias',
+  filePrefix: 'media',
+  allowedMimeTypes: ['image/', 'video/'],
+  maxFileSizeMB: 5,
+  errorMessage: '只允許上傳圖片 (image) 或影片 (video) 檔案',
 });

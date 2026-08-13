@@ -1,16 +1,39 @@
 import type { Request, Response, NextFunction } from 'express';
+import multer from 'multer';
 import AppError from '../utils/AppError.js';
 import logger from '../utils/logger.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
 
 const isAppError = (err: unknown): err is AppError => err instanceof AppError;
 
+const multerErrorMessageMap: Record<string, string> = {
+  LIMIT_FILE_SIZE: '檔案大小超過限制',
+  LIMIT_UNEXPECTED_FILE: '不支援的檔案欄位或超過檔案數量限制',
+  LIMIT_FILE_COUNT: '上傳檔案數量超過限制',
+  LIMIT_PART_COUNT: '上傳欄位數量超過限制',
+  LIMIT_FIELD_KEY: '欄位名稱過長',
+  LIMIT_FIELD_VALUE: '欄位內容過長',
+  LIMIT_FIELD_COUNT: '欄位數量超過限制',
+};
+
+// 把各種已知的第三方錯誤,統一轉換成 AppError,讓後續邏輯不用個別處理
+const normalizeError = (err: AppError | Error): AppError | Error => {
+  if (err instanceof multer.MulterError) {
+    const message =
+      multerErrorMessageMap[err.code] ?? `檔案上傳錯誤: ${err.message}`;
+    return new AppError(message, 400);
+  }
+  return err;
+};
+
 export const globalErrorHandler = (
-  err: AppError | Error,
+  rawErr: AppError | Error,
   req: Request,
   res: Response,
   _next: NextFunction,
 ) => {
+  const err = normalizeError(rawErr);
+
   const statusCode = isAppError(err) ? err.statusCode : 500;
   const message = err.message || '伺服器發生異常';
   const isOperational = isAppError(err) ? err.isOperational : false;

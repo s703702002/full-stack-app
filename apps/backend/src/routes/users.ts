@@ -13,7 +13,7 @@ import { getUserMedias } from '../controllers/mediaController.js';
 import { checkAuthenticated } from '../middlewares/auth.js';
 import { checkPermission } from '../middlewares/rbac.js';
 import { apiLimiter } from '../middlewares/rateLimiter.js';
-import { upload } from '../middlewares/uploadMiddleware.js';
+import { avatarUpload } from '../middlewares/avatarUploadMiddleware.js';
 import validate from '../middlewares/validateMiddleware.js';
 import {
   createUserBanSchema,
@@ -38,7 +38,7 @@ router.put(
 );
 router.put(
   '/profile',
-  upload.single('avatar'),
+  avatarUpload.single('avatar'),
   validate(updateProfileSchema),
   updateProfile,
 );
