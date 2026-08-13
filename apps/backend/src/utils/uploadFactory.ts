@@ -6,6 +6,7 @@ import { extname } from '../utils/pathHelper.js';
 import { s3Client } from '../utils/s3Utils.js';
 import AppError from '../utils/AppError.js';
 import { env } from '../utils/validateEnv.js';
+import { getAuthUser } from './requestHelper.js';
 
 type AllowedMimePrefix = 'image/' | 'video/';
 
@@ -45,9 +46,9 @@ export function createUploader({
     bucket: env.S3_BUCKET,
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: (_req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const userId = getAuthUser(_req).id;
       const ext = extname(file.originalname);
-      cb(null, `${folder}/${filePrefix}-${uniqueSuffix}${ext}`);
+      cb(null, `${folder}/${filePrefix}-${userId}-${Date.now()}${ext}`);
     },
   });
 
