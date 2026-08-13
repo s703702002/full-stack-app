@@ -3,6 +3,7 @@ import { formatMedia } from '../utils/formatters.js';
 import AppError from '../utils/AppError.js';
 import { deleteFromS3 } from '../utils/s3Utils.js';
 import type { MediaType } from '../generated/client.js';
+import { MAX_MEDIA_PER_USER } from '../constants/media.js';
 
 export const mediaService = {
   getUserMedias: async (
@@ -43,6 +44,16 @@ export const mediaService = {
     const fileKey = file.key;
     if (!fileKey) {
       throw new AppError('上傳失敗：無法取得 S3 檔案 key', 500);
+    }
+
+    const currentCount = await MediaModel.countByUserId(userId);
+    if (currentCount >= MAX_MEDIA_PER_USER) {
+      try {
+        await deleteFromS3(fileKey);
+      } catch (err) {
+        console.error('超額上傳清理 S3 檔案失敗:', err);
+      }
+      throw new AppError(`已達上傳上限（最多 ${MAX_MEDIA_PER_USER} 個媒體項目）`, 400);
     }
 
     const mediaType: MediaType = file.mimetype.startsWith('video/')

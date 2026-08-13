@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mediaService } from './mediaService.js';
 import MediaModel from '../models/mediaModel.js';
 
-vi.mock('../models/mediaModel');
-vi.mock('../utils/s3Utils', () => ({
+vi.mock('../models/mediaModel.js');
+vi.mock('../utils/s3Utils.js', () => ({
   deleteFromS3: vi.fn(),
   generatePresignedGetUrl: vi
     .fn()
@@ -49,6 +49,51 @@ describe('mediaService', () => {
       expect(result.items).toHaveLength(1);
       expect(result.items[0].id).toBe('media-1');
       expect(result.pagination.total).toBe(1);
+    });
+  });
+
+  describe('createMediaFromFile', () => {
+    const mockFile = {
+      key: 'medias/test.jpg',
+      mimetype: 'image/jpeg',
+      size: 2048,
+    } as any;
+
+    it('已達 5 個媒體上限時應清理 S3 檔案並拋出 400 錯誤', async () => {
+      const { deleteFromS3 } = await import('../utils/s3Utils.js');
+      vi.mocked(MediaModel.countByUserId).mockResolvedValue(5);
+
+      await expect(
+        mediaService.createMediaFromFile('user-1', mockFile, '標題', '描述'),
+      ).rejects.toThrow('已達上傳上限（最多 5 個媒體項目）');
+
+      expect(deleteFromS3).toHaveBeenCalledWith('medias/test.jpg');
+      expect(MediaModel.createMedia).not.toHaveBeenCalled();
+    });
+
+    it('未達 5 個媒體上限時應正常建立媒體項目', async () => {
+      vi.mocked(MediaModel.countByUserId).mockResolvedValue(4);
+      vi.mocked(MediaModel.createMedia).mockResolvedValue({
+        id: 'media-5',
+        userId: 'user-1',
+        title: '標題',
+        description: '描述',
+        fileKey: 'medias/test.jpg',
+        mediaType: 'IMAGE' as const,
+        mimeType: 'image/jpeg',
+        size: 2048,
+        createdAt: new Date(),
+      } as any);
+
+      const result = await mediaService.createMediaFromFile(
+        'user-1',
+        mockFile,
+        '標題',
+        '描述',
+      );
+
+      expect(MediaModel.createMedia).toHaveBeenCalled();
+      expect(result.id).toBe('media-5');
     });
   });
 

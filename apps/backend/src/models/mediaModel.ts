@@ -28,6 +28,12 @@ const MediaModel = {
     return { medias, total };
   },
 
+  countByUserId: async (userId: string) => {
+    return await prisma.media.count({
+      where: { userId },
+    });
+  },
+
   createMedia: async (data: {
     userId: string;
     title?: string;
