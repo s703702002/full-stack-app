@@ -1,7 +1,11 @@
 import type { Request } from 'express';
 
+export interface MockMulterFileOptions extends Partial<Express.Multer.File> {
+  key?: string;
+}
+
 export function createMockFile(
-  overrides: Partial<Express.Multer.File> = {},
+  overrides: MockMulterFileOptions = {},
 ): Express.Multer.File {
   return {
     fieldname: 'file',
@@ -21,3 +25,4 @@ export function createMockFile(
 export function createMockRequest(): Request {
   return {} as Request;
 }
+

@@ -1,7 +1,8 @@
-// oxlint-disable typescript/no-explicit-any
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mediaService } from './mediaService.js';
 import MediaModel from '../models/mediaModel.js';
+import type { Media } from '../generated/client.js';
+import { createMockFile } from '../test/helper.js';
 
 vi.mock('../models/mediaModel.js');
 vi.mock('../utils/s3Utils.js', () => ({
@@ -11,6 +12,19 @@ vi.mock('../utils/s3Utils.js', () => ({
     .mockResolvedValue('http://mock-s3-url.com/file'),
 }));
 
+const createMockMedia = (overrides: Partial<Media> = {}): Media => ({
+  id: 'media-1',
+  userId: 'user-1',
+  title: '美景照片',
+  description: '好漂亮的風景',
+  fileKey: 'medias/img1.jpg',
+  mediaType: 'IMAGE',
+  mimeType: 'image/jpeg',
+  size: 1024,
+  createdAt: new Date('2026-08-07T00:00:00Z'),
+  ...overrides,
+});
+
 describe('mediaService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -18,20 +32,7 @@ describe('mediaService', () => {
 
   describe('getUserMedias', () => {
     it('應該返回格式化後的媒體列表與分頁資訊', async () => {
-      const mockMedias = [
-        {
-          id: 'media-1',
-          userId: 'user-1',
-          title: '美景照片',
-          description: '好漂亮的風景',
-          url: 'http://example.com/img1.jpg',
-          fileKey: 'medias/img1.jpg',
-          mediaType: 'IMAGE' as const,
-          mimeType: 'image/jpeg',
-          size: 1024,
-          createdAt: new Date('2026-08-07T00:00:00Z'),
-        },
-      ];
+      const mockMedias: Media[] = [createMockMedia()];
 
       vi.mocked(MediaModel.findAllByUserId).mockResolvedValue({
         medias: mockMedias,
@@ -53,11 +54,11 @@ describe('mediaService', () => {
   });
 
   describe('createMediaFromFile', () => {
-    const mockFile = {
+    const mockFile = createMockFile({
       key: 'medias/test.jpg',
       mimetype: 'image/jpeg',
       size: 2048,
-    } as any;
+    });
 
     it('已達 5 個媒體上限時應清理 S3 檔案並拋出 400 錯誤', async () => {
       const { deleteFromS3 } = await import('../utils/s3Utils.js');
@@ -73,17 +74,15 @@ describe('mediaService', () => {
 
     it('未達 5 個媒體上限時應正常建立媒體項目', async () => {
       vi.mocked(MediaModel.countByUserId).mockResolvedValue(4);
-      vi.mocked(MediaModel.createMedia).mockResolvedValue({
-        id: 'media-5',
-        userId: 'user-1',
-        title: '標題',
-        description: '描述',
-        fileKey: 'medias/test.jpg',
-        mediaType: 'IMAGE' as const,
-        mimeType: 'image/jpeg',
-        size: 2048,
-        createdAt: new Date(),
-      } as any);
+      vi.mocked(MediaModel.createMedia).mockResolvedValue(
+        createMockMedia({
+          id: 'media-5',
+          title: '標題',
+          description: '描述',
+          fileKey: 'medias/test.jpg',
+          size: 2048,
+        }),
+      );
 
       const result = await mediaService.createMediaFromFile(
         'user-1',
@@ -99,11 +98,12 @@ describe('mediaService', () => {
 
   describe('deleteMedia', () => {
     it('若非本人刪除應拋出 403 錯誤', async () => {
-      vi.mocked(MediaModel.findById).mockResolvedValue({
-        id: 'media-1',
-        userId: 'owner-user',
-        fileKey: 'medias/img1.jpg',
-      } as any);
+      vi.mocked(MediaModel.findById).mockResolvedValue(
+        createMockMedia({
+          id: 'media-1',
+          userId: 'owner-user',
+        }),
+      );
 
       await expect(
         mediaService.deleteMedia('other-user', 'media-1'),
@@ -111,12 +111,12 @@ describe('mediaService', () => {
     });
 
     it('若找到該媒體且為本人，應調用刪除 API', async () => {
-      vi.mocked(MediaModel.findById).mockResolvedValue({
+      const mockMedia = createMockMedia({
         id: 'media-1',
         userId: 'owner-user',
-        fileKey: 'medias/img1.jpg',
-      } as any);
-      vi.mocked(MediaModel.deleteById).mockResolvedValue({} as any);
+      });
+      vi.mocked(MediaModel.findById).mockResolvedValue(mockMedia);
+      vi.mocked(MediaModel.deleteById).mockResolvedValue(mockMedia);
 
       const result = await mediaService.deleteMedia('owner-user', 'media-1');
 
